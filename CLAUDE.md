@@ -30,10 +30,16 @@ Next.js (App Router) + React + TypeScript · Tailwind CSS · Three.js + @react-t
 ## Guion de escenas (storyboard)
 Referencia de ritmo: intro de scroll tipo "maqueta lateral" (grúa carga contenedor → camión → sección oscura sube → servicios en scroll horizontal → vista cenital de la carretera). Contenido 100 % propio de TJMI.
 
+Decisiones cerradas (2026-09-22):
+- La escena de apertura es **grúa portacontenedores + contenedor**, no carretilla con palés.
+- El **logo de TJMI va como textura en la lona lateral del remolque** (y pequeño en la puerta de la tractora). Es el requisito de marca de la intro.
+- Los modelos 3D salen de **stock optimizado** (licencia CC0/CC-BY revisada), no modelados a medida.
+- Trato al cliente: **tuteo** en todos los textos.
+
 | # | Escena | Qué pasa | Texto |
 |---|--------|----------|-------|
-| 1 | Hero – Almacén | Fondo blanco, vista lateral. Una carretilla elevadora carga palés de azulejos (cajas con franja azul/roja) en un semirremolque. Idle loop suave antes de hacer scroll. | Logo + claim corto + indicador "scroll" |
-| 2 | Carga completa | Al hacer scroll se cierra la lona del remolque, la cabeza tractora se engancha/arranca, la carretilla sale de plano. Leve desaturación. | — |
+| 1 | Hero – Terminal | Fondo blanco, vista lateral. Una grúa portacontenedores (reach stacker) coge un contenedor de una pila y lo deposita sobre el semirremolque. Idle loop suave antes de hacer scroll. | Logo + claim corto + indicador "scroll" |
+| 2 | Carga completa | Al hacer scroll la grúa suelta el contenedor y sale de plano, la cabeza tractora se engancha/arranca. Leve desaturación. | — |
 | 3 | En ruta | El suelo se convierte en línea de horizonte. La sección azul noche sube desde abajo y el camión queda "posado" sobre ella. Titular con efecto ScrambleText. | "Cada día, de Castellón a Madrid." / subtítulo + botón "Sobre nosotros" |
 | 4 | Servicios | Sección fijada (pin) con scroll horizontal. Palabra gigante "SERVICIOS" en contorno detrás del camión desplazándose. Tarjetas de servicio entrando en horizontal. | Servicios reales de TJMI (ver `messages/es.json`) |
 | 5 | La ruta | La cámara gira a vista cenital. Carretera negra sobre blanco que dibuja la ruta Castellón → Madrid; el camión la recorre con el scroll. Hitos a lo largo del trazado (salida diaria, km, horas, entrega). | "Fiabilidad en cada kilómetro." |

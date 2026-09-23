@@ -1,0 +1,194 @@
+{
+  "meta": {
+    "title": "Transportes José María Ibáñez | Daily Castellón ⇄ Madrid route",
+    "description": "National and international road transport of palletised freight. Daily Castellón ⇄ Madrid route: we collect from 150+ factories and deliver door to door within 24 hours."
+  },
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "about": "About us",
+    "blog": "Blog",
+    "contact": "Contact",
+    "quote": "Get a quote",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "language": "Language",
+    "skipToContent": "Skip to content"
+  },
+  "hero": {
+    "eyebrow": "National and international transport",
+    "title": "We move your freight fast and safely",
+    "subtitle": "Road transport of palletised freight. Daily Castellón ⇄ Madrid route: we collect from 150+ factories and deliver door to door within 24 hours.",
+    "ctaPrimary": "Get a quote",
+    "ctaSecondary": "See services",
+    "scroll": "Scroll"
+  },
+  "inRoute": {
+    "title": "Every day, from Castellón to Madrid.",
+    "subtitle": "We collect, consolidate and deliver your freight within 24 hours. A daily, direct route in both directions.",
+    "stepsTitle": "How we work",
+    "steps": [
+      {
+        "title": "We collect",
+        "description": "We pass by the Castellón factories you tell us."
+      },
+      {
+        "title": "We consolidate",
+        "description": "We group your goods in our Castellón warehouse."
+      },
+      {
+        "title": "We ship",
+        "description": "Daily, direct Castellón ⇄ Madrid route."
+      },
+      {
+        "title": "We deliver",
+        "description": "To Madrid and neighbouring provinces within 24 h."
+      }
+    ],
+    "cta": "About us"
+  },
+  "services": {
+    "title": "Services",
+    "intro": "From a single pallet to a full truck: we cover your whole freight chain.",
+    "cta": "See all services",
+    "featured": {
+      "tag": "Our specialty",
+      "title": "Tiles and construction materials",
+      "description": "Pickup from 150+ factories across the province of Castellón and 24 h delivery to Madrid. Palletised industrial materials, equipment and spares, at ambient temperature.",
+      "tags": [
+        "Large-format tiles",
+        "Equipment and spares",
+        "Bulky loads",
+        "Palletised"
+      ]
+    },
+    "items": [
+      {
+        "title": "Groupage · LTL",
+        "description": "We group your goods with other shipments, for small and medium volumes."
+      },
+      {
+        "title": "Full truck · FTL",
+        "description": "A whole vehicle for your load, from origin to destination."
+      },
+      {
+        "title": "National and international",
+        "description": "Pickup, groupage and storage for clients in Spain and the EU."
+      },
+      {
+        "title": "Warehousing",
+        "description": "Buffer warehouses and stock storage, in closed or open facilities."
+      },
+      {
+        "title": "Picking",
+        "description": "Storage and order preparation."
+      },
+      {
+        "title": "Containers",
+        "description": "Container loading and unloading."
+      }
+    ]
+  },
+  "route": {
+    "title": "Reliable, kilometre after kilometre.",
+    "subtitle": "A daily Castellón ⇄ Madrid corridor and coverage across Spain.",
+    "milestones": [
+      { "value": "40", "label": "Years of experience" },
+      { "value": "150+", "label": "Pickup towns across Castellón" },
+      { "value": "4,000+ m²", "label": "Of own warehouse" },
+      { "value": "24 h", "label": "Delivery service" }
+    ],
+    "coverageTitle": "Routes and coverage",
+    "coverage": [
+      {
+        "title": "Castellón ⇄ Madrid, every day.",
+        "description": "Pickup in the province and 24 h delivery."
+      },
+      {
+        "title": "Madrid and neighbours.",
+        "description": "Delivery across the Madrid region and nearby provinces."
+      },
+      {
+        "title": "Rest of Spain.",
+        "description": "Transport and storage to other national destinations."
+      },
+      {
+        "title": "International.",
+        "description": "Groupage and logistics for European clients."
+      }
+    ],
+    "sites": "Two sites: Almazora (Castellón) and Fuenlabrada (Madrid)."
+  },
+  "cta": {
+    "eyebrow": "Free quote",
+    "title": "Tell us what you need to move",
+    "subtitle": "Fill in the form and we will send you a quote. Prefer to talk? We are one call or WhatsApp away.",
+    "button": "Get a quote",
+    "whatsapp": "WhatsApp 964 53 24 00"
+  },
+  "footer": {
+    "tagline": "Logistics and road transport. Daily Castellón ⇄ Madrid route.",
+    "navTitle": "Navigation",
+    "contactTitle": "Contact",
+    "sitesTitle": "Sites",
+    "company": "Transportes José María Ibáñez, S.L.",
+    "privacy": "Privacy policy",
+    "legalNotice": "Legal notice",
+    "cookies": "Cookies",
+    "rights": "All rights reserved."
+  },
+  "contact": {
+    "email": "trafico1@transjmi.com",
+    "whatsappUrl": "https://wa.me/34964532400",
+    "hoursLabel": "Business hours",
+    "phoneLabel": "Phone",
+    "emailLabel": "Email",
+    "mapLink": "Open in Google Maps",
+    "sites": [
+      {
+        "city": "Castellón",
+        "address": "Partida Ramonet S/N, 12550 Almazora, Castellón – Spain",
+        "phone": "964 53 24 00",
+        "phoneHref": "+34964532400",
+        "hours": "Monday to Friday · 9 – 13 h | 15 – 19 h",
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Partida%20Ramonet%2C%20Almazora%2C%20Castell%C3%B3n"
+      },
+      {
+        "city": "Madrid",
+        "address": "Av. de la Industria, 13, 28947 Fuenlabrada, Madrid – Spain",
+        "phone": "916 42 30 95",
+        "phoneHref": "+34916423095",
+        "hours": "Monday to Friday · 8 – 14 h | 15 – 17 h",
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Avenida%20de%20la%20Industria%2013%2C%20Fuenlabrada%2C%20Madrid"
+      }
+    ]
+  },
+  "pages": {
+    "services": {
+      "title": "Services",
+      "intro": "From a single pallet to a full truck: we cover your whole freight chain, with pickup in Castellón and 24 hour delivery in Madrid."
+    },
+    "about": {
+      "title": "About us",
+      "intro": "Forty years moving palletised freight between Castellón and Madrid.",
+      "body": [
+        "Transportes José María Ibáñez is a road transport company from Castellón specialised in palletised tiles and construction materials. We collect from 150+ towns across the province and deliver to Madrid within 24 hours.",
+        "We work from two sites: Almazora (Castellón) and Fuenlabrada (Madrid), with over 4,000 m² of our own warehousing. That lets us collect, consolidate and distribute without relying on third parties.",
+        "Beyond the daily Castellón ⇄ Madrid corridor, we serve the rest of Spain and European clients, with groupage, full truckload, warehousing, picking and container loading and unloading."
+      ],
+      "sustainabilityBadge": "Photovoltaic installation",
+      "sustainabilityTitle": "We are committed to solar energy",
+      "sustainabilityText": "We have a photovoltaic installation at our facilities, a step towards more sustainable logistics."
+    },
+    "contact": {
+      "title": "Contact",
+      "intro": "Tell us what you need to move, from where and to where. We will reply with a free quote.",
+      "formSoon": "The quote form is coming in the next phase. In the meantime, write to us by email or WhatsApp, or call either of our two sites."
+    },
+    "blog": {
+      "title": "Blog",
+      "intro": "Industry news, loading tips and company updates.",
+      "empty": "No articles published yet."
+    }
+  }
+}

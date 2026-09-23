@@ -1,0 +1,194 @@
+{
+  "meta": {
+    "title": "Transportes José María Ibáñez | Ruta diaria Castellón ⇄ Madrid",
+    "description": "Transporte terrestre nacional e internacional de mercancía paletizada. Ruta diaria Castellón ⇄ Madrid: recogemos en más de 150 fábricas y entregamos puerta a puerta en 24 horas."
+  },
+  "nav": {
+    "home": "Inicio",
+    "services": "Servicios",
+    "about": "Nosotros",
+    "blog": "Blog",
+    "contact": "Contacto",
+    "quote": "Pedir presupuesto",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "language": "Idioma",
+    "skipToContent": "Saltar al contenido"
+  },
+  "hero": {
+    "eyebrow": "Transporte nacional e internacional",
+    "title": "Transportamos tu carga de forma rápida y segura",
+    "subtitle": "Transporte terrestre de mercancía paletizada. Ruta diaria Castellón ⇄ Madrid: recogemos en más de 150 fábricas y entregamos puerta a puerta en 24 horas.",
+    "ctaPrimary": "Pedir presupuesto",
+    "ctaSecondary": "Ver servicios",
+    "scroll": "Desplázate"
+  },
+  "inRoute": {
+    "title": "Cada día, de Castellón a Madrid.",
+    "subtitle": "Recogemos, agrupamos y entregamos tu mercancía en 24 horas. Ruta diaria y directa, en los dos sentidos.",
+    "stepsTitle": "Cómo trabajamos",
+    "steps": [
+      {
+        "title": "Recogemos",
+        "description": "Pasamos por las fábricas de Castellón que nos indiques."
+      },
+      {
+        "title": "Agrupamos",
+        "description": "Consolidamos tu mercancía en nuestro almacén de Castellón."
+      },
+      {
+        "title": "Transportamos",
+        "description": "Ruta diaria y directa Castellón ⇄ Madrid."
+      },
+      {
+        "title": "Entregamos",
+        "description": "En Madrid y provincias colindantes en 24 h."
+      }
+    ],
+    "cta": "Sobre nosotros"
+  },
+  "services": {
+    "title": "Servicios",
+    "intro": "De un solo palé a un camión completo: cubrimos toda la cadena de tu mercancía.",
+    "cta": "Ver todos los servicios",
+    "featured": {
+      "tag": "Nuestra especialidad",
+      "title": "Azulejo y material de construcción",
+      "description": "Recogida en más de 150 fábricas de la provincia de Castellón y entrega en 24 h en Madrid. Materiales, equipos y repuestos industriales paletizados, a temperatura ambiente.",
+      "tags": [
+        "Azulejo gran formato",
+        "Equipos y repuestos",
+        "Cargas voluminosas",
+        "Paletizado"
+      ]
+    },
+    "items": [
+      {
+        "title": "Grupaje · LTL",
+        "description": "Agrupamos tu mercancía con otros envíos, para volúmenes pequeños y medios."
+      },
+      {
+        "title": "Camión completo · FTL",
+        "description": "Vehículo íntegro para tu carga, de origen a destino."
+      },
+      {
+        "title": "Nacional e internacional",
+        "description": "Recogida, grupaje y almacenaje para clientes de España y de la UE."
+      },
+      {
+        "title": "Almacenaje",
+        "description": "Naves reguladoras y almacenaje de stock, en instalaciones cerradas o abiertas."
+      },
+      {
+        "title": "Picking",
+        "description": "Almacenaje y preparación de pedidos."
+      },
+      {
+        "title": "Contenedores",
+        "description": "Carga y descarga de contenedores."
+      }
+    ]
+  },
+  "route": {
+    "title": "Fiabilidad en cada kilómetro.",
+    "subtitle": "Un corredor diario Castellón ⇄ Madrid y cobertura en toda España.",
+    "milestones": [
+      { "value": "40", "label": "Años de experiencia" },
+      { "value": "+150", "label": "Localidades de recogida en Castellón" },
+      { "value": "+4.000 m²", "label": "De almacenaje propio" },
+      { "value": "24 h", "label": "Servicio de entrega" }
+    ],
+    "coverageTitle": "Rutas y cobertura",
+    "coverage": [
+      {
+        "title": "Castellón ⇄ Madrid, cada día.",
+        "description": "Recogida en la provincia y entrega en 24 h."
+      },
+      {
+        "title": "Madrid y colindantes.",
+        "description": "Entrega en la Comunidad de Madrid y provincias cercanas."
+      },
+      {
+        "title": "Resto de España.",
+        "description": "Transporte y almacenaje para otros destinos nacionales."
+      },
+      {
+        "title": "Internacional.",
+        "description": "Grupaje y logística para clientes europeos."
+      }
+    ],
+    "sites": "Dos sedes: Almazora (Castellón) y Fuenlabrada (Madrid)."
+  },
+  "cta": {
+    "eyebrow": "Presupuesto sin compromiso",
+    "title": "Cuéntanos qué necesitas mover",
+    "subtitle": "Rellena el formulario y te enviamos un presupuesto. ¿Prefieres hablar? Estamos a un teléfono o un WhatsApp de distancia.",
+    "button": "Pedir presupuesto",
+    "whatsapp": "WhatsApp 964 53 24 00"
+  },
+  "footer": {
+    "tagline": "Logística y transporte por carretera. Ruta diaria Castellón ⇄ Madrid.",
+    "navTitle": "Navegación",
+    "contactTitle": "Contacto",
+    "sitesTitle": "Sedes",
+    "company": "Transportes José María Ibáñez, S.L.",
+    "privacy": "Política de privacidad",
+    "legalNotice": "Aviso legal",
+    "cookies": "Cookies",
+    "rights": "Todos los derechos reservados."
+  },
+  "contact": {
+    "email": "trafico1@transjmi.com",
+    "whatsappUrl": "https://wa.me/34964532400",
+    "hoursLabel": "Horario comercial",
+    "phoneLabel": "Teléfono",
+    "emailLabel": "Email",
+    "mapLink": "Ver en Google Maps",
+    "sites": [
+      {
+        "city": "Castellón",
+        "address": "Partida Ramonet S/N, 12550 Almazora, Castellón – España",
+        "phone": "964 53 24 00",
+        "phoneHref": "+34964532400",
+        "hours": "Lunes a viernes · 9 – 13 h | 15 – 19 h",
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Partida%20Ramonet%2C%20Almazora%2C%20Castell%C3%B3n"
+      },
+      {
+        "city": "Madrid",
+        "address": "Av. de la Industria, 13, 28947 Fuenlabrada, Madrid – España",
+        "phone": "916 42 30 95",
+        "phoneHref": "+34916423095",
+        "hours": "Lunes a viernes · 8 – 14 h | 15 – 17 h",
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Avenida%20de%20la%20Industria%2013%2C%20Fuenlabrada%2C%20Madrid"
+      }
+    ]
+  },
+  "pages": {
+    "services": {
+      "title": "Servicios",
+      "intro": "De un solo palé a un camión completo: cubrimos toda la cadena de tu mercancía, con recogida en Castellón y entrega en 24 horas en Madrid."
+    },
+    "about": {
+      "title": "Nosotros",
+      "intro": "Cuarenta años moviendo mercancía paletizada entre Castellón y Madrid.",
+      "body": [
+        "Transportes José María Ibáñez es una empresa de transporte terrestre de Castellón especializada en azulejo y material de construcción paletizado. Recogemos en más de 150 localidades de la provincia y entregamos en Madrid en 24 horas.",
+        "Trabajamos desde dos sedes: Almazora (Castellón) y Fuenlabrada (Madrid), con más de 4.000 m² de almacenaje propio. Eso nos permite recoger, consolidar y distribuir sin depender de terceros.",
+        "Además del corredor diario Castellón ⇄ Madrid, damos servicio al resto de España y a clientes europeos, con grupaje, camión completo, almacenaje, picking y carga y descarga de contenedores."
+      ],
+      "sustainabilityBadge": "Instalación fotovoltaica",
+      "sustainabilityTitle": "Apostamos por la energía solar",
+      "sustainabilityText": "Contamos con una instalación fotovoltaica en nuestras instalaciones, un paso hacia una logística más sostenible."
+    },
+    "contact": {
+      "title": "Contacto",
+      "intro": "Cuéntanos qué necesitas mover, desde dónde y hasta dónde. Te respondemos con un presupuesto sin compromiso.",
+      "formSoon": "El formulario de presupuesto llegará en la siguiente fase. Mientras tanto, escríbenos por email o WhatsApp, o llámanos a cualquiera de las dos sedes."
+    },
+    "blog": {
+      "title": "Blog",
+      "intro": "Noticias del sector, consejos de carga y novedades de la empresa.",
+      "empty": "Todavía no hay artículos publicados."
+    }
+  }
+}
