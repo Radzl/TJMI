@@ -7,11 +7,14 @@ type ScrollState = {
   progress: number;
   /** Progreso de cada escena del guion, 0 → 1 (índice 0 = escena 1). */
   scenes: number[];
+  /** Metros recorridos por el camión. Lo usan las ruedas para girar. */
+  travel: number;
 };
 
 export const useScrollStore = create<ScrollState>(() => ({
   progress: 0,
   scenes: new Array<number>(SCENE_COUNT).fill(0),
+  travel: 0,
 }));
 
 // El scrub de GSAP escribe en cada frame. Mutamos el estado en sitio en vez de
@@ -19,6 +22,10 @@ export const useScrollStore = create<ScrollState>(() => ({
 // componentes 3D leen estos valores con getState() dentro de useFrame.
 export function writeProgress(value: number) {
   useScrollStore.getState().progress = value;
+}
+
+export function writeTravel(value: number) {
+  useScrollStore.getState().travel = value;
 }
 
 export function writeSceneProgress(index: number, value: number) {

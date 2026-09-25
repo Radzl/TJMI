@@ -1,7 +1,10 @@
 {
   "meta": {
     "title": "Transportes José María Ibáñez | Daily Castellón ⇄ Madrid route",
-    "description": "National and international road transport of palletised freight. Daily Castellón ⇄ Madrid route: we collect from 150+ factories and deliver door to door within 24 hours."
+    "description": "National and international road transport of palletised freight. Daily Castellón ⇄ Madrid route: we collect from 150+ factories and deliver door to door within 24 hours.",
+    "cookiesTitle": "Cookie policy | Transportes José María Ibáñez",
+    "privacyTitle": "Privacy policy | Transportes José María Ibáñez",
+    "legalTitle": "Legal notice | Transportes José María Ibáñez"
   },
   "nav": {
     "home": "Home",
@@ -20,8 +23,7 @@
     "title": "We move your freight fast and safely",
     "subtitle": "Road transport of palletised freight. Daily Castellón ⇄ Madrid route: we collect from 150+ factories and deliver door to door within 24 hours.",
     "ctaPrimary": "Get a quote",
-    "ctaSecondary": "See services",
-    "scroll": "Scroll"
+    "ctaSecondary": "See services"
   },
   "inRoute": {
     "title": "Every day, from Castellón to Madrid.",
@@ -93,11 +95,30 @@
     "title": "Reliable, kilometre after kilometre.",
     "subtitle": "A daily Castellón ⇄ Madrid corridor and coverage across Spain.",
     "milestones": [
-      { "value": "40", "label": "Years of experience" },
-      { "value": "150+", "label": "Pickup towns across Castellón" },
-      { "value": "4,000+ m²", "label": "Of own warehouse" },
-      { "value": "24 h", "label": "Delivery service" }
+      {
+        "value": "40",
+        "label": "Years of experience"
+      },
+      {
+        "value": "150+",
+        "label": "Pickup towns across Castellón"
+      },
+      {
+        "value": "4,000+ m²",
+        "label": "Of own warehouse"
+      },
+      {
+        "value": "24 h",
+        "label": "Delivery service"
+      }
     ],
+    "odometer": {
+      "value": "420",
+      "unit": "km",
+      "label": "Per trip, every working day"
+    },
+    "origin": "Almazora (Castellón)",
+    "destination": "Fuenlabrada (Madrid)",
     "coverageTitle": "Routes and coverage",
     "coverage": [
       {
@@ -135,11 +156,17 @@
     "privacy": "Privacy policy",
     "legalNotice": "Legal notice",
     "cookies": "Cookies",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "cookiePreferences": "Cookie preferences"
   },
   "contact": {
     "email": "trafico1@transjmi.com",
     "whatsappUrl": "https://wa.me/34964532400",
+    "whatsappAria": "Message us on WhatsApp",
+    "directTitle": "Or get in touch directly",
+    "sitesTitle": "Where we are",
+    "sitesIntro": "Two sites of our own: one in the heart of the tile cluster and one at the gates of Madrid.",
+    "mapTitle": "Map of our {city} site",
     "hoursLabel": "Business hours",
     "phoneLabel": "Phone",
     "emailLabel": "Email",
@@ -151,7 +178,8 @@
         "phone": "964 53 24 00",
         "phoneHref": "+34964532400",
         "hours": "Monday to Friday · 9 – 13 h | 15 – 19 h",
-        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Partida%20Ramonet%2C%20Almazora%2C%20Castell%C3%B3n"
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Partida%20Ramonet%2C%20Almazora%2C%20Castell%C3%B3n",
+        "embedUrl": "https://maps.google.com/maps?q=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Partida%20Ramonet%2C%20Almazora&z=14&output=embed"
       },
       {
         "city": "Madrid",
@@ -159,9 +187,59 @@
         "phone": "916 42 30 95",
         "phoneHref": "+34916423095",
         "hours": "Monday to Friday · 8 – 14 h | 15 – 17 h",
-        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Avenida%20de%20la%20Industria%2013%2C%20Fuenlabrada%2C%20Madrid"
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Avenida%20de%20la%20Industria%2013%2C%20Fuenlabrada%2C%20Madrid",
+        "embedUrl": "https://maps.google.com/maps?q=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Avenida%20de%20la%20Industria%2013%2C%20Fuenlabrada&z=14&output=embed"
       }
     ]
+  },
+  "quote": {
+    "title": "Request a quote",
+    "intro": "Fill in what you know. With the origin, destination and number of pallets we can already give you a price.",
+    "origin": "Origin",
+    "originPlaceholder": "Castellón, factory…",
+    "destination": "Destination",
+    "destinationPlaceholder": "Madrid, Fuenlabrada…",
+    "pallets": "Number of pallets",
+    "palletsPlaceholder": "e.g. 6",
+    "goods": "Type of goods",
+    "goodsOptions": [
+      "Tiles / ceramics",
+      "Construction materials",
+      "Equipment and spares",
+      "Bulky load",
+      "Other"
+    ],
+    "name": "Name",
+    "company": "Company",
+    "companyOptional": "Company (optional)",
+    "email": "Email",
+    "phone": "Phone",
+    "details": "Shipment details",
+    "detailsPlaceholder": "Special dimensions, unloading hours, whether an appointment is needed…",
+    "detailsOptional": "Shipment details (optional)",
+    "consent": "I agree to my details being used to answer this request.",
+    "submit": "Send on WhatsApp",
+    "submitEmail": "I would rather send it by email",
+    "note": "We reply during business hours. Your data is only used to handle your request.",
+    "sent": "Done. WhatsApp has opened with your request ready: just hit send.",
+    "messageIntro": "Hello, I would like a quote:",
+    "errors": {
+      "origin": "Tell us where the goods ship from",
+      "destination": "Tell us where they are going",
+      "pallets": "Tell us how many pallets",
+      "name": "We need your name",
+      "email": "Enter a valid email",
+      "phone": "Enter a contact phone number",
+      "consent": "We need your consent to reply"
+    }
+  },
+  "blog": {
+    "readTime": "{minutes} min read",
+    "back": "Back to the blog",
+    "more": "More articles",
+    "ctaTitle": "Need a hand with your next shipment?",
+    "ctaText": "Tell us what you need to move and we will send you a price within 24 hours.",
+    "ctaButton": "Get a quote"
   },
   "pages": {
     "services": {
@@ -176,6 +254,9 @@
         "We work from two sites: Almazora (Castellón) and Fuenlabrada (Madrid), with over 4,000 m² of our own warehousing. That lets us collect, consolidate and distribute without relying on third parties.",
         "Beyond the daily Castellón ⇄ Madrid corridor, we serve the rest of Spain and European clients, with groupage, full truckload, warehousing, picking and container loading and unloading."
       ],
+      "videoLabel": "Corporate video of Transportes José María Ibáñez",
+      "videoPlay": "Play the company video",
+      "videoCaption": "Company video.",
       "sustainabilityBadge": "Photovoltaic installation",
       "sustainabilityTitle": "We are committed to solar energy",
       "sustainabilityText": "We have a photovoltaic installation at our facilities, a step towards more sustainable logistics."
@@ -187,8 +268,232 @@
     },
     "blog": {
       "title": "Blog",
-      "intro": "Industry news, loading tips and company updates.",
+      "intro": "Practical advice on pallet transport, load preparation and the daily Castellón ⇄ Madrid route, written from the loading dock.",
       "empty": "No articles published yet."
+    },
+    "cookies": {
+      "title": "Cookie policy",
+      "intro": "What cookies this site uses, what they are for, and how to change your mind at any time.",
+      "updated": "Last updated: 24 September 2026",
+      "whatTitle": "What is a cookie?",
+      "whatText": "It is a small file a website stores on your device when you visit. It is used to remember things, such as the language you picked. Some are set by us and some by an outside company, such as Google when we show you a map.",
+      "tableTitle": "Cookies we use",
+      "tableHeaders": {
+        "name": "Cookie",
+        "owner": "Who sets it",
+        "purpose": "What it does",
+        "duration": "How long it lasts",
+        "category": "Category"
+      },
+      "rows": [
+        {
+          "name": "tjmi_consent",
+          "owner": "Transportes José María Ibáñez (first party)",
+          "purpose": "Stores which cookies you accepted and when, so we do not ask you again on every visit.",
+          "duration": "12 months",
+          "category": "Necessary"
+        },
+        {
+          "name": "NEXT_LOCALE",
+          "owner": "Transportes José María Ibáñez (first party)",
+          "purpose": "Remembers whether you are viewing the site in Spanish or English.",
+          "duration": "12 months",
+          "category": "Necessary"
+        },
+        {
+          "name": "NID, SOCS and other Google cookies",
+          "owner": "Google Ireland Limited (third party)",
+          "purpose": "Set when the map of our depots loads. Google uses them to remember map preferences and for security.",
+          "duration": "Per Google, up to 24 months",
+          "category": "Maps"
+        }
+      ],
+      "sections": [
+        {
+          "heading": "What happens if you reject them",
+          "paragraphs": [
+            "Nothing: the site works just the same. The only difference is that you will not see the embedded maps. Instead we show the written address and a link to open the location in Google Maps, if you want to.",
+            "We never load third-party cookies before you give us permission."
+          ]
+        },
+        {
+          "heading": "How to change your mind",
+          "paragraphs": [
+            "Every page has a \"Cookie preferences\" link in the footer. From there you can give or withdraw your permission whenever you like, as easily as you gave it.",
+            "We will ask again after 12 months, or sooner if we add a new service."
+          ]
+        },
+        {
+          "heading": "Transfers outside the European Union",
+          "paragraphs": [
+            "If you accept map cookies, Google may process your data outside the European Economic Area. Google relies on the EU-US Data Privacy Framework. You can read their privacy policy at policies.google.com/privacy."
+          ]
+        },
+        {
+          "heading": "How to delete them from your browser",
+          "paragraphs": [
+            "Besides our panel, your browser lets you see and delete the cookies stored by any website:"
+          ]
+        }
+      ],
+      "browsers": [
+        {
+          "name": "Google Chrome",
+          "url": "https://support.google.com/chrome/answer/95647"
+        },
+        {
+          "name": "Mozilla Firefox",
+          "url": "https://support.mozilla.org/kb/clear-cookies-and-site-data-firefox"
+        },
+        {
+          "name": "Safari",
+          "url": "https://support.apple.com/guide/safari/manage-cookies-sfri11471/mac"
+        },
+        {
+          "name": "Microsoft Edge",
+          "url": "https://support.microsoft.com/help/4027947"
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "intro": "What personal data we collect when you contact us, what we use it for, and what you can do about it.",
+      "updated": "Last updated: 24 September 2026",
+      "pending": "Draft pending review. The company details marked below are missing, and your accountant or lawyer should review it before publishing.",
+      "sections": [
+        {
+          "heading": "Who is responsible for your data",
+          "paragraphs": [
+            "Transportes José María Ibáñez, S.L.",
+            "Tax ID: [PENDING: company tax ID]",
+            "Registered office: [PENDING: full registered address]",
+            "Contact address for data matters: [PENDING: email]",
+            "Phone: [PENDING: phone]"
+          ]
+        },
+        {
+          "heading": "What data we collect",
+          "paragraphs": [
+            "Only what you give us. If you fill in the quote form: your name, your company, your email, your phone and whatever you write in the message.",
+            "If you write to us by email or WhatsApp, whatever data appears in that conversation.",
+            "We use no analytics or advertising cookies, so we do not build profiles of people browsing the site."
+          ]
+        },
+        {
+          "heading": "What we use it for, and on what legal basis",
+          "paragraphs": [
+            "To reply to you and prepare a quote. The legal basis is taking steps at your request before entering into a contract (Article 6.1.b GDPR).",
+            "If you also want us to send you commercial information, we will ask you separately and clearly. That legal basis would be your consent (Article 6.1.a)."
+          ]
+        },
+        {
+          "heading": "How long we keep it",
+          "paragraphs": [
+            "For as long as the business relationship lasts and then for the periods required by tax and commercial law (generally six years).",
+            "If your enquiry does not lead to a contract, we delete the data once it is no longer needed to deal with it."
+          ]
+        },
+        {
+          "heading": "Who we share it with",
+          "paragraphs": [
+            "We do not sell or hand your data to anyone for advertising.",
+            "Only the providers we need in order to work can access it, always under a signed data processing agreement: our web hosting provider and our email provider.",
+            "[PENDING: confirm the specific hosting and email providers]"
+          ]
+        },
+        {
+          "heading": "Your rights",
+          "paragraphs": [
+            "You can ask us to access your data, correct it, delete it, object to our using it, restrict its use or take it elsewhere. Just write to the contact address above.",
+            "If you think we have not handled your request properly, you can complain to the Spanish Data Protection Agency (www.aepd.es)."
+          ]
+        },
+        {
+          "heading": "Security",
+          "paragraphs": [
+            "We apply reasonable technical and organisational measures so that your data is not lost or seen by anyone who should not see it."
+          ]
+        }
+      ]
+    },
+    "legal": {
+      "title": "Legal notice",
+      "intro": "Details of the company behind this website and terms of use, under Spanish Law 34/2002 on information society services.",
+      "updated": "Last updated: 24 September 2026",
+      "pending": "Draft pending review. The company details and the 3D model credits marked below are missing.",
+      "sections": [
+        {
+          "heading": "Company details",
+          "paragraphs": [
+            "Owner: Transportes José María Ibáñez, S.L.",
+            "Tax ID: [PENDING: company tax ID]",
+            "Registered office: [PENDING: full registered address]",
+            "Email: [PENDING: email]",
+            "Phone: [PENDING: phone]",
+            "Registry details: [PENDING: Commercial Registry, volume, folio and sheet]"
+          ]
+        },
+        {
+          "heading": "Use of the site",
+          "paragraphs": [
+            "Browsing this site makes you a user and means you accept these terms.",
+            "You agree to use it in good faith, without damaging it or trying to reach restricted areas.",
+            "Information about services, routes and lead times is indicative. What binds us is the quote or contract we sign with you."
+          ]
+        },
+        {
+          "heading": "Intellectual property",
+          "paragraphs": [
+            "The text, logo, photographs and design of this site belong to Transportes José María Ibáñez, S.L., except as stated below.",
+            "You may not reproduce or reuse them without our written permission."
+          ]
+        },
+        {
+          "heading": "3D model credits",
+          "paragraphs": [
+            "The homepage animation uses freely licensed stock 3D models, modified by us (brand colours and our own logo).",
+            "[PENDING: name, author, licence and link for each model used]"
+          ]
+        },
+        {
+          "heading": "Links to other sites",
+          "paragraphs": [
+            "This site contains links to third-party sites such as Google Maps or WhatsApp. We do not control their content and are not responsible for it."
+          ]
+        },
+        {
+          "heading": "Applicable law",
+          "paragraphs": [
+            "These terms are governed by Spanish law."
+          ]
+        }
+      ]
+    },
+    "notFound": {
+      "code": "Error 404",
+      "title": "You have gone off route",
+      "intro": "This page does not exist, or we moved it. Head back to the homepage, or tell us what you need moving and we will come back to you with a quote.",
+      "home": "Back to the homepage",
+      "contact": "Request a quote"
     }
+  },
+  "cookies": {
+    "bannerTitle": "Cookies",
+    "bannerText": "We only use the cookies this site needs to work. Google maps are loaded only if you allow it, because Google sets its own cookies.",
+    "acceptAll": "Accept",
+    "rejectAll": "Reject",
+    "configure": "Customise",
+    "policyLink": "Read the cookie policy",
+    "prefsTitle": "Cookie preferences",
+    "prefsIntro": "Choose what you want to allow. You can change it whenever you like from the link in the footer.",
+    "save": "Save choices",
+    "necessaryTitle": "Necessary",
+    "necessaryText": "They remember your language and the choice you make here. The site does not work without them, so they cannot be switched off.",
+    "always": "Always on",
+    "mapsTitle": "Maps",
+    "mapsText": "They allow the Google maps showing our depots to load. Google sets its own cookies when they are displayed.",
+    "mapBlocked": "The map is blocked until you accept Google Maps cookies.",
+    "mapShow": "Show the map",
+    "mapExternal": "Open in Google Maps"
   }
 }

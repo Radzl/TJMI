@@ -16,3 +16,9 @@ export function smoothstep(t: number) {
   const x = clamp(t);
   return x * x * (3 - 2 * x);
 }
+
+/** Arranca rápido y frena al final: sirve para que el camión "llegue". */
+export function easeOut(t: number) {
+  const x = clamp(t);
+  return 1 - (1 - x) ** 3;
+}

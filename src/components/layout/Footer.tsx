@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import CookiePreferencesButton from '@/components/legal/CookiePreferencesButton';
 import Container from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
 import Wordmark from './Wordmark';
@@ -10,8 +11,11 @@ const navLinks = [
   { href: '/contacto', key: 'contact' },
 ] as const;
 
-// TODO: enlazar con las páginas legales reales cuando existan
-const legalLinks = ['privacy', 'legalNotice', 'cookies'] as const;
+const legalLinks = [
+  { href: '/privacidad', key: 'privacy' },
+  { href: '/aviso-legal', key: 'legalNotice' },
+  { href: '/cookies', key: 'cookies' },
+] as const;
 
 type Site = {
   city: string;
@@ -106,11 +110,18 @@ export default function Footer() {
             © {new Date().getFullYear()} {t('company')}. {t('rights')}
           </p>
           <ul className="flex flex-wrap gap-5">
-            {legalLinks.map((key) => (
-              <li key={key}>
-                <span className="cursor-default">{t(key)}</span>
+            {legalLinks.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="hover:text-brand-blue">
+                  {t(link.key)}
+                </Link>
               </li>
             ))}
+            <li>
+              <CookiePreferencesButton>
+                {t('cookiePreferences')}
+              </CookiePreferencesButton>
+            </li>
           </ul>
         </Container>
       </div>

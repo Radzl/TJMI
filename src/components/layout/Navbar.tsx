@@ -2,7 +2,7 @@
 
 import { Menu, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Container from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
 import LocaleSwitcher from './LocaleSwitcher';
@@ -18,9 +18,35 @@ const links = [
 export default function Navbar() {
   const t = useTranslations('nav');
   const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // La barra se aparta al bajar y vuelve al subir: deja ver la intro entera
+  // sin quitarle al usuario el acceso al menú.
+  useEffect(() => {
+    let last = window.scrollY;
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 8);
+      if (Math.abs(y - last) > 6) {
+        setHidden(y > last && y > 160);
+        last = y;
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-white/90 backdrop-blur">
+    <header
+      className={`sticky top-0 z-50 transition-[transform,background-color,border-color] duration-300 ${
+        scrolled
+          ? 'border-b border-line bg-bone/90 backdrop-blur'
+          : 'border-b border-transparent bg-transparent'
+      } ${hidden && !open ? '-translate-y-full' : 'translate-y-0'}`}
+    >
       <Container className="flex h-20 items-center justify-between">
         <Link href="/" aria-label={t('home')} onClick={() => setOpen(false)}>
           <Wordmark />

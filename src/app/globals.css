@@ -8,6 +8,8 @@
   --color-ink: #11151c;
   --color-muted: #5c6673;
   --color-line: #e6e8ec;
+  /* Blanco cálido de fondo: da profundidad a las tarjetas blancas encima. */
+  --color-bone: #f6f4f1;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-oswald), var(--font-inter), ui-sans-serif, sans-serif;
@@ -19,7 +21,7 @@ html {
 }
 
 body {
-  background-color: #ffffff;
+  background-color: var(--color-bone);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }

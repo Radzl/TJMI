@@ -1,7 +1,10 @@
 {
   "meta": {
     "title": "Transportes José María Ibáñez | Ruta diaria Castellón ⇄ Madrid",
-    "description": "Transporte terrestre nacional e internacional de mercancía paletizada. Ruta diaria Castellón ⇄ Madrid: recogemos en más de 150 fábricas y entregamos puerta a puerta en 24 horas."
+    "description": "Transporte terrestre nacional e internacional de mercancía paletizada. Ruta diaria Castellón ⇄ Madrid: recogemos en más de 150 fábricas y entregamos puerta a puerta en 24 horas.",
+    "cookiesTitle": "Política de cookies | Transportes José María Ibáñez",
+    "privacyTitle": "Política de privacidad | Transportes José María Ibáñez",
+    "legalTitle": "Aviso legal | Transportes José María Ibáñez"
   },
   "nav": {
     "home": "Inicio",
@@ -20,8 +23,7 @@
     "title": "Transportamos tu carga de forma rápida y segura",
     "subtitle": "Transporte terrestre de mercancía paletizada. Ruta diaria Castellón ⇄ Madrid: recogemos en más de 150 fábricas y entregamos puerta a puerta en 24 horas.",
     "ctaPrimary": "Pedir presupuesto",
-    "ctaSecondary": "Ver servicios",
-    "scroll": "Desplázate"
+    "ctaSecondary": "Ver servicios"
   },
   "inRoute": {
     "title": "Cada día, de Castellón a Madrid.",
@@ -93,11 +95,30 @@
     "title": "Fiabilidad en cada kilómetro.",
     "subtitle": "Un corredor diario Castellón ⇄ Madrid y cobertura en toda España.",
     "milestones": [
-      { "value": "40", "label": "Años de experiencia" },
-      { "value": "+150", "label": "Localidades de recogida en Castellón" },
-      { "value": "+4.000 m²", "label": "De almacenaje propio" },
-      { "value": "24 h", "label": "Servicio de entrega" }
+      {
+        "value": "40",
+        "label": "Años de experiencia"
+      },
+      {
+        "value": "+150",
+        "label": "Localidades de recogida en Castellón"
+      },
+      {
+        "value": "+4.000 m²",
+        "label": "De almacenaje propio"
+      },
+      {
+        "value": "24 h",
+        "label": "Servicio de entrega"
+      }
     ],
+    "odometer": {
+      "value": "420",
+      "unit": "km",
+      "label": "Por trayecto, cada día laborable"
+    },
+    "origin": "Almazora (Castellón)",
+    "destination": "Fuenlabrada (Madrid)",
     "coverageTitle": "Rutas y cobertura",
     "coverage": [
       {
@@ -135,11 +156,17 @@
     "privacy": "Política de privacidad",
     "legalNotice": "Aviso legal",
     "cookies": "Cookies",
-    "rights": "Todos los derechos reservados."
+    "rights": "Todos los derechos reservados.",
+    "cookiePreferences": "Preferencias de cookies"
   },
   "contact": {
     "email": "trafico1@transjmi.com",
     "whatsappUrl": "https://wa.me/34964532400",
+    "whatsappAria": "Escríbenos por WhatsApp",
+    "directTitle": "O escríbenos directamente",
+    "sitesTitle": "Dónde estamos",
+    "sitesIntro": "Dos sedes propias: una en el corazón del azulejo y otra a las puertas de Madrid.",
+    "mapTitle": "Mapa de la sede de {city}",
     "hoursLabel": "Horario comercial",
     "phoneLabel": "Teléfono",
     "emailLabel": "Email",
@@ -151,7 +178,8 @@
         "phone": "964 53 24 00",
         "phoneHref": "+34964532400",
         "hours": "Lunes a viernes · 9 – 13 h | 15 – 19 h",
-        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Partida%20Ramonet%2C%20Almazora%2C%20Castell%C3%B3n"
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Partida%20Ramonet%2C%20Almazora%2C%20Castell%C3%B3n",
+        "embedUrl": "https://maps.google.com/maps?q=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Partida%20Ramonet%2C%20Almazora&z=14&output=embed"
       },
       {
         "city": "Madrid",
@@ -159,9 +187,59 @@
         "phone": "916 42 30 95",
         "phoneHref": "+34916423095",
         "hours": "Lunes a viernes · 8 – 14 h | 15 – 17 h",
-        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Avenida%20de%20la%20Industria%2013%2C%20Fuenlabrada%2C%20Madrid"
+        "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Avenida%20de%20la%20Industria%2013%2C%20Fuenlabrada%2C%20Madrid",
+        "embedUrl": "https://maps.google.com/maps?q=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Avenida%20de%20la%20Industria%2013%2C%20Fuenlabrada&z=14&output=embed"
       }
     ]
+  },
+  "quote": {
+    "title": "Pide presupuesto",
+    "intro": "Rellena lo que sepas. Con el origen, el destino y los palés ya podemos darte un precio.",
+    "origin": "Origen",
+    "originPlaceholder": "Castellón, fábrica…",
+    "destination": "Destino",
+    "destinationPlaceholder": "Madrid, Fuenlabrada…",
+    "pallets": "Nº de palés",
+    "palletsPlaceholder": "Ej. 6",
+    "goods": "Tipo de mercancía",
+    "goodsOptions": [
+      "Azulejos / cerámica",
+      "Material de construcción",
+      "Equipos y repuestos",
+      "Carga voluminosa",
+      "Otro"
+    ],
+    "name": "Nombre",
+    "company": "Empresa",
+    "companyOptional": "Empresa (opcional)",
+    "email": "Email",
+    "phone": "Teléfono",
+    "details": "Detalles del envío",
+    "detailsPlaceholder": "Medidas especiales, horario de descarga, si hace falta cita previa…",
+    "detailsOptional": "Detalles del envío (opcional)",
+    "consent": "He leído y acepto que uséis mis datos para responder a esta solicitud.",
+    "submit": "Enviar por WhatsApp",
+    "submitEmail": "Prefiero enviarlo por email",
+    "note": "Respondemos en horario comercial. Tus datos solo se usan para gestionar tu solicitud.",
+    "sent": "Listo. Se ha abierto WhatsApp con tu solicitud preparada: solo tienes que darle a enviar.",
+    "messageIntro": "Hola, quiero pedir presupuesto:",
+    "errors": {
+      "origin": "Dinos desde dónde sale la mercancía",
+      "destination": "Dinos a dónde va",
+      "pallets": "Indica cuántos palés son",
+      "name": "Necesitamos tu nombre",
+      "email": "Escribe un email válido",
+      "phone": "Escribe un teléfono de contacto",
+      "consent": "Necesitamos tu consentimiento para responderte"
+    }
+  },
+  "blog": {
+    "readTime": "{minutes} min de lectura",
+    "back": "Volver al blog",
+    "more": "Más artículos",
+    "ctaTitle": "¿Te ayudamos con tu próximo envío?",
+    "ctaText": "Cuéntanos qué necesitas mover y te damos precio en menos de 24 horas.",
+    "ctaButton": "Pedir presupuesto"
   },
   "pages": {
     "services": {
@@ -176,6 +254,9 @@
         "Trabajamos desde dos sedes: Almazora (Castellón) y Fuenlabrada (Madrid), con más de 4.000 m² de almacenaje propio. Eso nos permite recoger, consolidar y distribuir sin depender de terceros.",
         "Además del corredor diario Castellón ⇄ Madrid, damos servicio al resto de España y a clientes europeos, con grupaje, camión completo, almacenaje, picking y carga y descarga de contenedores."
       ],
+      "videoLabel": "Vídeo corporativo de Transportes José María Ibáñez",
+      "videoPlay": "Reproducir el vídeo de la empresa",
+      "videoCaption": "Vídeo corporativo de la empresa.",
       "sustainabilityBadge": "Instalación fotovoltaica",
       "sustainabilityTitle": "Apostamos por la energía solar",
       "sustainabilityText": "Contamos con una instalación fotovoltaica en nuestras instalaciones, un paso hacia una logística más sostenible."
@@ -187,8 +268,232 @@
     },
     "blog": {
       "title": "Blog",
-      "intro": "Noticias del sector, consejos de carga y novedades de la empresa.",
+      "intro": "Consejos prácticos sobre transporte de palés, preparación de carga y la ruta diaria Castellón ⇄ Madrid, escritos desde el muelle.",
       "empty": "Todavía no hay artículos publicados."
+    },
+    "cookies": {
+      "title": "Política de cookies",
+      "intro": "Aquí te contamos qué cookies usa esta web, para qué sirven y cómo puedes cambiar tu decisión en cualquier momento.",
+      "updated": "Última actualización: 24 de septiembre de 2026",
+      "whatTitle": "¿Qué es una cookie?",
+      "whatText": "Es un archivo pequeño que una web guarda en tu dispositivo cuando la visitas. Sirve para recordar cosas, como el idioma que has elegido. Algunas las ponemos nosotros y otras las pone una empresa de fuera, como Google cuando te enseñamos un mapa.",
+      "tableTitle": "Qué cookies usamos",
+      "tableHeaders": {
+        "name": "Cookie",
+        "owner": "Quién la pone",
+        "purpose": "Para qué sirve",
+        "duration": "Cuánto dura",
+        "category": "Categoría"
+      },
+      "rows": [
+        {
+          "name": "tjmi_consent",
+          "owner": "Transportes José María Ibáñez (propia)",
+          "purpose": "Guarda qué cookies has aceptado y en qué fecha, para no volver a preguntártelo en cada visita.",
+          "duration": "12 meses",
+          "category": "Necesaria"
+        },
+        {
+          "name": "NEXT_LOCALE",
+          "owner": "Transportes José María Ibáñez (propia)",
+          "purpose": "Recuerda si estás viendo la web en español o en inglés.",
+          "duration": "12 meses",
+          "category": "Necesaria"
+        },
+        {
+          "name": "NID, SOCS y otras de Google",
+          "owner": "Google Ireland Limited (tercero)",
+          "purpose": "Se instalan al cargar el mapa de nuestras sedes. Google las usa para recordar preferencias del mapa y por seguridad.",
+          "duration": "Según Google, hasta 24 meses",
+          "category": "Mapas"
+        }
+      ],
+      "sections": [
+        {
+          "heading": "Qué pasa si las rechazas",
+          "paragraphs": [
+            "No pasa nada: la web funciona igual. Lo único que cambia es que no verás los mapas incrustados. En su lugar te dejamos la dirección escrita y un enlace para abrir la ubicación en Google Maps, si tú quieres.",
+            "Nunca cargamos cookies de terceros antes de que nos des permiso."
+          ]
+        },
+        {
+          "heading": "Cómo cambiar de opinión",
+          "paragraphs": [
+            "En el pie de página, en cualquier página de la web, tienes el enlace «Preferencias de cookies». Desde ahí puedes aceptar o retirar tu permiso cuando quieras, con la misma facilidad con la que lo diste.",
+            "Volveremos a preguntarte pasados 12 meses, o antes si añadimos algún servicio nuevo."
+          ]
+        },
+        {
+          "heading": "Transferencias fuera de la Unión Europea",
+          "paragraphs": [
+            "Si aceptas las cookies de mapas, Google puede tratar tus datos fuera del Espacio Económico Europeo. Google se acoge al Marco de Privacidad de Datos UE-EE. UU. Puedes consultar su política de privacidad en policies.google.com/privacy."
+          ]
+        },
+        {
+          "heading": "Cómo borrarlas desde el navegador",
+          "paragraphs": [
+            "Además de nuestro panel, tu navegador te permite ver y borrar las cookies que tengas guardadas de cualquier web:"
+          ]
+        }
+      ],
+      "browsers": [
+        {
+          "name": "Google Chrome",
+          "url": "https://support.google.com/chrome/answer/95647"
+        },
+        {
+          "name": "Mozilla Firefox",
+          "url": "https://support.mozilla.org/kb/clear-cookies-and-site-data-firefox"
+        },
+        {
+          "name": "Safari",
+          "url": "https://support.apple.com/guide/safari/manage-cookies-sfri11471/mac"
+        },
+        {
+          "name": "Microsoft Edge",
+          "url": "https://support.microsoft.com/help/4027947"
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Política de privacidad",
+      "intro": "Qué datos personales recogemos cuando contactas con nosotros, para qué los usamos y qué puedes hacer con ellos.",
+      "updated": "Última actualización: 24 de septiembre de 2026",
+      "pending": "Documento pendiente de revisión. Faltan los datos societarios marcados abajo y conviene que lo revise vuestra gestoría o abogado antes de publicarlo.",
+      "sections": [
+        {
+          "heading": "Quién es el responsable de tus datos",
+          "paragraphs": [
+            "Transportes José María Ibáñez, S.L.",
+            "NIF: [PENDIENTE: NIF de la empresa]",
+            "Domicilio social: [PENDIENTE: domicilio social completo]",
+            "Correo de contacto para asuntos de datos: [PENDIENTE: email]",
+            "Teléfono: [PENDIENTE: teléfono]"
+          ]
+        },
+        {
+          "heading": "Qué datos recogemos",
+          "paragraphs": [
+            "Solo los que nos das tú. Si rellenas el formulario de presupuesto: tu nombre, el de tu empresa, tu correo, tu teléfono y lo que nos cuentes en el mensaje.",
+            "Si nos escribes por correo o por WhatsApp, los datos que aparezcan en esa conversación.",
+            "No usamos cookies de analítica ni de publicidad, así que no elaboramos perfiles de quien navega por la web."
+          ]
+        },
+        {
+          "heading": "Para qué los usamos y con qué base legal",
+          "paragraphs": [
+            "Para responderte y prepararte un presupuesto. La base legal es la aplicación de medidas precontractuales a petición tuya (artículo 6.1.b del RGPD).",
+            "Si además quieres que te mandemos información comercial, te lo pediremos aparte y de forma clara. Esa base legal sería tu consentimiento (artículo 6.1.a)."
+          ]
+        },
+        {
+          "heading": "Cuánto tiempo los guardamos",
+          "paragraphs": [
+            "Mientras dure la relación comercial y, después, durante los plazos que nos obligan las leyes fiscales y mercantiles (con carácter general, seis años).",
+            "Si tu consulta no acaba en contratación, borramos los datos cuando dejan de ser necesarios para atenderla."
+          ]
+        },
+        {
+          "heading": "A quién se los cedemos",
+          "paragraphs": [
+            "No vendemos ni cedemos tus datos a nadie para que te haga publicidad.",
+            "Solo acceden a ellos los proveedores que necesitamos para trabajar, siempre con un contrato de encargado de tratamiento firmado: el proveedor de alojamiento de la web y el proveedor de correo electrónico.",
+            "[PENDIENTE: confirmar proveedores concretos de hosting y de correo]"
+          ]
+        },
+        {
+          "heading": "Qué derechos tienes",
+          "paragraphs": [
+            "Puedes pedirnos acceder a tus datos, corregirlos, borrarlos, oponerte a que los usemos, limitar su uso o llevártelos a otro sitio. Basta con escribirnos al correo de contacto que aparece arriba.",
+            "Si crees que no te hemos atendido bien, puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es)."
+          ]
+        },
+        {
+          "heading": "Seguridad",
+          "paragraphs": [
+            "Aplicamos las medidas técnicas y organizativas razonables para que tus datos no se pierdan ni acaben en manos de quien no debe."
+          ]
+        }
+      ]
+    },
+    "legal": {
+      "title": "Aviso legal",
+      "intro": "Datos de la empresa titular de esta web y condiciones de uso, conforme a la Ley 34/2002 de servicios de la sociedad de la información.",
+      "updated": "Última actualización: 24 de septiembre de 2026",
+      "pending": "Documento pendiente de revisión. Faltan los datos societarios y los créditos de los modelos 3D marcados abajo.",
+      "sections": [
+        {
+          "heading": "Datos identificativos",
+          "paragraphs": [
+            "Titular: Transportes José María Ibáñez, S.L.",
+            "NIF: [PENDIENTE: NIF de la empresa]",
+            "Domicilio social: [PENDIENTE: domicilio social completo]",
+            "Correo electrónico: [PENDIENTE: email]",
+            "Teléfono: [PENDIENTE: teléfono]",
+            "Datos registrales: [PENDIENTE: Registro Mercantil, tomo, folio y hoja]"
+          ]
+        },
+        {
+          "heading": "Uso de la web",
+          "paragraphs": [
+            "Navegar por esta web te convierte en usuario y supone que aceptas estas condiciones.",
+            "Te comprometes a usarla de buena fe, sin dañarla ni intentar acceder a partes restringidas.",
+            "La información sobre servicios, rutas y plazos es orientativa. Lo que vincula es el presupuesto o el contrato que firmemos contigo."
+          ]
+        },
+        {
+          "heading": "Propiedad intelectual",
+          "paragraphs": [
+            "Los textos, el logotipo, las fotografías y el diseño de esta web son propiedad de Transportes José María Ibáñez, S.L., salvo lo que se indica abajo.",
+            "No puedes reproducirlos ni reutilizarlos sin nuestro permiso por escrito."
+          ]
+        },
+        {
+          "heading": "Créditos de los modelos 3D",
+          "paragraphs": [
+            "La animación de la portada usa modelos 3D de stock con licencia libre, modificados por nosotros (colores de marca y logotipo propio).",
+            "[PENDIENTE: nombre del modelo, autor, licencia y enlace de cada uno de los modelos usados]"
+          ]
+        },
+        {
+          "heading": "Enlaces a otras webs",
+          "paragraphs": [
+            "Esta web contiene enlaces a sitios de terceros, como Google Maps o WhatsApp. No controlamos su contenido ni respondemos de él."
+          ]
+        },
+        {
+          "heading": "Legislación aplicable",
+          "paragraphs": [
+            "Estas condiciones se rigen por la legislación española."
+          ]
+        }
+      ]
+    },
+    "notFound": {
+      "code": "Error 404",
+      "title": "Te has salido de la ruta",
+      "intro": "Esta página no existe o la hemos movido de sitio. Vuelve al inicio, o cuéntanos qué necesitas mover y te respondemos con un presupuesto.",
+      "home": "Volver al inicio",
+      "contact": "Pedir presupuesto"
     }
+  },
+  "cookies": {
+    "bannerTitle": "Cookies",
+    "bannerText": "Usamos solo las cookies imprescindibles para que la web funcione. Los mapas de Google los cargamos únicamente si nos das permiso, porque instalan cookies suyas.",
+    "acceptAll": "Aceptar",
+    "rejectAll": "Rechazar",
+    "configure": "Configurar",
+    "policyLink": "Ver la política de cookies",
+    "prefsTitle": "Preferencias de cookies",
+    "prefsIntro": "Elige qué quieres permitir. Puedes cambiarlo cuando quieras desde el enlace del pie de página.",
+    "save": "Guardar selección",
+    "necessaryTitle": "Necesarias",
+    "necessaryText": "Recuerdan tu idioma y la decisión que tomes aquí. Sin ellas la web no funciona, así que no se pueden desactivar.",
+    "always": "Siempre activas",
+    "mapsTitle": "Mapas",
+    "mapsText": "Permiten cargar los mapas de Google con la ubicación de nuestras naves. Google instala sus propias cookies al mostrarlos.",
+    "mapBlocked": "El mapa está bloqueado hasta que aceptes las cookies de Google Maps.",
+    "mapShow": "Ver el mapa",
+    "mapExternal": "Abrir en Google Maps"
   }
 }

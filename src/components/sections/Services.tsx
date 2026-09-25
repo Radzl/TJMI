@@ -8,46 +8,61 @@ type ServiceItem = {
   description: string;
 };
 
+// Una foto por servicio, en el mismo orden que los textos de `messages`.
+const SERVICE_IMAGES = [
+  '/media/grupaje.jpg',
+  '/media/ftl.jpg',
+  '/media/intl.jpg',
+  '/media/almacen.jpg',
+  '/media/picking.jpg',
+  '/media/contenedores.jpg',
+];
+
 export default function Services() {
   const t = useTranslations('services');
   const items = t.raw('items') as ServiceItem[];
   const featuredTags = t.raw('featured.tags') as string[];
 
   return (
-    // TODO: escena 4 (F4) — pin + scroll horizontal de las tarjetas
+    // El oscuro no lo pone esta sección: lo pone el fondo de página, que ya ha
+    // virado a azul noche durante el cierre de la intro. Así no entra ningún
+    // rectángulo cortando el 3D.
+    // TODO: F4 — pin + scroll horizontal de las tarjetas
+    // Lleva su propio fondo oscuro, pero como el fondo de página ya ha virado
+    // a azul noche durante el cierre de la intro, no se ve ningún borde.
     <section
-      data-scene="4"
-      className="relative z-10 overflow-hidden pb-28 pt-40 sm:pt-52"
+      data-bg="night"
+      className="relative z-10 overflow-hidden bg-night pb-28 pt-32 text-white"
     >
       <span
         aria-hidden="true"
-        className="text-stroke pointer-events-none absolute left-0 top-6 select-none font-display text-[18vw] uppercase leading-none"
+        className="text-stroke pointer-events-none absolute left-0 top-6 select-none font-display text-[18vw] uppercase leading-none opacity-25"
       >
         {t('title')}
       </span>
 
       <Container className="relative">
-        <h2 className="font-display text-4xl uppercase leading-none tracking-tight text-ink sm:text-5xl">
+        <h2 className="font-display text-4xl uppercase leading-none tracking-tight sm:text-5xl">
           {t('title')}
         </h2>
-        <p className="mt-6 max-w-xl text-lg text-muted">{t('intro')}</p>
+        <p className="mt-6 max-w-xl text-lg text-white/70">{t('intro')}</p>
 
-        <article className="mt-16 grid overflow-hidden rounded-2xl border border-line lg:grid-cols-2">
+        <article className="mt-16 grid overflow-hidden rounded-2xl border border-white/15 bg-white/[0.04] lg:grid-cols-2">
           <div className="p-10 lg:p-12">
             <span className="font-display text-xs uppercase tracking-widest text-brand-red">
               {t('featured.tag')}
             </span>
-            <h3 className="mt-4 font-display text-2xl uppercase tracking-tight text-ink sm:text-3xl">
+            <h3 className="mt-4 font-display text-2xl uppercase tracking-tight sm:text-3xl">
               {t('featured.title')}
             </h3>
-            <p className="mt-5 text-base leading-relaxed text-muted">
+            <p className="mt-5 text-base leading-relaxed text-white/70">
               {t('featured.description')}
             </p>
             <ul className="mt-8 flex flex-wrap gap-2">
               {featuredTags.map((tag) => (
                 <li
                   key={tag}
-                  className="rounded-full border border-line px-4 py-1.5 text-xs uppercase tracking-widest text-muted"
+                  className="rounded-full border border-white/20 px-4 py-1.5 text-xs uppercase tracking-widest text-white/60"
                 >
                   {tag}
                 </li>
@@ -66,23 +81,34 @@ export default function Services() {
         </article>
 
         <ul className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <li
               key={item.title}
-              className="rounded-2xl border border-line bg-white p-8 transition-colors hover:border-brand-blue"
+              className="group overflow-hidden rounded-2xl border border-white/15 bg-white/[0.04] transition-colors hover:border-white/40"
             >
-              <h3 className="font-display text-xl uppercase tracking-tight text-ink">
-                {item.title}
-              </h3>
-              <p className="mt-4 text-sm leading-relaxed text-muted">
-                {item.description}
-              </p>
+              <div className="relative h-44 overflow-hidden">
+                <Image
+                  src={SERVICE_IMAGES[index]}
+                  alt=""
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div className="p-8">
+                <h3 className="font-display text-xl uppercase tracking-tight">
+                  {item.title}
+                </h3>
+                <p className="mt-4 text-sm leading-relaxed text-white/65">
+                  {item.description}
+                </p>
+              </div>
             </li>
           ))}
         </ul>
 
         <div className="mt-12">
-          <Button href="/servicios" variant="outline">
+          <Button href="/servicios" variant="onDark">
             {t('cta')}
           </Button>
         </div>

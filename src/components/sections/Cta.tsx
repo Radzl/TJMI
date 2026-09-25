@@ -7,9 +7,8 @@ export default function Cta() {
   const tContact = useTranslations('contact');
 
   return (
-    // TODO: escena 6 (F6) — aquí irá el formulario de presupuesto
-    // El fondo blanco cierra la intro 3D: a partir de aquí manda el contenido.
-    <section data-scene="6" className="relative z-10 bg-white pb-28 pt-20">
+    // TODO: F6 — aquí irá el formulario de presupuesto
+    <section data-bg="bone" className="relative z-10 bg-bone pb-28 pt-20">
       <Container>
         <div className="rounded-3xl bg-night px-8 py-20 text-center text-white sm:px-16">
           <p className="font-display text-xs uppercase tracking-[0.3em] text-white/50">
