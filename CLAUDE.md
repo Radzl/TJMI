@@ -45,6 +45,15 @@ Decisiones cerradas:
 - Ese acto se ve desde una **cámara en tres cuartos** que está en la misma dirección que la vista de perfil, solo que en alto (unos 30°). Pasar a perfil es bajar la cámara, no girarla: por eso no se nota el corte. Con cámara ortográfica es la única forma de que un avance en profundidad se lea (baja por la pantalla).
 - El encuadre de ese acto (`quarterDrop`, `quarterShift`, `quarterWidth` en `Scene.tsx`) deja la maniobra en la franja baja y, en escritorio, en la columna izquierda: el titular nunca debe quedar sobre el 3D oscuro.
 - El patio se llena con torres de contenedores (`PILE_ROWS`, una rejilla de `slot` × `row`). Dos reglas al tocarlo: nada por encima de `x ≈ -19`, o asomaría por la izquierda en la vista de perfil; y como mucho dos filas de fondo, porque cuanto más atrás está algo más sube en pantalla y acaba detrás del titular.
+- **Las farolas van en la carretera, no en el patio** (`Road.tsx`). En el arranque, con la grúa cargando, estorbaban. Se colocan sobre la propia curva, así que siguen el trazado solas si se cambia, y **se encienden según se dibuja el asfalto**, no antes.
+- El recorrido de la carretera ocupa casi media sección (`ROAD_RUN` en `lib/route.ts`) y `RoadIntro` mide 360 svh: son 420 km y con un tramo corto se despachaban en dos golpes de rueda. Si tocas `ROAD_RUN`, mueve también el fundido final (`closing` en `Scene.tsx`) y la salida del texto en `RoadIntro`, que van **detrás** de la llegada.
+- El bloque de texto de `RoadIntro` lleva un **velo crema en degradado** que se desvanece hacia la derecha. El trazado pasa por detrás y sobre el asfalto negro el texto en tinta no se lee; en móvil el texto ocupa casi todo el ancho, así que apartar la carretera no es opción. No lo quites sin resolver antes esa lectura.
+- El fondo del patio (`TerminalYard.tsx`) son suelo y vallado, y **no es decoración**: sin nada fijo detrás, el camión avanzando ocho metros no se lee como que avanza porque no hay contra qué medirlo.
+- Ese vallado viene **en dos piezas**. La lejana (x < −19) se ve siempre. La cercana, la que cruza por detrás del camión, solo se enciende con `quarter < 0.45`: en tres cuartos pasaría por detrás del titular en escritorio, y ahí todavía queda fuera de plano por la derecha, así que encenderla no se nota.
+- El suelo del patio usa material **sin luz y con `toneMapped={false}`**. Con la iluminación actual (hemisférica a 2.1 más dos direccionales) cualquier crema se satura a blanco y no se distinguiría del fondo de la página. Es un parche: lo que toca de verdad es revisar la iluminación.
+- La carga se posa en **dos tiempos** (`place` y `lower`): primero se sitúa sobre el chasis y solo entonces baja en vertical. En diagonal parecía de juguete.
+- Al posarse, el conjunto se hunde y se mece (`LANDING_DIP`). Va exagerado a propósito: los ocho centímetros reales de una suspensión no se ven a esta distancia de cámara. Es animación, no simulación.
+- Entre que se posa y que la pluma se separa hay un compás de silencio. Sin esa pausa no se lee "ya está", se lee "salió corriendo".
 - **La nave de `Facility` no sirve como fondo del patio**: está modelada para verse desde arriba y, sin perspectiva que la achique, ocupa el plano entero y su franja de marca cruza el titular. Ya se probó.
 
 | # | Escena | Qué pasa | Texto |
@@ -55,6 +64,26 @@ Decisiones cerradas:
 | 4 | Servicios | Ya sin 3D. Sección fijada (pin) con scroll horizontal. Palabra gigante "SERVICIOS" en contorno. Tarjetas de servicio entrando en horizontal. | Servicios reales de TJMI (ver `messages/es.json`) |
 | 5 | La ruta (dentro de la intro) | Cámara cenital inclinada. La carretera se dibuja según avanza el camión, que sale de una nave y entra en otra, con las ruedas girando y rodadas sobre el asfalto. Cuentakilómetros atado al avance. | "Fiabilidad en cada kilómetro." + 420 km |
 | 6 | CTA | Formulario de presupuesto y WhatsApp. | Formulario + WhatsApp |
+
+## Iluminación del 3D
+- El Canvas va con `shadows="soft"`. **Hay sombras reales**: la grúa, los contenedores y el camión proyectan sobre el patio.
+- La luz que proyecta **viaja con el punto que mira la cámara**. Solo se traslada, nunca cambia de dirección, así que la escena se ilumina igual siempre; lo que se mueve es el recuadro donde se calcula la sombra, para no gastar resolución en vacío. En móvil el mapa de sombras va a la mitad.
+- Los reflejos vienen de un `Environment` montado con `Lightformer` **dentro de la escena**. Nada de HDRI descargado: sería una petición a un tercero y va contra la regla de no cargar nada de fuera sin consentimiento. `frames={1}` lo calcula una vez.
+- La exposición es baja a propósito. La de antes (hemisférica a 2.1) saturaba a blanco cualquier crema.
+- **El suelo del patio son dos planos y no es capricho.** El pavimento ocupa todo el encuadre, así que su tono *es* el fondo de la escena y tiene que quedarse pegado al crema de la página; con un material iluminado no se puede, por mucho que se aclare. Así que el pavimento va sin luz con el color exacto, y encima hay un plano invisible (`shadowMaterial`) que solo pinta las sombras que recibe. Si tocas uno, mira el otro.
+- Postprocesado: sigue sin usarse. Oclusión ambiental y viñeta quedan pendientes; el salto grande ya lo dan las sombras.
+
+## Detalles de acabado
+- **Grano de papel** sobre toda la página (`body::after` en `globals.css`). El crema plano se lee como pantalla; con la textura se lee como papel. No captura clics y no se imprime.
+- El menú marca la **página activa** con `aria-current` y un subrayado rojo.
+- Cada artículo del blog tiene **portada** (`cover` en `content/blog.ts`), y sale también en Open Graph y en el marcado para buscadores: es lo que hace que al compartir el enlace por WhatsApp o LinkedIn aparezca la foto.
+
+## Secciones con efecto (cómo están montadas)
+- **Servicios en horizontal** (`ServicesTrack.tsx`): el bloque se fija y la fila de tarjetas se desplaza lo que sobresale por la derecha. La sección que lo contiene **no puede llevar `overflow-hidden`**: recorta el `position: sticky` con el que ScrollTrigger fija, y el efecto deja de funcionar sin dar ningún error.
+- **Nosotros** abre con el vídeo corporativo a pantalla completa (`VideoHero.tsx`). Arranca mudo porque ningún navegador deja reproducir solo con sonido, y como en el vídeo habla alguien hay un botón para activarlo. El contenido sube por encima con el borde redondeado.
+- `RevealText` usa **IntersectionObserver y no ScrollTrigger** a propósito: encima hay un vídeo a pantalla completa que cambia la altura de la página al cargar, y un disparador calculado antes de eso deja el texto invisible para siempre. Ya pasó.
+- **Formulario de presupuesto en tres pasos** (`QuoteForm.tsx`): qué mueves → de dónde a dónde → cómo te llamamos, con barra de avance. Los campos que no están en pantalla siguen registrados, así que al volver atrás no se pierde nada. El submit está interceptado para que Intro en un paso intermedio avance en vez de enviar. **Sigue sin enviar de verdad**: abre WhatsApp o el correo.
+- **Mapa de la ruta** (`RouteMap.tsx`): la silueta de la península es un trazado **simplificado a mano**, proyectando longitud y latitud de los puntos de costa reconocibles sobre el lienzo. No es cartografía y no hace falta que lo sea: pesa unos cientos de bytes en vez de los cientos de kB de un SVG real.
 
 ## Cookies y consentimiento (obligatorio)
 - **Nada de terceros se carga antes del consentimiento.** Si añades un servicio externo (analítica, píxel, vídeo incrustado, fuentes de terceros), va detrás del gate, no suelto.
@@ -74,6 +103,17 @@ Decisiones cerradas:
 - Preloader con progreso real (`useProgress` de drei) y máximo ~2 s percibidos.
 - Lighthouse objetivo: Performance ≥ 80 en móvil, Accesibilidad ≥ 95.
 - Todo el texto importante existe en HTML (SEO), nunca solo dentro del Canvas.
+
+## SEO
+- `src/app/sitemap.ts` genera `/sitemap.xml` y `src/app/robots.ts` el `/robots.txt`. Van fuera de `[locale]` a propósito: el proxy de idiomas no las toca porque su filtro deja fuera todo lo que lleva punto en el nombre.
+- **Si añades una página, añádela a `SITE_PATHS` en `src/lib/seo.ts`** o no entrará en el sitemap. Los artículos del blog se sacan solos de `content/blog.ts`.
+- Cada página declara su **canonical y su hreflang** con `pageAlternates(locale, ruta)`. El canonical dice cuál es la dirección buena; el hreflang, que la versión española y la inglesa son la misma página traducida y no contenido duplicado. Incluye `x-default`, que apunta al español.
+- El layout define `title.template`, así que **cada página solo declara su nombre corto** y se le añade " | Transportes José María Ibáñez". La portada usa `title.default`. Antes todas las páginas compartían el mismo título, que para buscadores es como no tener ninguno.
+- Los artículos del blog llevan además Open Graph con su portada y marcado `Article` para buscadores.
+- El marcado de empresa (`BusinessJsonLd.tsx`) va en la portada y en contacto. Es un grafo de tres nodos —la empresa y sus dos naves— enlazados por `@id`, para que Google entienda que son la misma empresa y no tres negocios. Es lo que alimenta la ficha lateral.
+- Los datos societarios estructurados viven en `src/lib/business.ts`, **no en `messages`**: una dirección o un teléfono no se traducen. Si cambia una dirección, un teléfono o un horario, hay que tocarlo en los dos sitios (ahí y en `messages`, que es lo que se ve en pantalla).
+- **No hay coordenadas a propósito.** No las tenemos medidas y es peor ponerlas mal que no ponerlas. Si se sacan de Google Maps, se añaden como `geo` en `business.ts`.
+- Falta `priceRange`, que Google recomienda para negocios locales. No se ha puesto para no inventárselo.
 
 ## Páginas de error
 - El 404 propio vive en `src/app/[locale]/not-found.tsx` y **necesita la ruta comodín** `src/app/[locale]/[...rest]/page.tsx`, que solo llama a `notFound()`. Sin ella, cualquier URL inventada cae en la pantalla de error por defecto de Next, sin navbar, sin pie y sin idioma. No borres esa carpeta.

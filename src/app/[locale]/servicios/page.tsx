@@ -1,8 +1,10 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Cta from '@/components/sections/Cta';
 import Container from '@/components/ui/Container';
 import PageHeader from '@/components/ui/PageHeader';
+import { pageAlternates } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -20,6 +22,17 @@ const SERVICE_IMAGES = [
   '/media/picking.jpg',
   '/media/contenedores.jpg',
 ];
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'pages.services' });
+
+  return {
+    title: t('title'),
+    description: t('intro'),
+    alternates: pageAlternates(locale, '/servicios'),
+  };
+}
 
 export default async function ServicesPage({ params }: Props) {
   const { locale } = await params;

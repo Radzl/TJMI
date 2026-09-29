@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Button from '@/components/ui/Button';
@@ -7,6 +8,7 @@ import { findPost, posts } from '@/content/blog';
 import { Link } from '@/i18n/navigation';
 import { routing, type Locale } from '@/i18n/routing';
 import { COMPANY_NAME, SITE_URL } from '@/lib/site';
+import { pageAlternates } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -31,12 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: content.title,
     description: content.excerpt,
-    alternates: {
-      canonical: `/${locale}${path}`,
-      languages: Object.fromEntries(
-        routing.locales.map((code) => [code, `/${code}${path}`]),
-      ),
-    },
+    alternates: pageAlternates(locale, path),
     openGraph: {
       type: 'article',
       title: content.title,
@@ -44,6 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: post.date,
       siteName: COMPANY_NAME,
       url: `${SITE_URL}/${locale}${path}`,
+      images: [`${SITE_URL}${post.cover}`],
     },
   };
 }
@@ -66,6 +64,7 @@ export default async function BlogPostPage({ params }: Props) {
     '@type': 'Article',
     headline: content.title,
     description: content.excerpt,
+    image: `${SITE_URL}${post.cover}`,
     datePublished: post.date,
     inLanguage: active,
     author: { '@type': 'Organization', name: COMPANY_NAME },
@@ -107,6 +106,16 @@ export default async function BlogPostPage({ params }: Props) {
               {content.excerpt}
             </p>
           </header>
+
+          <Image
+            src={post.cover}
+            alt=""
+            width={1600}
+            height={900}
+            priority
+            sizes="(max-width: 1024px) 100vw, 1024px"
+            className="mt-10 aspect-[16/9] w-full rounded-2xl object-cover"
+          />
 
           <div className="mt-12 max-w-2xl">
             {content.body.map((block, index) => {

@@ -41,3 +41,23 @@ body {
   color: transparent;
   -webkit-text-stroke: 1.5px var(--color-line);
 }
+
+/* Grano de papel sobre toda la página.
+   El crema de la marca, plano, se lee como pantalla. Con esta textura casi
+   imperceptible por encima se lee como papel, que es lo que le pega a una web
+   con tanto blanco. No captura clics y no se imprime. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+@media print {
+  body::after {
+    display: none;
+  }
+}

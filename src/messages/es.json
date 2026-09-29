@@ -1,10 +1,7 @@
 {
   "meta": {
     "title": "Transportes José María Ibáñez | Ruta diaria Castellón ⇄ Madrid",
-    "description": "Transporte terrestre nacional e internacional de mercancía paletizada. Ruta diaria Castellón ⇄ Madrid: recogemos en más de 150 fábricas y entregamos puerta a puerta en 24 horas.",
-    "cookiesTitle": "Política de cookies | Transportes José María Ibáñez",
-    "privacyTitle": "Política de privacidad | Transportes José María Ibáñez",
-    "legalTitle": "Aviso legal | Transportes José María Ibáñez"
+    "description": "Transporte terrestre nacional e internacional de mercancía paletizada. Ruta diaria Castellón ⇄ Madrid: recogemos en más de 150 fábricas y entregamos puerta a puerta en 24 horas."
   },
   "nav": {
     "home": "Inicio",
@@ -138,7 +135,31 @@
         "description": "Grupaje y logística para clientes europeos."
       }
     ],
-    "sites": "Dos sedes: Almazora (Castellón) y Fuenlabrada (Madrid)."
+    "sites": "Dos sedes: Almazora (Castellón) y Fuenlabrada (Madrid).",
+    "mapTitle": "La ruta, cada día",
+    "mapIntro": "Salimos de Almazora cada mañana y entregamos en Madrid al día siguiente. Sin transbordos y sin depender de nadie.",
+    "mapStops": [
+      {
+        "time": "06:00",
+        "title": "Salida de Almazora",
+        "detail": "Cargado la tarde anterior en nuestra nave."
+      },
+      {
+        "time": "09:00",
+        "title": "Recogidas en ruta",
+        "detail": "Más de 150 localidades de la provincia de Castellón."
+      },
+      {
+        "time": "14:00",
+        "title": "Llegada a Fuenlabrada",
+        "detail": "420 km por la A-3, sin transbordos."
+      },
+      {
+        "time": "24 h",
+        "title": "Entrega en destino",
+        "detail": "Madrid y provincias colindantes."
+      }
+    ]
   },
   "cta": {
     "eyebrow": "Presupuesto sin compromiso",
@@ -231,7 +252,24 @@
       "email": "Escribe un email válido",
       "phone": "Escribe un teléfono de contacto",
       "consent": "Necesitamos tu consentimiento para responderte"
-    }
+    },
+    "steps": [
+      {
+        "title": "¿Qué mueves?",
+        "hint": "Con esto ya podemos hacerte una idea del precio."
+      },
+      {
+        "title": "¿De dónde a dónde?",
+        "hint": "Origen y destino, aunque sea aproximado."
+      },
+      {
+        "title": "¿Cómo te llamamos?",
+        "hint": "Te respondemos en horario comercial."
+      }
+    ],
+    "next": "Siguiente",
+    "back": "Atrás",
+    "stepOf": "Paso {current} de {total}"
   },
   "blog": {
     "readTime": "{minutes} min de lectura",
@@ -259,7 +297,9 @@
       "videoCaption": "Vídeo corporativo de la empresa.",
       "sustainabilityBadge": "Instalación fotovoltaica",
       "sustainabilityTitle": "Apostamos por la energía solar",
-      "sustainabilityText": "Contamos con una instalación fotovoltaica en nuestras instalaciones, un paso hacia una logística más sostenible."
+      "sustainabilityText": "Contamos con una instalación fotovoltaica en nuestras instalaciones, un paso hacia una logística más sostenible.",
+      "videoSoundOn": "Activar sonido",
+      "videoSoundOff": "Silenciar"
     },
     "contact": {
       "title": "Contacto",

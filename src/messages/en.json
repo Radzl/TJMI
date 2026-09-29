@@ -1,10 +1,7 @@
 {
   "meta": {
     "title": "Transportes José María Ibáñez | Daily Castellón ⇄ Madrid route",
-    "description": "National and international road transport of palletised freight. Daily Castellón ⇄ Madrid route: we collect from 150+ factories and deliver door to door within 24 hours.",
-    "cookiesTitle": "Cookie policy | Transportes José María Ibáñez",
-    "privacyTitle": "Privacy policy | Transportes José María Ibáñez",
-    "legalTitle": "Legal notice | Transportes José María Ibáñez"
+    "description": "National and international road transport of palletised freight. Daily Castellón ⇄ Madrid route: we collect from 150+ factories and deliver door to door within 24 hours."
   },
   "nav": {
     "home": "Home",
@@ -138,7 +135,31 @@
         "description": "Groupage and logistics for European clients."
       }
     ],
-    "sites": "Two sites: Almazora (Castellón) and Fuenlabrada (Madrid)."
+    "sites": "Two sites: Almazora (Castellón) and Fuenlabrada (Madrid).",
+    "mapTitle": "The route, every day",
+    "mapIntro": "We leave Almazora every morning and deliver in Madrid the next day. No transfers, no third parties.",
+    "mapStops": [
+      {
+        "time": "06:00",
+        "title": "Departure from Almazora",
+        "detail": "Loaded at our depot the afternoon before."
+      },
+      {
+        "time": "09:00",
+        "title": "Pick-ups along the way",
+        "detail": "More than 150 towns across the Castellón province."
+      },
+      {
+        "time": "14:00",
+        "title": "Arrival in Fuenlabrada",
+        "detail": "420 km on the A-3, with no transfers."
+      },
+      {
+        "time": "24 h",
+        "title": "Delivery at destination",
+        "detail": "Madrid and neighbouring provinces."
+      }
+    ]
   },
   "cta": {
     "eyebrow": "Free quote",
@@ -231,7 +252,24 @@
       "email": "Enter a valid email",
       "phone": "Enter a contact phone number",
       "consent": "We need your consent to reply"
-    }
+    },
+    "steps": [
+      {
+        "title": "What are you moving?",
+        "hint": "This alone gives us a good idea of the price."
+      },
+      {
+        "title": "From where to where?",
+        "hint": "Origin and destination, even roughly."
+      },
+      {
+        "title": "How do we reach you?",
+        "hint": "We reply during business hours."
+      }
+    ],
+    "next": "Next",
+    "back": "Back",
+    "stepOf": "Step {current} of {total}"
   },
   "blog": {
     "readTime": "{minutes} min read",
@@ -259,7 +297,9 @@
       "videoCaption": "Company video.",
       "sustainabilityBadge": "Photovoltaic installation",
       "sustainabilityTitle": "We are committed to solar energy",
-      "sustainabilityText": "We have a photovoltaic installation at our facilities, a step towards more sustainable logistics."
+      "sustainabilityText": "We have a photovoltaic installation at our facilities, a step towards more sustainable logistics.",
+      "videoSoundOn": "Turn on sound",
+      "videoSoundOff": "Mute"
     },
     "contact": {
       "title": "Contact",

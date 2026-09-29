@@ -1,8 +1,11 @@
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import QuoteForm from '@/components/sections/QuoteForm';
 import Sites from '@/components/sections/Sites';
 import Container from '@/components/ui/Container';
 import PageHeader from '@/components/ui/PageHeader';
+import { pageAlternates } from '@/lib/seo';
+import BusinessJsonLd from '@/components/seo/BusinessJsonLd';
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -12,6 +15,17 @@ type Site = {
   phoneHref: string;
   hours: string;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'pages.contact' });
+
+  return {
+    title: t('title'),
+    description: t('intro'),
+    alternates: pageAlternates(locale, '/contacto'),
+  };
+}
 
 export default async function ContactPage({ params }: Props) {
   const { locale } = await params;
@@ -23,6 +37,8 @@ export default async function ContactPage({ params }: Props) {
 
   return (
     <>
+      <BusinessJsonLd locale={locale} />
+
       <PageHeader title={t('title')} intro={t('intro')} />
 
       <section className="py-20">

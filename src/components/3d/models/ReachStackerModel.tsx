@@ -86,7 +86,9 @@ export default function ReachStackerModel({ boomRef }: Props) {
       }
       if (BOOM_MATERIALS.has(name)) boomParts.push(child);
 
-      child.material = new MeshStandardMaterial({
+      child.castShadow = true;
+        child.receiveShadow = true;
+        child.material = new MeshStandardMaterial({
         color: COLORS[name] ?? '#8a8f98',
         roughness: 0.55,
         metalness: 0.05,

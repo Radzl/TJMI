@@ -40,7 +40,12 @@ export async function generateMetadata({
   return {
     // Base para que las URL relativas de canonical y Open Graph resuelvan.
     metadataBase: new URL(SITE_URL),
-    title: t('title'),
+    // `default` es el título de la portada; `template` se lo aplica al resto
+    // de páginas, que solo tienen que declarar su nombre corto.
+    title: {
+      default: t('title'),
+      template: `%s | ${COMPANY_NAME}`,
+    },
     description: t('description'),
     openGraph: {
       siteName: COMPANY_NAME,

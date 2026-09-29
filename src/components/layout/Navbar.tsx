@@ -4,7 +4,7 @@ import { Menu, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import Container from '@/components/ui/Container';
-import { Link } from '@/i18n/navigation';
+import { Link, usePathname } from '@/i18n/navigation';
 import LocaleSwitcher from './LocaleSwitcher';
 import Wordmark from './Wordmark';
 
@@ -20,6 +20,11 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  // `usePathname` de next-intl ya viene sin el prefijo de idioma, así que
+  // vale igual en /es y en /en.
+  const pathname = usePathname();
+  const isCurrent = (href: string) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href);
 
   // La barra se aparta al bajar y vuelve al subir: deja ver la intro entera
   // sin quitarle al usuario el acceso al menú.
@@ -57,7 +62,12 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="font-display text-xs uppercase tracking-widest text-ink transition-colors hover:text-brand-blue"
+              aria-current={isCurrent(link.href) ? 'page' : undefined}
+              className={`relative font-display text-xs uppercase tracking-widest transition-colors after:absolute after:-bottom-2 after:left-0 after:h-px after:bg-brand-red after:transition-all after:duration-300 after:content-[''] hover:text-brand-blue ${
+                isCurrent(link.href)
+                  ? 'text-brand-blue after:w-full'
+                  : 'text-ink after:w-0 hover:after:w-full'
+              }`}
             >
               {t(link.key)}
             </Link>
@@ -94,8 +104,17 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="font-display text-sm uppercase tracking-widest text-ink"
+                  aria-current={isCurrent(link.href) ? 'page' : undefined}
+                  className={`flex items-center gap-3 font-display text-sm uppercase tracking-widest ${
+                    isCurrent(link.href) ? 'text-brand-blue' : 'text-ink'
+                  }`}
                 >
+                  <span
+                    aria-hidden="true"
+                    className={`h-px bg-brand-red transition-all ${
+                      isCurrent(link.href) ? 'w-6' : 'w-0'
+                    }`}
+                  />
                   {t(link.key)}
                 </Link>
               ))}

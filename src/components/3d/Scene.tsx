@@ -1,10 +1,16 @@
 'use client';
 
-import { ContactShadows, OrthographicCamera } from '@react-three/drei';
+import {
+  ContactShadows,
+  Environment,
+  Lightformer,
+  OrthographicCamera,
+} from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import {
   Vector3,
+  type DirectionalLight,
   type Group,
   type MeshBasicMaterial,
   type OrthographicCamera as OrthoCamera,
@@ -15,6 +21,7 @@ import ReachStackerModel, {
   boomPose,
 } from './models/ReachStackerModel';
 import Facility from './models/Facility';
+import TerminalYard, { TerminalYardNear } from './models/TerminalYard';
 import Road, { ROAD_CURVE } from './models/Road';
 import TruckRig, { TRUCK } from './models/TruckRig';
 import { roadProgress } from '@/lib/route';
@@ -81,9 +88,13 @@ const PILE_ROWS = [
 // come el plano entero y su franja de marca cruza el titular. El patio se
 // llena con contenedores, que sí están a escala.
 
-// Avance del camión antes de salir a ruta. La carretera arranca justo donde lo
+// Avance del camión antes de salir a ruta. Es largo a propósito: con pocos
+// metros no se leía como que avanzaba. La carretera arranca justo donde lo
 // deja la sección oscura, para que el salto a cenital no se note.
-const SETTLE_RUN = 8;
+const SETTLE_RUN = 26;
+/** Cuánto acompaña la cámara al camión en ese arranque. Por debajo de 1 el
+ *  camión gana terreno en pantalla: es lo que hace que se vea avanzar. */
+const SETTLE_FOLLOW = 0.6;
 const ROAD_ORIGIN_X = TRUCK_X + SETTLE_RUN;
 /** Desplazamiento lateral en cenital: deja la columna izquierda al texto. */
 const ROAD_SHIFT = 9;
@@ -91,6 +102,13 @@ const ROAD_SHIFT = 9;
 const TOP_TILT = 20;
 /** Rumbo del camión al entrar en el patio de destino. */
 const ARRIVAL_HEADING = Math.atan2(14, 20);
+
+/**
+ * Cuánto se hunde el conjunto al recibir el contenedor. Los ocho centímetros
+ * reales de una suspensión no se ven a esta distancia de cámara, así que va
+ * exagerado: es animación, no simulación.
+ */
+const LANDING_DIP = 0.5;
 
 // Vista en tres cuartos del arranque: misma dirección que el perfil, pero la
 // cámara sube 20 m y se echa 34 m atrás (unos 30° sobre el suelo). Cuanto más
@@ -113,6 +131,8 @@ export default function Scene() {
   const bandRef = useRef<Group>(null);
   const roadRef = useRef<Group>(null);
   const terminalRef = useRef<Group>(null);
+  const nearYardRef = useRef<Group>(null);
+  const keyLightRef = useRef<DirectionalLight>(null);
   const veilRef = useRef<MeshBasicMaterial>(null);
   const trailRef = useRef<Group>(null);
   const trailNearRef = useRef<MeshBasicMaterial>(null);
@@ -162,8 +182,15 @@ export default function Scene() {
     const idle = 1 - smoothstep(range(hero, 0, 0.1));
     const sway = Math.sin(state.clock.elapsedTime * 0.9) * 0.14 * idle;
 
-    // Avance del camión mientras sigue en llano, sobre la sección oscura.
-    const groundRun = smoothstep(range(inRoute, 0.2, 1)) * SETTLE_RUN;
+    // Arranque del camión en llano, sobre la sección oscura. La curva es
+    // cuadrática y no `smoothstep` a propósito: arranca parado y va ganando
+    // velocidad, en vez de frenar al final. Así entrega el relevo a la
+    // carretera todavía acelerando y no se nota el cambio.
+    const groundT = range(inRoute, 0.18, 1);
+    const groundRun = groundT * groundT * SETTLE_RUN;
+    // El morro se levanta al tirar y se vuelve a posar: son cuarenta
+    // toneladas saliendo de parado.
+    const pull = Math.sin(Math.min(1, groundT * 2.2) * Math.PI);
 
     // --- Escena 5: la cámara gira a cenital y aparece la carretera -------
     // El suelo oscuro aguanta hasta que el texto claro de la escena 3 ha
@@ -182,7 +209,7 @@ export default function Scene() {
     // el color al que ya ha virado el fondo de la página.
     // Se deja un respiro entre que el camión aparca y empieza el fundido: sin
     // esa pausa no se lee como "ha llegado", se lee como un corte.
-    const closing = smoothstep(range(route, 0.84, 0.95));
+    const closing = smoothstep(range(route, 0.9, 0.98));
 
     // Cuánto queda de vista en tres cuartos. Se usa también para el suelo:
     // desde una cámara elevada la franja oscura deja de ser una franja y se
@@ -210,20 +237,33 @@ export default function Scene() {
 
     // --- Escena 1: la grúa baja el contenedor hasta el chasis ------------
     // A partir de aquí manda la carga y la grúa se coloca donde haga falta.
-    const travel = smoothstep(range(hero, 0.5, 0.78));
-    const cargoX1 = lerp(PICK.x, DROP.x, travel);
-    const cargoY1 = lerp(PICK.y, DROP.y, smoothstep(range(hero, 0.54, 0.8)));
+    // Son dos tiempos, no uno: primero se sitúa sobre el chasis y solo
+    // entonces baja en vertical. Una grúa real no entra en diagonal.
+    const place = smoothstep(range(hero, 0.5, 0.62));
+    const lower = smoothstep(range(hero, 0.63, 0.74));
+    const cargoX1 = lerp(PICK.x, DROP.x, place);
+    const cargoY1 = lerp(PICK.y, DROP.y, lower);
+
+    // Golpe de la carga al posarse: el conjunto se hunde en la suspensión y
+    // se mece hasta pararse. Va exagerado a propósito, porque a esta
+    // distancia de cámara los ocho centímetros reales no se verían.
+    const impact = range(hero, 0.74, 0.88);
+    const dip =
+      Math.sin(impact * Math.PI * 3) * Math.exp(-impact * 5) * LANDING_DIP;
 
     // --- Escena 2: suelta la carga, levanta pluma y sale de plano --------
+    // Entre que se posa y que la pluma se separa hay un compás de silencio:
+    // sin esa pausa no se lee "ya está", se lee "salió corriendo".
     const released = smoothstep(range(hero, 0.8, 0.88));
-    const exit = smoothstep(range(hero, 0.86, 1));
+    const exit = smoothstep(range(hero, 0.88, 1));
 
     // Relevo entre los dos actos. Coinciden en el punto de unión, así que la
     // mezcla es corta y no se nota el cambio de quién manda a quién.
     const act = smoothstep(range(hero, 0.46, 0.5));
 
-    // Altura de la carga: el balanceo solo cuando ya cuelga, no apoyada.
-    const cargoY = lerp(cargoY0, cargoY1, act) + sway * lift;
+    // Altura de la carga: el balanceo solo cuando ya cuelga, no apoyada; el
+    // hundimiento, solo cuando ya está encima del camión.
+    const cargoY = lerp(cargoY0, cargoY1, act) + sway * lift - dip;
 
     // La pluma apunta siempre a la carga, en los dos actos.
     const carryPose = boomPose(cargoY + GRIP);
@@ -265,8 +305,13 @@ export default function Scene() {
     const heading = Math.atan2(-roadTangent.z, roadTangent.x);
 
     if (truckRef.current) {
-      truckRef.current.position.set(truckX, 0, truckZ);
+      // El camión se hunde con el golpe: es lo que cuenta que lo que le
+      // acaban de dejar encima pesa veinte toneladas.
+      truckRef.current.position.set(truckX, -dip, truckZ);
       truckRef.current.rotation.y = heading * onRoad;
+      // Solo en llano: en cenital el morro levantado no se vería y además
+      // pelearía con el giro del rumbo.
+      truckRef.current.rotation.z = pull * 0.013 * (1 - onRoad);
     }
     // Metros hechos: de aquí sacan las ruedas su giro.
     writeTravel(groundRun + roadT * roadLength);
@@ -288,8 +333,14 @@ export default function Scene() {
         cargoY,
         truckZ - Math.sin(angle) * dropOffset + cargoZ,
       );
-      cargoRef.current.rotation.y = angle + craneAngle;
-      cargoRef.current.rotation.z = sway * 0.02;
+      // Llega un pelo torcido y se endereza al posarse, como cuando el
+      // operario corrige en el último momento.
+      const skew = (1 - smoothstep(range(hero, 0.62, 0.78))) * 0.04;
+      cargoRef.current.rotation.y = angle + craneAngle + skew * act;
+      // La carga se inclina con el camión: si no, el contenedor se quedaría
+      // plano mientras el morro sube.
+      cargoRef.current.rotation.z =
+        sway * 0.02 + pull * 0.013 * (1 - onRoad);
     }
 
     // --- Suelo oscuro de la terminal y carretera --------------------------
@@ -300,6 +351,13 @@ export default function Scene() {
     // cenital estorban, porque el encuadre abarca decenas de metros.
     if (terminalRef.current) {
       terminalRef.current.visible = topView < 0.02;
+    }
+    // El tramo de fondo que pasa por detrás del camión solo se enciende con la
+    // cámara ya casi de perfil. En tres cuartos cruzaría por detrás del
+    // titular, y para entonces todavía queda fuera de plano por la derecha,
+    // así que encenderlo no se ve.
+    if (nearYardRef.current) {
+      nearYardRef.current.visible = quarter < 0.45;
     }
     if (veilRef.current) {
       veilRef.current.opacity = closing;
@@ -325,7 +383,7 @@ export default function Scene() {
         filledFocusY,
         fillGround,
       );
-      const sideX = (isNarrow ? 0 : 2) + groundRun * 0.5;
+      const sideX = (isNarrow ? 0 : 2) + groundRun * SETTLE_FOLLOW;
 
       const z = lerp(0, truckZ + ROAD_SHIFT, topView);
 
@@ -359,11 +417,21 @@ export default function Scene() {
       // En cenital el "arriba" de la pantalla pasa a ser -X, así que el camión
       // avanza hacia abajo mientras sigues bajando por la página.
       camera.up.set(-topView, 1 - topView, 0).normalize();
-      camera.lookAt(
-        lerp(aimX, truckX, topView),
-        lerp(aimYTarget, 0, topView),
-        lerp(aimZ, z, topView),
-      );
+      const focusX = lerp(aimX, truckX, topView);
+      const focusZ = lerp(aimZ, z, topView);
+
+      camera.lookAt(focusX, lerp(aimYTarget, 0, topView), focusZ);
+
+      // La luz que proyecta sombra viaja con el punto que mira la cámara. Su
+      // dirección no cambia (solo se traslada), así que la escena se ilumina
+      // igual en todo momento; lo único que se mueve es el recuadro donde se
+      // calcula la sombra, que así no se gasta en zonas vacías.
+      const key = keyLightRef.current;
+      if (key) {
+        key.position.set(focusX - 26, 42, focusZ + 30);
+        key.target.position.set(focusX, 0, focusZ);
+        key.target.updateMatrixWorld();
+      }
       camera.zoom =
         size.width /
         (lerp(lerp(worldWidth, quarterWidth, quarter), roadWidth, topView) +
@@ -396,21 +464,87 @@ export default function Scene() {
       </OrthographicCamera>
 
       {/* Luz suave y cálida, como la referencia: nada de contraste duro. */}
-      <hemisphereLight args={['#ffffff', '#d9d4cc', 2.1]} />
-      <directionalLight position={[-14, 22, 26]} intensity={1.7} />
-      <directionalLight position={[18, 10, 14]} intensity={0.45} />
+      {/* Entorno para los reflejos, montado con paneles de luz aquí mismo.
+          No se descarga ningún HDRI: sería una petición a un tercero, que en
+          esta web va contra la regla de no cargar nada de fuera sin permiso.
+          `frames={1}` lo calcula una vez y se olvida. */}
+      <Environment resolution={256} frames={1}>
+        <Lightformer
+          intensity={1.6}
+          position={[0, 6, 8]}
+          scale={[14, 10, 1]}
+          color="#ffffff"
+        />
+        <Lightformer
+          intensity={0.7}
+          position={[-9, 4, -6]}
+          rotation={[0, Math.PI / 3, 0]}
+          scale={[10, 8, 1]}
+          color="#dfe4ec"
+        />
+        <Lightformer
+          form="ring"
+          intensity={0.5}
+          position={[6, 8, -4]}
+          scale={6}
+          color="#f3ede4"
+        />
+      </Environment>
+
+      {/* Exposición contenida: la de antes saturaba a blanco cualquier crema
+          y por eso el suelo del patio no se distinguía del fondo. */}
+      <hemisphereLight args={['#eef1f6', '#d0c9bd', 0.85]} />
+      <directionalLight
+        ref={keyLightRef}
+        position={[-26, 42, 30]}
+        intensity={2.1}
+        castShadow
+        shadow-mapSize={isNarrow ? [1024, 1024] : [2048, 2048]}
+        shadow-bias={-0.0006}
+        shadow-normalBias={0.04}
+      >
+        {/* El encuadre de la sombra abarca todo el patio. Se mueve con lo que
+            esté mirando la cámara, para no gastar resolución en vacío. */}
+        <orthographicCamera
+          attach="shadow-camera"
+          args={[-55, 55, 55, -55, 1, 160]}
+        />
+      </directionalLight>
+      <directionalLight position={[22, 12, 10]} intensity={0.35} />
 
       <ContactShadows
         position={[0, 0.03, 0]}
         scale={90}
         resolution={1024}
         blur={3}
-        opacity={0.3}
+        opacity={0.16}
         far={14}
       />
 
       {/* Terminal: solo existe mientras la cámara está en vista lateral. */}
       <group ref={terminalRef}>
+        <TerminalYard />
+        <group ref={nearYardRef} visible={false}>
+          <TerminalYardNear />
+        </group>
+
+        {/* Plazas pintadas, una debajo de cada torre y otra en el hueco del
+            que sale la carga: ese rectángulo vacío es lo que cuenta que la
+            grúa acaba de llevarse un contenedor de ahí. */}
+        {[{ slot: 0, row: 0 }, ...PILE_ROWS].map((bay) => (
+          <mesh
+            key={`bay-${bay.slot}-${bay.row}`}
+            position={[
+              PILE.x - bay.slot * PILE_GAP,
+              0.02,
+              PILE.z - bay.row * PILE_ROW_DEPTH,
+            ]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <planeGeometry args={[CONTAINER.width + 1.3, CONTAINER.length + 1.3]} />
+            <meshBasicMaterial color="#dcd4c5" toneMapped={false} />
+          </mesh>
+        ))}
         {/* Pila del patio: dos torres de dos, tumbadas en la misma dirección
             en la que la grúa agarra. El quinto contenedor es el que se lleva,
             y arranca en el hueco libre del final de la fila. */}

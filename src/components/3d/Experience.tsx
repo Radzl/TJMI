@@ -10,7 +10,9 @@ export default function Experience() {
     <>
       <Preloader />
       <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
-        <Canvas dpr={[1, 1.5]} gl={{ antialias: true }}>
+        {/* `soft` usa el mapa de sombras suavizado: a esta escala las sombras
+            duras se ven como recortes de cartulina. */}
+        <Canvas shadows="soft" dpr={[1, 1.5]} gl={{ antialias: true }}>
           <Suspense fallback={null}>
             <Scene />
           </Suspense>

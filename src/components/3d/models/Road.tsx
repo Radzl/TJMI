@@ -8,6 +8,7 @@ import {
   CatmullRomCurve3,
   DoubleSide,
   Vector3,
+  type Group,
   type Mesh,
 } from 'three';
 import { roadProgress } from '@/lib/route';
@@ -88,6 +89,19 @@ function build(ranges: Array<[number, number]>, width: number, segments: number)
   return geometry;
 }
 
+/**
+ * Farolas del arcén. Van aquí y no en el patio porque su sitio es la
+ * carretera: en el arranque, con la grúa cargando, estorbaban.
+ *
+ * Se colocan sobre el propio trazado, así que si se cambia la curva siguen
+ * la carretera solas. Aparecen según se va dibujando el asfalto, no antes.
+ */
+const LAMP = { height: 8, offset: ROAD_WIDTH / 2 + 1.6, count: 11 };
+const LAMP_TS = Array.from(
+  { length: LAMP.count },
+  (_, index) => MARKED.from + ((MARKED.to - MARKED.from) * index) / (LAMP.count - 1),
+);
+
 const DASHES = 34;
 const ASPHALT_SEGMENTS = 240;
 /** Índices por tramo: dos triángulos. */
@@ -98,6 +112,32 @@ const PER_DASH = PER_SEGMENT * 2;
 export default function Road() {
   const asphaltRef = useRef<Mesh>(null);
   const markingRef = useRef<Mesh>(null);
+  const lampsRef = useRef<Group>(null);
+
+  // Posición y giro de cada farola, sacados del propio trazado.
+  const lamps = useMemo(
+    () =>
+      LAMP_TS.map((t) => {
+        const point = ROAD_CURVE.getPointAt(t);
+        const tangent = ROAD_CURVE.getTangentAt(t);
+        const length = Math.hypot(tangent.x, tangent.z) || 1;
+        // Normal dentro del plano del suelo: manda la farola al arcén.
+        const nx = -tangent.z / length;
+        const nz = tangent.x / length;
+
+        return {
+          t,
+          position: [
+            point.x + nx * LAMP.offset,
+            0,
+            point.z + nz * LAMP.offset,
+          ] as [number, number, number],
+          // El brazo se gira hacia la calzada.
+          rotation: Math.atan2(-nz, -nx),
+        };
+      }),
+    [],
+  );
 
   const asphalt = useMemo(
     () => build([[0, 1]], ROAD_WIDTH, ASPHALT_SEGMENTS),
@@ -134,6 +174,11 @@ export default function Road() {
       0,
       Math.ceil(DASHES * marked) * PER_DASH,
     );
+
+    // Cada farola se enciende cuando el asfalto ya ha llegado hasta ella.
+    lampsRef.current?.children.forEach((lamp, index) => {
+      lamp.visible = LAMP_TS[index] <= reveal;
+    });
   });
 
   return (
@@ -146,6 +191,31 @@ export default function Road() {
       <mesh ref={markingRef} geometry={marking} position={[0, 0.06, 0]}>
         <meshBasicMaterial color="#f6f4f1" side={DoubleSide} />
       </mesh>
+
+      <group ref={lampsRef}>
+        {lamps.map((lamp) => (
+          <group
+            key={lamp.t}
+            position={lamp.position}
+            rotation={[0, lamp.rotation, 0]}
+            visible={false}
+          >
+            <mesh position={[0, LAMP.height / 2, 0]}>
+              <cylinderGeometry args={[0.16, 0.22, LAMP.height, 8]} />
+              <meshStandardMaterial color="#9aa0a8" roughness={0.6} />
+            </mesh>
+            {/* Brazo y luminaria, volcados sobre la calzada. */}
+            <mesh position={[1.1, LAMP.height - 0.2, 0]}>
+              <boxGeometry args={[2.4, 0.22, 0.24]} />
+              <meshStandardMaterial color="#9aa0a8" roughness={0.6} />
+            </mesh>
+            <mesh position={[2.2, LAMP.height - 0.38, 0]}>
+              <boxGeometry args={[1.5, 0.3, 0.6]} />
+              <meshStandardMaterial color="#39414f" roughness={0.5} />
+            </mesh>
+          </group>
+        ))}
+      </group>
     </group>
   );
 }

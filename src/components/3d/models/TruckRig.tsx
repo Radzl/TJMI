@@ -1,6 +1,8 @@
 'use client';
 
 import { useTexture } from '@react-three/drei';
+import { useLayoutEffect, useRef } from 'react';
+import { Mesh, type Group } from 'three';
 import Wheels from './Wheels';
 
 // Tractora + chasis portacontenedores, con las proporciones de la Volvo FH de
@@ -16,10 +18,22 @@ const DARK = '#1c2530';
 const GLASS = '#101720';
 
 export default function TruckRig() {
+  const root = useRef<Group>(null);
   const logo = useTexture('/logo.png');
 
+  // El camión son treinta mallas sueltas: marcarlas de una pasada sale más
+  // limpio que repetir castShadow y receiveShadow treinta veces.
+  useLayoutEffect(() => {
+    root.current?.traverse((node) => {
+      if (node instanceof Mesh) {
+        node.castShadow = true;
+        node.receiveShadow = true;
+      }
+    });
+  }, []);
+
   return (
-    <group>
+    <group ref={root}>
       {/* ---- chasis portacontenedores ---- */}
       <mesh position={[4.7, 1, 0]}>
         <boxGeometry args={[9.4, 0.3, 2.5]} />

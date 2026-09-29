@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import Button from '@/components/ui/Button';
+import ServicesTrack from './ServicesTrack';
 import Container from '@/components/ui/Container';
 
 type ServiceItem = {
@@ -27,20 +28,12 @@ export default function Services() {
     // El oscuro no lo pone esta sección: lo pone el fondo de página, que ya ha
     // virado a azul noche durante el cierre de la intro. Así no entra ningún
     // rectángulo cortando el 3D.
-    // TODO: F4 — pin + scroll horizontal de las tarjetas
     // Lleva su propio fondo oscuro, pero como el fondo de página ya ha virado
     // a azul noche durante el cierre de la intro, no se ve ningún borde.
-    <section
-      data-bg="night"
-      className="relative z-10 overflow-hidden bg-night pb-28 pt-32 text-white"
-    >
-      <span
-        aria-hidden="true"
-        className="text-stroke pointer-events-none absolute left-0 top-6 select-none font-display text-[18vw] uppercase leading-none opacity-25"
-      >
-        {t('title')}
-      </span>
-
+    // Ojo: aquí NO puede haber `overflow-hidden`. El desfile horizontal fija
+    // el bloque de las tarjetas, y un ancestro con overflow recortado rompe
+    // el `position: sticky` que usa ScrollTrigger para fijarlo.
+    <section data-bg="night" className="relative z-10 bg-night pb-28 pt-32 text-white">
       <Container className="relative">
         <h2 className="font-display text-4xl uppercase leading-none tracking-tight sm:text-5xl">
           {t('title')}
@@ -80,38 +73,22 @@ export default function Services() {
           </div>
         </article>
 
-        <ul className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((item, index) => (
-            <li
-              key={item.title}
-              className="group overflow-hidden rounded-2xl border border-white/15 bg-white/[0.04] transition-colors hover:border-white/40"
-            >
-              <div className="relative h-44 overflow-hidden">
-                <Image
-                  src={SERVICE_IMAGES[index]}
-                  alt=""
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-8">
-                <h3 className="font-display text-xl uppercase tracking-tight">
-                  {item.title}
-                </h3>
-                <p className="mt-4 text-sm leading-relaxed text-white/65">
-                  {item.description}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
+      </Container>
 
-        <div className="mt-12">
-          <Button href="/servicios" variant="onDark">
-            {t('cta')}
-          </Button>
-        </div>
+      {/* Las tarjetas salen del Container a propósito: el desfile tiene que
+          poder llegar hasta los dos bordes de la pantalla. */}
+      <div className="mt-16">
+        <ServicesTrack
+          word={t('title')}
+          items={items}
+          images={SERVICE_IMAGES}
+        />
+      </div>
+
+      <Container className="relative">
+        <Button href="/servicios" variant="onDark">
+          {t('cta')}
+        </Button>
       </Container>
     </section>
   );

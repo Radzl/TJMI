@@ -39,6 +39,8 @@ export default function ContainerModel({
         const name = (child.material as MeshStandardMaterial)?.name ?? '';
         // mat15 es la chapa corrugada; el resto son herrajes y marcos, que
         // van un punto más oscuros pero dentro de la misma gama.
+        child.castShadow = true;
+        child.receiveShadow = true;
         child.material = new MeshStandardMaterial({
           color: name === 'mat15' ? color : '#2a4470',
           roughness: 0.62,

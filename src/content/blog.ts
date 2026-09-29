@@ -16,6 +16,8 @@ export type Post = {
   /** Fecha de publicación en ISO, para el orden y para el marcado de SEO. */
   date: string;
   minutes: number;
+  /** Foto de portada: sale en el listado, en el artículo y al compartirlo. */
+  cover: string;
   content: Record<Locale, PostContent>;
 };
 
@@ -24,6 +26,7 @@ export const posts: Post[] = [
     slug: 'grupaje-o-camion-completo',
     date: '2026-05-14',
     minutes: 4,
+    cover: '/media/grupaje.jpg',
     content: {
       es: {
         title: 'Grupaje o camión completo: cómo elegir según tu carga',
@@ -121,6 +124,7 @@ export const posts: Post[] = [
     slug: 'preparar-pale-azulejos',
     date: '2026-06-11',
     minutes: 3,
+    cover: '/media/picking.jpg',
     content: {
       es: {
         title: 'Cómo preparar un palé de azulejos para que llegue intacto',
@@ -218,6 +222,7 @@ export const posts: Post[] = [
     slug: 'cuanto-tarda-castellon-madrid',
     date: '2026-07-09',
     minutes: 4,
+    cover: '/media/camion-01.jpg',
     content: {
       es: {
         title: 'Cuánto tarda un envío de Castellón a Madrid (y de qué depende)',
@@ -315,6 +320,7 @@ export const posts: Post[] = [
     slug: 'documentacion-transporte-nacional',
     date: '2026-08-20',
     minutes: 3,
+    cover: '/media/ftl.jpg',
     content: {
       es: {
         title: 'Qué documentación necesitas para un transporte nacional',
@@ -402,6 +408,7 @@ export const posts: Post[] = [
     slug: 'azulejo-gran-formato-transporte',
     date: '2026-09-17',
     minutes: 4,
+    cover: '/media/almacen.jpg',
     content: {
       es: {
         title: 'Azulejo de gran formato: qué cambia al transportarlo',
