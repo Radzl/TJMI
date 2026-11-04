@@ -5,7 +5,7 @@ import LegalSections, {
 } from '@/components/legal/LegalSections';
 import Container from '@/components/ui/Container';
 import PageHeader from '@/components/ui/PageHeader';
-import { pageAlternates } from '@/lib/seo';
+import { pageMetadata } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -22,12 +22,15 @@ type Browser = { name: string; url: string };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'pages.cookies' });
+  const meta = await getTranslations({ locale, namespace: 'meta' });
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/cookies',
     title: t('title'),
     description: t('intro'),
-    alternates: pageAlternates(locale, '/cookies'),
-  };
+    imageAlt: meta('ogAlt'),
+  });
 }
 
 export default async function CookiesPage({ params }: Props) {
@@ -42,11 +45,11 @@ export default async function CookiesPage({ params }: Props) {
 
   return (
     <>
-      <PageHeader title={t('title')} intro={t('intro')} />
+      <PageHeader title={t('title')} intro={t('intro')} path="/cookies" />
 
       <section className="py-20">
         <Container>
-          <p className="mb-12 font-display text-xs uppercase tracking-[0.3em] text-muted">
+          <p className="mb-12 font-display text-xs uppercase tracking-[0.18em] sm:tracking-[0.3em] text-muted">
             {t('updated')}
           </p>
 

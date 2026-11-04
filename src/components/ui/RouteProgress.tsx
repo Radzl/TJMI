@@ -7,6 +7,9 @@ import { roadProgress } from '@/lib/route';
 type Props = {
   origin: string;
   destination: string;
+  /** El tramo que mide. Tiene que ser el mismo que el de la escena 3D. */
+  start?: string;
+  end?: string;
 };
 
 /**
@@ -14,7 +17,12 @@ type Props = {
  * recorre la carretera, así que el visitante ve dónde va sin tener que
  * interpretar la escena 3D.
  */
-export default function RouteProgress({ origin, destination }: Props) {
+export default function RouteProgress({
+  origin,
+  destination,
+  start = 'top bottom',
+  end = 'bottom top',
+}: Props) {
   const fillRef = useRef<HTMLSpanElement>(null);
   const dotRef = useRef<HTMLSpanElement>(null);
 
@@ -26,9 +34,9 @@ export default function RouteProgress({ origin, destination }: Props) {
 
     const trigger = ScrollTrigger.create({
       trigger: section,
-      start: 'top bottom',
-      end: 'bottom top',
-      scrub: true,
+      start,
+      end,
+      scrub: 1,
       onUpdate: (self) => {
         const advance = roadProgress(self.progress) * 100;
         fill.style.width = `${advance}%`;
@@ -37,7 +45,7 @@ export default function RouteProgress({ origin, destination }: Props) {
     });
 
     return () => trigger.kill();
-  }, []);
+  }, [start, end]);
 
   return (
     <div className="mt-10">

@@ -4,7 +4,11 @@ import { useEffect, useRef } from 'react';
 import { gsap } from '@/lib/gsap';
 
 const COLORS: Record<string, string> = {
-  bone: '#f6f4f1',
+  // **El crema bueno es `#f7f3ec`.** Aquí se quedó el anterior (`#f6f4f1`)
+  // cuando se cambió el de la marca, así que el fondo que pinta este
+  // componente y el del `body` eran dos cremas distintos por dos puntos. No
+  // se ve de uno en uno; se ve en el borde donde uno tapa al otro.
+  bone: '#f7f3ec',
   night: '#0f1a2e',
 };
 

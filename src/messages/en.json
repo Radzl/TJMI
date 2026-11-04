@@ -1,7 +1,8 @@
 {
   "meta": {
-    "title": "Transportes José María Ibáñez | Daily Castellón ⇄ Madrid route",
-    "description": "National and international road transport of palletised freight. Daily Castellón ⇄ Madrid route: we collect from 150+ factories and deliver door to door within 24 hours."
+    "title": "Transportes José María Ibáñez | Castellón ⇄ Madrid pallets",
+    "description": "Daily pallet route between Castellón and Madrid. We collect at over 150 factories and deliver door to door the next day. Ask for a quote.",
+    "ogAlt": "Transportes José María Ibáñez lorry with its branded curtain, loading at the Almazora warehouse."
   },
   "nav": {
     "home": "Home",
@@ -13,35 +14,40 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "language": "Language",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "faq": "FAQ"
   },
   "hero": {
     "eyebrow": "National and international transport",
-    "title": "We move your freight fast and safely",
-    "subtitle": "Road transport of palletised freight. Daily Castellón ⇄ Madrid route: we collect from 150+ factories and deliver door to door within 24 hours.",
+    "title": "Castellón to Madrid in 24 hours",
+    "subtitle": "Palletised road freight. We collect from more than 150 factories across the province of Castellón and deliver door to door in Madrid and the surrounding area.",
     "ctaPrimary": "Get a quote",
     "ctaSecondary": "See services"
   },
   "inRoute": {
     "title": "Every day, from Castellón to Madrid.",
-    "subtitle": "We collect, consolidate and deliver your freight within 24 hours. A daily, direct route in both directions.",
-    "stepsTitle": "How we work",
+    "subtitle": "A daily, direct route in both directions. What we load in Castellón today is delivered in Madrid tomorrow, and the other way round.",
+    "stepsTitle": "From your dock to your customer's",
     "steps": [
       {
+        "place": "Castellón",
         "title": "We collect",
-        "description": "We pass by the Castellón factories you tell us."
+        "description": "We come to your factory. We work with over 150 across the province, so chances are we already call at yours."
       },
       {
+        "place": "Almazora",
         "title": "We consolidate",
-        "description": "We group your goods in our Castellón warehouse."
+        "description": "Your freight comes into our 4,000 m² warehouse and joins the rest of the route. That is why you can send three pallets without paying for a whole lorry."
       },
       {
-        "title": "We ship",
-        "description": "Daily, direct Castellón ⇄ Madrid route."
+        "place": "420 km",
+        "title": "We haul",
+        "description": "The lorry leaves every working day and runs the A-3 in one go. Between our warehouse and the other one, nobody else handles it."
       },
       {
+        "place": "Madrid",
         "title": "We deliver",
-        "description": "To Madrid and neighbouring provinces within 24 h."
+        "description": "We deliver out of our Fuenlabrada warehouse: door to door, next day, across Madrid and the surrounding area."
       }
     ],
     "cta": "About us"
@@ -63,30 +69,182 @@
     },
     "items": [
       {
-        "title": "Groupage · LTL",
-        "description": "We group your goods with other shipments, for small and medium volumes."
+        "title": "Groupage (LTL)",
+        "description": "We group your goods with other shipments, for small and medium volumes.",
+        "long": [
+          "Your goods share the truck with other customers. You pay for the floor space you take up, not for the whole vehicle, so moving three pallets does not cost the same as moving thirty.",
+          "We run it on the daily Castellón ⇄ Madrid route: whatever we pick up during the day is consolidated that afternoon at our Almazora warehouse and leaves the same night. That is why a small shipment arrives just as fast as a large one."
+        ],
+        "includes": [
+          "Pickup in more than 150 towns across the province of Castellón.",
+          "Consolidation at our own warehouse, with no third-party transfers.",
+          "Delivery in Madrid and neighbouring provinces within 24 hours.",
+          "Delivery notice and shipment tracking."
+        ],
+        "bestFor": [
+          "You move between one and a dozen pallets.",
+          "Your volume is irregular and you do not always fill a truck.",
+          "You would rather ship small orders often than wait to fill a load."
+        ],
+        "heading": "Pallet groupage between Castellón and Madrid",
+        "seoTitle": "Pallet groupage Castellón ⇄ Madrid",
+        "seoDescription": "Groupage from one to twelve pallets. Collection across the province of Castellón, consolidation in our own warehouse and next-day delivery in Madrid.",
+        "highlights": [
+          "150+ pickup towns",
+          "Our own warehouse, no transfers",
+          "Next-day delivery"
+        ]
       },
       {
-        "title": "Full truck · FTL",
-        "description": "A whole vehicle for your load, from origin to destination."
+        "title": "Full truck (FTL)",
+        "description": "A whole vehicle for your load, from origin to destination.",
+        "long": [
+          "The vehicle runs for you alone, from origin to destination, with no intermediate stops and no handling along the way. What is loaded in Castellón is exactly what is unloaded at the far end.",
+          "It is the option when the deadline rules or the load is delicate: every extra handling is a breakage risk, and on a full truck there are only two, loading and unloading."
+        ],
+        "includes": [
+          "13.6 m curtain-sider trailer, up to 33 euro pallets.",
+          "Side loading: it can be loaded by forklift from the side, with no dock.",
+          "Loading and delivery times agreed with you.",
+          "Our own fleet: we do not subcontract the trip."
+        ],
+        "bestFor": [
+          "You fill half a load or more.",
+          "The goods are fragile and you want no handling in between.",
+          "You need a specific delivery time."
+        ],
+        "heading": "Full truckload from Castellón to Madrid",
+        "seoTitle": "Full truckload (FTL) Castellón ⇄ Madrid",
+        "seoDescription": "A 13.6-metre curtainsider carrying up to 33 euro pallets, for your freight alone. No transhipment, with loading and delivery times agreed with you.",
+        "highlights": [
+          "13.6 m and 33 pallets",
+          "Side loading, no dock",
+          "Our own fleet"
+        ]
       },
       {
         "title": "National and international",
-        "description": "Pickup, groupage and storage for clients in Spain and the EU."
+        "description": "Pickup, groupage and storage for clients in Spain and the EU.",
+        "long": [
+          "Beyond the daily corridor we move goods to the rest of Spain and to European customers. The origin is usually the same — the province of Castellón — and what changes is the destination and the lead time.",
+          "For national destinations outside Madrid we work with scheduled departures; for Europe, with groupage or full truck depending on volume. In both cases we prepare the paperwork ourselves."
+        ],
+        "includes": [
+          "Departures to national destinations from our Almazora warehouse.",
+          "Groupage and full truck for the European Union.",
+          "Transport paperwork prepared by us (CMR, delivery notes).",
+          "A single point of contact for the whole journey."
+        ],
+        "bestFor": [
+          "You sell outside Madrid and do not want to build a carrier network.",
+          "You export to Europe and need departures from Castellón.",
+          "You want someone answerable for the shipment end to end."
+        ],
+        "heading": "National and international transport from Castellón",
+        "seoTitle": "National and international transport from Castellón",
+        "seoDescription": "Beyond the daily corridor: palletised freight to the rest of Spain and groupage for European customers, departing from Castellón.",
+        "highlights": [
+          "Departures from Almazora",
+          "Groupage and full loads to the EU",
+          "CMR and notes included"
+        ]
       },
       {
         "title": "Warehousing",
-        "description": "Buffer warehouses and stock storage, in closed or open facilities."
+        "description": "Buffer warehouses and stock storage, in closed or open facilities.",
+        "long": [
+          "More than 4,000 m² of our own warehousing between Almazora and Fuenlabrada. It is not space rented from a third party: it is ours, and that is what lets goods come in and go out when they need to without asking anyone.",
+          "It gets used two ways: as a buffer warehouse, to take the pressure off the factory in high season, and as permanent stock at the gates of Madrid, to serve orders the same day."
+        ],
+        "includes": [
+          "Enclosed facilities and an open yard for material that allows it.",
+          "Goods in and goods out handled by us.",
+          "Stock control and counting.",
+          "Loading and unloading with our own forklifts."
+        ],
+        "bestFor": [
+          "Your factory runs out of room in the busy months.",
+          "You want stock near Madrid without opening a branch.",
+          "You produce in batches but ship a little at a time."
+        ],
+        "heading": "Warehousing and buffer stock in Castellón and Madrid",
+        "seoTitle": "Warehousing and buffer warehouse in Castellón",
+        "seoDescription": "Over 4,000 m² between Almazora and Fuenlabrada to hold your stock near the customer and release it as they ask for it, without filling up your factory.",
+        "highlights": [
+          "Enclosed hall and open yard",
+          "Stock control and counting",
+          "Our own forklifts"
+        ]
       },
       {
         "title": "Picking",
-        "description": "Storage and order preparation."
+        "description": "Storage and order preparation.",
+        "long": [
+          "We hold your goods and put orders together one by one: items are picked, built onto a pallet, shrink-wrapped and labelled ready to leave.",
+          "This is what turns a warehouse into a service. You send us the order and we leave it ready for that same night’s truck."
+        ],
+        "includes": [
+          "Order preparation by item and quantity.",
+          "Pallet building, shrink-wrapping and labelling.",
+          "Delivery note and paperwork for each order.",
+          "Departure on the same day’s route if the order comes in on time."
+        ],
+        "bestFor": [
+          "You ship many small orders out of a large stock.",
+          "You do not want to run a warehouse team of your own.",
+          "You sell to distributors with variable orders."
+        ],
+        "heading": "Picking and order preparation",
+        "seoTitle": "Picking and order preparation in Castellón",
+        "seoDescription": "We put your orders together pallet by pallet or box by box: picking, shrink-wrapping, labelling and departure on the same day’s route.",
+        "highlights": [
+          "Orders by item and quantity",
+          "Shrink-wrapping and labelling",
+          "Same-day departure"
+        ]
       },
       {
         "title": "Containers",
-        "description": "Container loading and unloading."
+        "description": "Container loading and unloading.",
+        "long": [
+          "We load and unload containers at our own facilities. What arrives is deconsolidated, palletised and enters the normal circuit; what leaves is loaded and made ready for the port.",
+          "Castellón is a port and it is tiles, so half the province moves containers. Having loading and unloading in the same warehouse where the goods are then stored saves you a whole trip."
+        ],
+        "includes": [
+          "Container loading and unloading by forklift.",
+          "Palletising and shrink-wrapping of loose arrivals.",
+          "Immediate storage after unloading.",
+          "Load preparation for departure to the port."
+        ],
+        "bestFor": [
+          "You import or export in containers from Castellón.",
+          "You need to deconsolidate without filling your own warehouse.",
+          "You want unloading and storage to happen in the same place."
+        ],
+        "heading": "Container loading and unloading",
+        "seoTitle": "Container loading and unloading in Castellón",
+        "seoDescription": "Container stuffing and unstuffing at our own premises, with the goods palletised and ready to carry on by road.",
+        "highlights": [
+          "Forklift loading and unloading",
+          "Palletising of loose arrivals",
+          "Storage straight after"
+        ]
       }
-    ]
+    ],
+    "scrollHint": "Scroll",
+    "detail": {
+      "includes": "What's included",
+      "bestFor": "When it makes sense",
+      "open": "See details",
+      "close": "Close",
+      "quote": "Get a quote",
+      "all": "See all services",
+      "label": "Service details",
+      "page": "Go to the service page",
+      "otherTitle": "Other services",
+      "backToAll": "All services",
+      "see": "View service"
+    }
   },
   "route": {
     "title": "Reliable, kilometre after kilometre.",
@@ -140,29 +298,26 @@
     "mapIntro": "We leave Almazora every morning and deliver in Madrid the next day. No transfers, no third parties.",
     "mapStops": [
       {
-        "time": "06:00",
         "title": "Departure from Almazora",
         "detail": "Loaded at our depot the afternoon before."
       },
       {
-        "time": "09:00",
         "title": "Pick-ups along the way",
         "detail": "More than 150 towns across the Castellón province."
       },
       {
-        "time": "14:00",
         "title": "Arrival in Fuenlabrada",
         "detail": "420 km on the A-3, with no transfers."
       },
       {
-        "time": "24 h",
         "title": "Delivery at destination",
         "detail": "Madrid and neighbouring provinces."
       }
-    ]
+    ],
+    "railFrom": "Castellón",
+    "railTo": "Madrid"
   },
   "cta": {
-    "eyebrow": "Free quote",
     "title": "Tell us what you need to move",
     "subtitle": "Fill in the form and we will send you a quote. Prefer to talk? We are one call or WhatsApp away.",
     "button": "Get a quote",
@@ -198,7 +353,7 @@
         "address": "Partida Ramonet S/N, 12550 Almazora, Castellón – Spain",
         "phone": "964 53 24 00",
         "phoneHref": "+34964532400",
-        "hours": "Monday to Friday · 9 – 13 h | 15 – 19 h",
+        "hours": "Monday to Friday, 9 to 13 h and 15 to 19 h",
         "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Partida%20Ramonet%2C%20Almazora%2C%20Castell%C3%B3n",
         "embedUrl": "https://maps.google.com/maps?q=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Partida%20Ramonet%2C%20Almazora&z=14&output=embed"
       },
@@ -207,7 +362,7 @@
         "address": "Av. de la Industria, 13, 28947 Fuenlabrada, Madrid – Spain",
         "phone": "916 42 30 95",
         "phoneHref": "+34916423095",
-        "hours": "Monday to Friday · 8 – 14 h | 15 – 17 h",
+        "hours": "Monday to Friday, 8 to 14 h and 15 to 17 h",
         "mapUrl": "https://www.google.com/maps/search/?api=1&query=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Avenida%20de%20la%20Industria%2013%2C%20Fuenlabrada%2C%20Madrid",
         "embedUrl": "https://maps.google.com/maps?q=Transportes%20Jos%C3%A9%20Mar%C3%ADa%20Ib%C3%A1%C3%B1ez%2C%20Avenida%20de%20la%20Industria%2013%2C%20Fuenlabrada&z=14&output=embed"
       }
@@ -275,18 +430,38 @@
     "readTime": "{minutes} min read",
     "back": "Back to the blog",
     "more": "More articles",
-    "ctaTitle": "Need a hand with your next shipment?",
-    "ctaText": "Tell us what you need to move and we will send you a price within 24 hours.",
-    "ctaButton": "Get a quote"
+    "ctaTitle": "Moving pallets to Madrid?",
+    "ctaText": "We leave Castellón every working day and deliver within 24 hours, across the province and door to door. Tell us what you need to move and we will price it in under a day.",
+    "ctaButton": "Request a quote",
+    "readMore": "Read the article",
+    "moreTitle": "Keep reading",
+    "ctaWhatsapp": "Ask on WhatsApp"
   },
   "pages": {
     "services": {
-      "title": "Services",
-      "intro": "From a single pallet to a full truck: we cover your whole freight chain, with pickup in Castellón and 24 hour delivery in Madrid."
+      "title": "Freight and logistics services in Castellón",
+      "intro": "From a single pallet to a full truck: we cover your whole freight chain, with pickup in Castellón and 24 hour delivery in Madrid.",
+      "listEyebrow": "Full catalogue",
+      "listTitle": "Everything we move",
+      "facts": [
+        {
+          "value": "6",
+          "label": "Services on offer"
+        },
+        {
+          "value": "24 h",
+          "label": "Delivery in Madrid"
+        },
+        {
+          "value": "+150",
+          "label": "Factories we collect from"
+        }
+      ],
+      "crumb": "Services"
     },
     "about": {
-      "title": "About us",
-      "intro": "Forty years moving palletised freight between Castellón and Madrid.",
+      "title": "Forty years on the same route",
+      "intro": "Two warehouses of our own, in Almazora and Fuenlabrada, and a lorry that leaves every working day between Castellón and Madrid.",
       "body": [
         "Transportes José María Ibáñez is a road transport company from Castellón specialised in palletised tiles and construction materials. We collect from 150+ towns across the province and deliver to Madrid within 24 hours.",
         "We work from two sites: Almazora (Castellón) and Fuenlabrada (Madrid), with over 4,000 m² of our own warehousing. That lets us collect, consolidate and distribute without relying on third parties.",
@@ -294,22 +469,64 @@
       ],
       "videoLabel": "Corporate video of Transportes José María Ibáñez",
       "videoPlay": "Play the company video",
-      "videoCaption": "Company video.",
       "sustainabilityBadge": "Photovoltaic installation",
       "sustainabilityTitle": "We are committed to solar energy",
       "sustainabilityText": "We have a photovoltaic installation at our facilities, a step towards more sustainable logistics.",
-      "videoSoundOn": "Turn on sound",
-      "videoSoundOff": "Mute"
+      "facts": [
+        {
+          "value": "+150",
+          "label": "Factories we collect from"
+        },
+        {
+          "value": "2",
+          "label": "Sites of our own"
+        },
+        {
+          "value": "+4,000 m²",
+          "label": "Of warehousing"
+        }
+      ],
+      "crumb": "About us",
+      "seoDescription": "Transportes José María Ibáñez has spent forty years moving palletised freight between Castellón and Madrid, with its own warehouses in Almazora and Fuenlabrada."
     },
     "contact": {
-      "title": "Contact",
+      "title": "Ask for a quote",
       "intro": "Tell us what you need to move, from where and to where. We will reply with a free quote.",
-      "formSoon": "The quote form is coming in the next phase. In the meantime, write to us by email or WhatsApp, or call either of our two sites."
+      "formSoon": "The quote form is coming in the next phase. In the meantime, write to us by email or WhatsApp, or call either of our two sites.",
+      "facts": [
+        {
+          "value": "2",
+          "label": "Sites: Almazora and Fuenlabrada"
+        },
+        {
+          "value": "24 h",
+          "label": "To get you a price"
+        },
+        {
+          "value": "+40",
+          "label": "Years moving pallets"
+        }
+      ],
+      "crumb": "Contact",
+      "seoDescription": "Phone, address and opening hours for our warehouses in Almazora (Castellón) and Fuenlabrada (Madrid). Tell us what you need to move and we will quote."
     },
     "blog": {
-      "title": "Blog",
+      "title": "Pallet transport blog",
       "intro": "Practical advice on pallet transport, load preparation and the daily Castellón ⇄ Madrid route, written from the loading dock.",
-      "empty": "No articles published yet."
+      "empty": "No articles published yet.",
+      "listEyebrow": "Up to date",
+      "listTitle": "Latest posts",
+      "facts": [
+        {
+          "value": "{count}",
+          "label": "Articles published"
+        },
+        {
+          "value": "{updated}",
+          "label": "Last updated"
+        }
+      ],
+      "crumb": "Blog"
     },
     "cookies": {
       "title": "Cookie policy",
@@ -515,6 +732,17 @@
       "intro": "This page does not exist, or we moved it. Head back to the homepage, or tell us what you need moving and we will come back to you with a quote.",
       "home": "Back to the homepage",
       "contact": "Request a quote"
+    },
+    "faq": {
+      "title": "FAQ"
+    },
+    "error": {
+      "code": "Something went wrong",
+      "title": "We have had a breakdown",
+      "intro": "This page did not load as it should. It is not your fault. Try reloading; if it keeps happening, call or write to us and we will sort it out in a minute.",
+      "retry": "Try again",
+      "home": "Go to the home page",
+      "contact": "Contact us"
     }
   },
   "cookies": {
@@ -535,5 +763,113 @@
     "mapBlocked": "The map is blocked until you accept Google Maps cookies.",
     "mapShow": "Show the map",
     "mapExternal": "Open in Google Maps"
+  },
+  "marquee": {
+    "items": [
+      "Tiles and building materials",
+      "Palletised freight",
+      "Castellón ⇄ Madrid",
+      "24 h delivery",
+      "Groupage and full loads",
+      "Our own warehousing"
+    ]
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "intro": "What we get asked most before a first shipment. If yours is not here, write to us and we will sort it out.",
+    "listTitle": "Before you call us",
+    "ctaTitle": "Question not here?",
+    "ctaText": "Tell us what you need to move and we will come back with a firm price.",
+    "ctaButton": "Get a quote",
+    "items": [
+      {
+        "q": "What is your main service?",
+        "a": [
+          "The daily Castellón ⇄ Madrid route: transport of tiles and building materials, and also industrial equipment and spare parts.",
+          "We collect from more than 150 tile factories across the province of Castellón and deliver within 24 hours in Madrid and the surrounding area."
+        ]
+      },
+      {
+        "q": "Do you carry large-format tiles?",
+        "a": [
+          "Yes. We handle bulky freight, with collection at the Castellón factories and delivery either to our Fuenlabrada (Madrid) site or straight to the final destination, in the Community of Madrid or nearby provinces."
+        ]
+      },
+      {
+        "q": "Do you offer warehousing?",
+        "a": [
+          "Yes, in enclosed or open facilities, depending on what the material needs."
+        ]
+      },
+      {
+        "q": "Is there a minimum number of pallets?",
+        "a": [
+          "No. We collect and consolidate all the goods in Castellón for transport and delivery in Madrid and neighbouring provinces; or for storage, if the destination is anywhere else in Spain."
+        ]
+      },
+      {
+        "q": "Do you collect and consolidate goods for shipment to European countries?",
+        "a": [
+          "Yes. We offer collection, groupage and storage of all the goods at our Castellón and Madrid sites for international customers.",
+          "We have long experience in logistics and transport with European companies."
+        ]
+      },
+      {
+        "q": "Can you collect orders from several tile factories and consolidate them for Madrid?",
+        "a": [
+          "Yes, that is exactly what we do every day. We collect from the different factories, consolidate everything in Castellón and it leaves on that night’s route for Madrid and the neighbouring provinces."
+        ]
+      },
+      {
+        "q": "Do you carry refrigerated loads?",
+        "a": [
+          "No. We carry palletised material and equipment at ambient temperature."
+        ]
+      },
+      {
+        "q": "Do you offer removals?",
+        "a": [
+          "Not for now. We carry palletised industrial materials and equipment."
+        ]
+      }
+    ]
+  },
+  "reviews": {
+    "title": "What our customers think",
+    "lead": "Reviews from our Google listing, exactly as they were written.",
+    "rating": "{n} out of 5",
+    "all": "Read them all on Google",
+    "prev": "Previous review",
+    "next": "Next review",
+    "goTo": "Go to review {n}"
+  },
+  "overview": {
+    "title": "The truck always leaves",
+    "lead": "Half empty or full to the roof, in August and in December. Forty years pulling out of Almazora every working day.",
+    "ctaLead": "Would you rather we told you ourselves?",
+    "cta": "Request a quote",
+    "cards": {
+      "services": {
+        "kicker": "Services",
+        "title": "Six ways to move your freight",
+        "text": "From a single pallet to a full truck."
+      },
+      "about": {
+        "kicker": "About us",
+        "figure": "+4,000 m²",
+        "label": "of warehouse of our own",
+        "text": "Two sites, in Almazora and Fuenlabrada, with solar panels on the roof."
+      },
+      "faq": {
+        "kicker": "FAQ",
+        "label": "answers",
+        "text": "Pallet minimums, large-format tiles, refrigerated loads and what we do not do."
+      },
+      "blog": {
+        "kicker": "Blog",
+        "label": "articles",
+        "text": "How to build a pallet, what insurance covers and how long a shipment really takes."
+      }
+    }
   }
 }

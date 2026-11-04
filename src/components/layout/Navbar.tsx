@@ -12,6 +12,7 @@ const links = [
   { href: '/servicios', key: 'services' },
   { href: '/nosotros', key: 'about' },
   { href: '/blog', key: 'blog' },
+  { href: '/faq', key: 'faq' },
   { href: '/contacto', key: 'contact' },
 ] as const;
 

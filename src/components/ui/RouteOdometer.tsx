@@ -7,13 +7,21 @@ import { roadProgress } from '@/lib/route';
 type Props = {
   total: string;
   className?: string;
+  /** El tramo que mide. Tiene que ser el mismo que el de la escena 3D. */
+  start?: string;
+  end?: string;
 };
 
 /**
  * Cuentakilómetros atado al mismo tramo de scroll que recorre el camión en la
  * carretera: los kilómetros suben exactamente al ritmo al que avanza.
  */
-export default function RouteOdometer({ total, className }: Props) {
+export default function RouteOdometer({
+  total,
+  className,
+  start = 'top bottom',
+  end = 'bottom top',
+}: Props) {
   const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -27,9 +35,9 @@ export default function RouteOdometer({ total, className }: Props) {
 
     const trigger = ScrollTrigger.create({
       trigger: section,
-      start: 'top bottom',
-      end: 'bottom top',
-      scrub: true,
+      start,
+      end,
+      scrub: 1,
       // Misma curva de avance que usa la escena 3D para mover el camión, para
       // que los kilómetros cierren justo cuando el camión llega.
       onUpdate: (self) => {
@@ -42,7 +50,7 @@ export default function RouteOdometer({ total, className }: Props) {
       trigger.kill();
       element.textContent = total;
     };
-  }, [total]);
+  }, [total, start, end]);
 
   return (
     <span ref={ref} className={className}>

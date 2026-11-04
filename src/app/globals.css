@@ -1,18 +1,188 @@
 @import "tailwindcss";
 
+/**
+ * `sin3d:` — «esta página va sin la escena 3D».
+ *
+ * Hay dos formas de quedarse sin 3D y las dos piden exactamente lo mismo de
+ * la maquetación, así que comparten una única definición:
+ *
+ *  - El sistema pide **reducir movimiento**, y entonces `ExperienceCanvas` ni
+ *    llega a montar el Canvas.
+ *  - La escena **se cae** en ejecución —WebGL bloqueado, contexto perdido, un
+ *    efecto incompatible— y `Canvas3DBoundary` marca el documento con
+ *    `data-sin-3d`.
+ *
+ * Lo que cambia en los dos casos: el hero y la carretera sueltan el `sticky`
+ * y dejan de medir pantallas que ya no tienen nada que enseñar, y la sección
+ * azul se pinta su propio fondo en vez de heredarlo del suelo de la escena.
+ *
+ * **Si añades una sección que dependa del Canvas para su alto o su fondo,
+ * dale su `sin3d:`.** Y no la marques solo con `motion-reduce:`: eso cubre
+ * la mitad de los casos y deja la otra mitad rota sin avisar.
+ */
+@custom-variant sin3d {
+  @media (prefers-reduced-motion: reduce) {
+    @slot;
+  }
+  &:where(html[data-sin-3d] *) {
+    @slot;
+  }
+}
+
 @theme {
   --color-brand-blue: #34548a;
   --color-brand-blue-dark: #27406b;
-  --color-brand-red: #d03b40;
-  --color-night: #0f1a2e;
-  --color-ink: #11151c;
-  --color-muted: #5c6673;
-  --color-line: #e6e8ec;
-  /* Blanco cálido de fondo: da profundidad a las tarjetas blancas encima. */
-  --color-bone: #f6f4f1;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-oswald), var(--font-inter), ui-sans-serif, sans-serif;
+  /* ── El rojo va en tres tonos, y no es capricho ──────────────────────────
+
+     Medido sobre el crema: el rojo de marca da **4,33:1**, y la WCAG pide
+     4,5 para texto pequeño. Y casi todo el rojo de esta web es texto pequeño:
+     enlaces de 12 px en versales («VER SERVICIO», «PEDIR PRESUPUESTO»), los
+     números de las cifras, los avisos del formulario. O sea que el color de
+     marca estaba suspendiendo justo en el único sitio donde se usa.
+
+     No se arregla cambiando el rojo de marca —ese lo fija el brief— sino
+     separando los trabajos:
+
+       · `brand-red`      el de la marca. **Solo relleno**: la banda, la
+                          muesca del vídeo, el punto del carrusel. En relleno
+                          el contraste lo pone el tamaño, no el color.
+       · `brand-red-ink`  texto pequeño sobre crema o blanco → 5,41:1.
+       · `brand-red-soft` texto pequeño sobre azul noche. El de marca da ahí
+                          3,63:1, y aclararlo es lo que lo sube: 4,75:1.
+
+     Los tres son el mismo tono (358°); lo que cambia es la claridad. */
+  --color-brand-red: #d03b40;
+  --color-brand-red-ink: #b83035;
+  --color-brand-red-soft: #de5a5e;
+  --color-night: #0f1a2e;
+  /* El mismo azul noche con un punto de luz dentro. Solo se usa como centro
+     del degradado de `.bg-night-depth`, nunca como color de relleno. */
+  --color-night-lift: #1b2c48;
+  --color-ink: #11151c;
+
+  /* ── Los grises eran fríos sobre un papel cálido ─────────────────────────
+
+     Medida la temperatura (rojo menos azul) de lo que había:
+
+       crema   #f7f3ec   **+11**  cálido
+       filete  #e6e8ec    −6      FRÍO
+       gris    #5c6673   −23      FRÍO
+
+     O sea que toda la capa tipográfica vivía en una temperatura distinta de
+     la del papel sobre el que se imprime. Es **exactamente** el problema que
+     este proyecto ya identificó y arregló dentro del 3D —«todo lo gris frío
+     de esta escena se ha leído siempre como día lluvioso»— y que en la
+     interfaz nunca se revisó.
+
+     Ahora los dos son cálidos y comparten familia con el crema. El gris
+     mantiene el contraste: 5,27:1 antes, **5,47:1** ahora.
+
+     `--color-ink` **no se toca**: a un 9 % de claridad la temperatura no se
+     percibe, y cambiarlo movería todos los titulares de la web para no
+     ganar nada visible. */
+  --color-muted: #67625a;
+  --color-line: #e8e2d6;
+
+  /* ── El escalón que faltaba ──────────────────────────────────────────────
+
+     La escala de claridad de la web era 95 → 91 → **(nada)** → 41 → 37 → 12:
+     un hueco de **cincuenta puntos** entre el filete y el gris de texto. Por
+     eso la única tarjeta posible en todo el sitio era «blanca sobre crema con
+     un filete»: no había ningún otro tono donde apoyarse, así que cualquier
+     bloque que quisiera separarse del fondo tenía que irse al blanco.
+
+     Estos dos lo llenan, en la familia cálida del papel:
+
+       · `sand`       superficie tranquila. Admite **todo el texto**: tinta
+                      15,1:1, gris 5,00:1, rojo de texto 4,95:1.
+       · `sand-deep`  un punto más. **No vale para texto pequeño** —el gris
+                      cae a 4,15:1—: es para rellenos, barras y huecos de
+                      foto. Si pones texto encima, que sea tinta. */
+  --color-sand: #efe9dd;
+  --color-sand-deep: #ded5c2;
+
+  /* Blanco cálido de fondo: da profundidad a las tarjetas blancas encima. */
+  /* Crema de papel, no crema de pantalla.
+
+     Estuvo en `#f6f4f1`, que está a dos puntos del valor que el criterio de
+     diseño señala como el más repetido en webs generadas. Este es un punto más
+     cálido y un punto menos gris: sube el rojo y el verde y baja el azul, que
+     es justo lo que separa el papel de un gris claro con un poco de color. El
+     cambio es pequeño a propósito —la marca pide mucho blanco, no un fondo con
+     carácter— pero saca a la página de ese valor exacto. */
+  --color-bone: #f7f3ec;
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), var(--font-body), ui-sans-serif, sans-serif;
+
+  /* Cuánto se condensa el titular. Archivo es variable y lleva eje de
+     anchura, así que esto es un número y no un corte con nombre: se puede
+     afinar sin cambiar de familia. 100 es la anchura normal; 78 deja una
+     condensada clara que en mayúsculas sigue siendo legible. */
+  --display-width: 78;
+
+  /* Escala de titulares, única para toda la web.
+     Antes cada sección se montaba su propio salto (`text-4xl sm:text-5xl
+     lg:text-6xl` aquí, un `clamp` a mano allá), así que no había dos titulares
+     que midieran lo mismo y la página se leía como maquetada a trozos. Esto es
+     una escala de cuatro peldaños y todos los titulares salen de ella.
+
+     Van en `clamp` y no por puntos de corte a propósito: un titular en
+     versalitas condensadas que salta de golpe entre 768 y 769 px canta mucho,
+     y entre medias siempre hay un ancho en el que queda ridículo o se desborda.
+     El mínimo del clamp es lo que mide en un móvil de 360 px y el máximo lo que
+     mide a partir de 1600 px; en medio crece solo. */
+  /* Recalibrada para Archivo. La anterior estaba hecha para Oswald, que es
+     más estrecha y de altura de x más baja: los mismos cuerpos en Archivo
+     salían pequeños para el sitio que ocupan.
+
+     ## Las interlíneas las fija el acento, no el gusto
+
+     Estuvieron en 0,86–0,90 con este razonamiento: «todos estos titulares van
+     en mayúsculas, y sin descendentes el hueco entre líneas se ve mucho mayor
+     del que mide». El razonamiento es correcto **en inglés**. En español las
+     mayúsculas sí suben: Á, É, Í, Ó, Ú, Ñ.
+
+     Medido sobre Archivo, en fracción del cuerpo:
+
+       mayúscula sin acento (H) ....... sube 0,6875 em
+       mayúscula con acento (Á É Ñ) ... sube 0,8750 em
+       cola de la Q ................... baja 0,1406 em
+       coma y paréntesis .............. bajan 0,1563 em
+
+     O sea que **el acento se come 0,1875 em por encima de la altura de
+     mayúscula**. Con interlínea 0,86 el hueco entre la línea de base de una
+     línea y el acento de la siguiente es de 0,86 − 0,875 = **−0,015 em**:
+     negativo, se tocan. Y se veía: en el cierre de la portada el acento de
+     «QUÉ» se fundía con la pata de la «É» de «CUÉNTANOS».
+
+     Lo que importa de esto: **el mínimo lo fija la tipografía, no el cuerpo**.
+     0,875 em es constante, así que el suelo es el mismo para un titular de
+     112 px y para uno de 36. Por eso las tres escalas grandes se mueven juntas
+     y ninguna puede bajar de ~0,94 sin volver a chocar.
+
+     Si algún día se cambia de familia, hay que **volver a medir** ese 0,875:
+     cada tipografía coloca los acentos a su altura. Se mide con
+     measureText('É').actualBoundingBoxAscent dividido por el tamaño.
+
+     La prosa negativa se deja como estaba: en una condensada, apretar de más
+     pega las letras. */
+  --text-display-xl: clamp(3rem, 8.6vw, 7rem);
+  --text-display-xl--line-height: 0.94;
+  --text-display-xl--letter-spacing: -0.015em;
+
+  --text-display-lg: clamp(2.5rem, 5.4vw, 4.75rem);
+  --text-display-lg--line-height: 0.94;
+  --text-display-lg--letter-spacing: -0.012em;
+
+  --text-display-md: clamp(2.25rem, 4.4vw, 3.75rem);
+  --text-display-md--line-height: 0.96;
+  --text-display-md--letter-spacing: -0.012em;
+
+  --text-display-sm: clamp(1.4rem, 2.1vw, 1.9rem);
+  --text-display-sm--line-height: 1.06;
+  --text-display-sm--letter-spacing: -0.005em;
 }
 
 html {
@@ -24,6 +194,10 @@ body {
   background-color: var(--color-bone);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  /* Plex trae cifras tabulares dibujadas. Se piden aquí una vez para toda la
+     página: así los kilómetros del cuentakilómetros, el contador del desfile
+     y las cifras de la banda no bailan de ancho al cambiar de dígito. */
+  font-variant-numeric: tabular-nums;
 }
 
 :focus-visible {
@@ -36,10 +210,341 @@ body {
   color: #ffffff;
 }
 
+/* El eje de anchura de Archivo. Va en una regla propia y no en cada clase
+   porque `font-display` se usa en docenas de sitios y la condensación tiene
+   que ser la misma en todos: si se reparte a mano, acaba habiendo tres. */
+.font-display,
+[class*='font-display'] {
+  font-variation-settings: 'wdth' var(--display-width);
+
+  /* El navegador reparte las líneas para que queden parejas en vez de llenar
+     cada una hasta donde llegue. En titulares cortos en mayúsculas es la
+     diferencia entre «DE CASTELLÓN A / MADRID EN 24 / HORAS» y un corte
+     equilibrado: evita la palabra suelta colgando en la última línea, que es
+     de lo que más delata un titular sin componer. */
+  text-wrap: balance;
+}
+
+/* Los cuatro pasos del servicio, que se encienden uno a uno según rueda el
+   camión. Ver `RouteSteps.tsx` para el porqué del contenido.
+
+   El estado de partida lo pone el JavaScript con `data-shown="false"`, nunca
+   el marcado: sin JS o con movimiento reducido la lista sale entera y
+   legible, porque son contenido y no adorno.
+
+   Lo que se mueve es poco a propósito. Lo que tiene que leerse es que las
+   paradas van llegando, no el viaje de cada bloque: un desplazamiento largo
+   aquí distrae de lo que de verdad se mueve en pantalla, que es el camión. */
+
+/* El tramo de vía de cada paso sobresale justo el hueco entre columnas para
+   empalmar con el siguiente. El del último no empalma con nada, así que se
+   recorta aquí; sin esto asomaría por la derecha del bloque.
+
+   **Se recorta solo de lado, y con `clip-path` y no con `overflow`.** Con
+   `overflow: hidden` el recorte es por los cuatro lados, y los nodos de la
+   primera fila, que suben 4 px por encima de la vía, salían partidos por la
+   mitad. Los valores negativos de arriba y abajo son justo eso: dejar que el
+   nodo asome. */
+.route-steps {
+  clip-path: inset(-1rem 0 -1rem 0);
+}
+
+.route-steps li {
+  /* El mismo valor que el `gap-x-10` de la rejilla. Si cambias uno, cambia el
+     otro: es lo que hace que los cuatro tramos se lean como una línea y no
+     como cuatro subrayados sueltos. */
+  --rail-gap: 2.5rem;
+  position: relative;
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+}
+
+.route-steps li[data-shown='false'] {
+  opacity: 0.18;
+  transform: translateY(0.5rem);
+}
+
+/* La vía: dos tramos del mismo largo, uno encima del otro. El de abajo está
+   siempre y marca por dónde va a pasar; el de arriba es el que se llena. */
+.route-steps li::before,
+.route-steps li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: calc(-1 * var(--rail-gap));
+  height: 1px;
+}
+
+.route-steps li::before {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.route-steps li::after {
+  background: rgb(255 255 255 / 0.55);
+  transform-origin: left center;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.route-steps li[data-shown='false']::after {
+  /* `transform: scaleX()` escrito a mano y no la clase `scale-x-0` de
+     Tailwind: esa clase escribe la propiedad `scale`, que es otra, y las dos
+     juntas se pisan en silencio. Ya pasó con la barra del desfile. */
+  transform: scaleX(0);
+}
+
+/* El nodo de la parada. Sin aro del color del fondo a propósito: el fondo lo
+   pinta el suelo del 3D, así que un aro tendría que acertar con ese azul
+   exacto y cualquier desvío se vería como un halo. La vía pasando por detrás
+   del punto es además lo que hace una parada. */
+.route-steps .route-dot {
+  position: absolute;
+  top: -0.25rem;
+  left: 0;
+  height: 0.5625rem;
+  width: 0.5625rem;
+  border-radius: 9999px;
+  background: var(--color-brand-red);
+  transition:
+    background-color 0.5s ease-out,
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.route-steps li[data-shown='false'] .route-dot {
+  background: rgb(255 255 255 / 0.22);
+  transform: scale(0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-steps li,
+  .route-steps li[data-shown='false'],
+  .route-steps li::after,
+  .route-steps li[data-shown='false']::after,
+  .route-steps .route-dot,
+  .route-steps li[data-shown='false'] .route-dot {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ─────────────────────────────── Las reseñas ──────────────────────────────
+
+   Eran una rejilla de tres columnas pegadas con un filete de un píxel, que es
+   el recurso de la banda de cifras y de las sedes. Allí funciona porque son
+   datos; aquí no, porque **cada reseña es la voz de una persona distinta** y
+   pegadas se leen como una tabla de opiniones. Ahora cada una es una tarjeta
+   suelta con aire alrededor y la fila se desplaza. */
+
+/* La barra de scroll nativa parte el diseño por abajo y además solo se ve en
+   algunos sistemas, así que la fila se vería distinta según el equipo. Los
+   mandos dicen que hay más, que es para lo que están. */
+.sin-barra {
+  scrollbar-width: none;
+}
+
+.sin-barra::-webkit-scrollbar {
+  display: none;
+}
+
+.reviews-card {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  border-radius: 1rem;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  padding: 2rem;
+  transition:
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reviews-card:hover {
+  border-color: color-mix(in oklab, var(--color-brand-blue) 35%, transparent);
+  /* Una sombra muy abierta y muy poco opaca: sobre crema, una sombra marcada
+     se lee como un recorte pegado encima, no como una tarjeta apoyada. */
+  box-shadow: 0 18px 40px -28px rgb(17 21 28 / 0.4);
+  transform: translateY(-3px);
+}
+
+/* El punto activo **se estira hasta ser una raya** en vez de solo cambiar de
+   color. Un punto relleno entre puntos vacíos se distingue mal de un lunar
+   más; una raya se ve desde lejos y además dice en qué dirección va la fila.
+   Y es el mismo gesto que el filete rojo que crece en las tarjetas del índice
+   de la portada. */
+.reviews-dot {
+  display: block;
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 9999px;
+  background: var(--color-line);
+  transition:
+    width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.35s ease;
+}
+
+.reviews-dot:hover {
+  background: color-mix(in oklab, var(--color-brand-blue) 45%, var(--color-line));
+}
+
+.reviews-dot[data-active='true'] {
+  width: 1.75rem;
+  background: var(--color-brand-red);
+}
+
+.reviews-arrow {
+  display: inline-flex;
+  height: 2.75rem;
+  width: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  color: var(--color-ink);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.reviews-arrow:hover:not(:disabled) {
+  border-color: var(--color-brand-blue);
+  background: var(--color-brand-blue);
+  color: #fff;
+}
+
+.reviews-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Sin fila que mover, los mandos son mobiliario: con dos reseñas en una
+   pantalla de escritorio caben las dos y unas flechas apagadas solo dicen que
+   aquí no hay nada. Lo enciende `ReviewsTrack` midiendo el ancho real. */
+.reviews-track[data-controls='off'] .reviews-controls {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reviews-card,
+  .reviews-card:hover,
+  .reviews-dot,
+  .reviews-arrow {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Azul noche con profundidad.
+
+   Un fondo oscuro plano se lee como «pintado de un color»: no tiene ni un
+   punto de luz, así que no parece un sitio, parece un rectángulo. Esto le
+   pone una mancha de luz muy suave y los cuatro bordes se quedan en el azul
+   noche exacto.
+
+   **Que los bordes coincidan no es un detalle de acabado, es lo que lo hace
+   posible.** El fondo de la página lo pinta `Backdrop` con ese mismo azul y
+   la sección de arriba trae el suelo del 3D: si el degradado no acabara
+   justo en `--color-night`, se vería la costura por los dos lados.
+
+   El degradado va a `alpha 0` del mismo color y no a `transparent`: en
+   varios navegadores `transparent` interpola pasando por el negro y deja un
+   halo sucio en el borde. */
+.bg-night-depth {
+  background-color: var(--color-night);
+  background-image: radial-gradient(
+    85% 55% at 50% 42%,
+    rgb(27 44 72 / 0.9) 0%,
+    rgb(27 44 72 / 0) 72%
+  );
+}
+
 /* Palabra gigante en contorno (escena Servicios) */
 .text-stroke {
   color: transparent;
   -webkit-text-stroke: 1.5px var(--color-line);
+}
+
+/* Revelado común de todas las fotos.
+   Las fotos de la casa vienen de sitios y días distintos: unas frías, otras
+   doradas, unas contrastadas y otras planas. Puestas juntas se nota que es un
+   montaje y no una web dirigida. Esto les pasa a todas el mismo revelado, así
+   que dejan de ser fotos sueltas y pasan a ser el material de la marca.
+
+   Va en CSS y no tocando los archivos: se ve igual, no pesa nada y se quita
+   en una línea si algún día se cambian las fotos por otras ya tratadas.
+
+   `isolation` es obligatorio: sin él, las capas de mezcla se comerían también
+   lo que haya detrás de la foto. */
+.photo {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.photo img,
+.photo video {
+  /* Menos saturación y algo más de cuerpo: es lo que iguala una foto de móvil
+     a mediodía con una de nave en interior. */
+  filter: saturate(0.74) contrast(1.07) brightness(1.02);
+}
+
+/* Luces hacia el papel y sombras hacia el azul noche. `soft-light` respeta el
+   detalle; un degradado opaco lo aplastaría. */
+.photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  background: linear-gradient(
+    180deg,
+    rgba(246, 244, 241, 0.22),
+    rgba(15, 26, 46, 0.3)
+  );
+}
+
+/* Y un velo de color que lleva todos los tonos hacia el azul de la casa. Es lo
+   que de verdad une fotos de temperaturas distintas: iguala el matiz sin tocar
+   la luminosidad, así que no las apaga. */
+.photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: color;
+  background: var(--color-night);
+  opacity: 0.22;
+}
+
+/* Banda de marca en movimiento continuo.
+   Son dos copias idénticas de la lista, así que desplazar la mitad del
+   conjunto deja el bucle sin costura. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 42s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
 }
 
 /* Grano de papel sobre toda la página.

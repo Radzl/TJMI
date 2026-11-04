@@ -39,7 +39,7 @@ export default function LegalSections({
  */
 export function PendingNotice({ children }: { children: string }) {
   return (
-    <p className="mb-12 max-w-3xl rounded-2xl border-l-4 border-brand-red bg-white p-6 text-sm leading-relaxed text-ink">
+    <p className="mb-12 max-w-3xl rounded-2xl border-l-4 border-brand-red-ink bg-white p-6 text-sm leading-relaxed text-ink">
       {children}
     </p>
   );

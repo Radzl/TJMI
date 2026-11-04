@@ -32,7 +32,7 @@ function Field({
       </span>
       {children}
       {error && (
-        <span className="mt-2 block text-sm text-brand-red">{error}</span>
+        <span className="mt-2 block text-sm text-brand-red-ink">{error}</span>
       )}
     </label>
   );
@@ -269,7 +269,7 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
                 <span>{t('consent')}</span>
               </label>
               {errors.consent && (
-                <p className="mt-2 text-sm text-brand-red">
+                <p className="mt-2 text-sm text-brand-red-ink">
                   {errors.consent.message}
                 </p>
               )}

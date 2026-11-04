@@ -2,18 +2,58 @@
 
 import { useProgress } from '@react-three/drei';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 /** Tope de seguridad: si algún archivo se atasca, la web no se queda colgada. */
 const MAX_WAIT = 4000;
 
+/**
+ * La pantalla de carga: **el viaje empieza antes que la web**.
+ *
+ * ## Por qué esto es «lo que va antes del 3D»
+ *
+ * La primera pantalla de la portada es el metro cuadrado más caro del sitio y
+ * lo que la hace distinta es la intro 3D: meterle algo delante la empujaría
+ * por debajo del pliegue. Pero resulta que **ya hay algo antes del 3D** —esta
+ * pantalla— y durante un tiempo fue un logo, una rayita de 160 px y un
+ * porcentaje. O sea, lo primero que ve todo el mundo, gastado en nada, y sin
+ * costar ni un píxel de scroll.
+ *
+ * Ahora la barra **es el trayecto**: una línea de Almazora a Fuenlabrada con
+ * un punto que avanza, y el contador en kilómetros en vez de en por ciento.
+ * Cuando el punto llega a Madrid, se abre la escena.
+ *
+ * ## Y no es un adorno suelto: es la misma pieza que hay dentro
+ *
+ * Los dos extremos, el filete, el punto y la cifra son **los mismos que
+ * `RouteProgress` y `RouteOdometer`** en la escena de la carretera, con los
+ * mismos textos de `messages`. Quien espera dos segundos aquí reconoce la
+ * pieza cuatro pantallas más abajo, cuando el camión la recorre de verdad.
+ * Una pantalla de carga que no se parece a nada de lo que viene después es
+ * tiempo tirado; esta es el anticipo.
+ *
+ * ## Dos cosas que no se tocan
+ *
+ * - **El tope de seguridad.** Si un GLB se atasca, a los cuatro segundos esto
+ *   se va igual. Una pantalla de carga que puede quedarse para siempre es
+ *   peor que no tenerla.
+ * - **Va `aria-hidden`.** Es un estado de espera, no contenido: a un lector
+ *   de pantalla no le aporta nada y lo que hay debajo ya está en el HTML.
+ */
 export default function Preloader() {
   const { progress, active } = useProgress();
+  const t = useTranslations('route');
   const [expired, setExpired] = useState(false);
   const [gone, setGone] = useState(false);
 
   const done = expired || (!active && progress >= 100);
   const shown = Math.min(100, Math.round(progress));
+
+  // Los kilómetros salen del mismo dato que el cuentakilómetros de la escena,
+  // así que si algún día cambia la distancia, cambia en los dos sitios.
+  const total = Number(t('odometer.value')) || 420;
+  const km = Math.round((shown / 100) * total);
 
   useEffect(() => {
     const safety = setTimeout(() => setExpired(true), MAX_WAIT);
@@ -31,7 +71,8 @@ export default function Preloader() {
   return (
     <div
       aria-hidden="true"
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bone transition-opacity duration-500 ${
+      data-preloader=""
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bone px-6 transition-opacity duration-500 ${
         done ? 'pointer-events-none opacity-0' : 'opacity-100'
       }`}
     >
@@ -44,15 +85,32 @@ export default function Preloader() {
         className="h-16 w-auto"
       />
 
-      <div className="mt-10 h-px w-40 overflow-hidden bg-line">
-        <div
-          className="h-full bg-brand-blue transition-[width] duration-300 ease-out"
-          style={{ width: `${shown}%` }}
-        />
+      {/* El trayecto. Ancho fijo y no un porcentaje de la pantalla: con un
+          ancho fluido, en un monitor grande la línea cruzaba medio escritorio
+          y el punto tardaba una eternidad en moverse de forma visible. */}
+      <div className="mt-12 w-full max-w-[22rem]">
+        <div className="flex items-baseline justify-between gap-4 font-display text-[0.6rem] uppercase tracking-[0.2em] text-muted">
+          <span>{t('origin')}</span>
+          <span className="text-right">{t('destination')}</span>
+        </div>
+
+        <div className="relative mt-3 h-px bg-line">
+          {/* El tramo hecho y el punto van los dos con `transition`, no con
+              un bucle de animación: el progreso llega a saltos —un GLB entero
+              de golpe— y sin suavizar, el punto daba brincos. */}
+          <span
+            className="absolute inset-y-0 left-0 block bg-brand-blue transition-[width] duration-500 ease-out"
+            style={{ width: `${shown}%` }}
+          />
+          <span
+            className="absolute -top-[3px] block h-[7px] w-[7px] -translate-x-1/2 rounded-full bg-brand-blue transition-[left] duration-500 ease-out"
+            style={{ left: `${shown}%` }}
+          />
+        </div>
       </div>
 
-      <span className="mt-4 font-display text-xs uppercase tracking-[0.35em] text-muted tabular-nums">
-        {shown}%
+      <span className="mt-5 font-display text-sm uppercase tracking-[0.25em] text-brand-blue tabular-nums">
+        {km} {t('odometer.unit')}
       </span>
     </div>
   );

@@ -3,7 +3,17 @@
 import { useEffect, useRef } from 'react';
 import { ScrollTrigger, prefersReducedMotion } from '@/lib/gsap';
 
-type Stop = { time: string; title: string; detail: string };
+/**
+ * Un hito de la ruta.
+ *
+ * **Sin hora, y es a propósito.** Cada hito llevaba una (06:00, 09:00, 14:00,
+ * «24 h») y ninguna era real: estaban puestas para que la lista pareciera un
+ * horario. Una hora concreta en una web de transporte es un compromiso, y
+ * publicar uno que no se cumple es peor que no publicar ninguno. Lo que sí es
+ * cierto —el orden de los pasos y que la entrega es al día siguiente— lo
+ * cuentan el propio orden de la lista y el texto de entrada.
+ */
+type Stop = { title: string; detail: string };
 
 type Props = {
   title: string;
@@ -179,12 +189,9 @@ export default function RouteMap({
               <li key={stop.title} className="relative">
                 <span
                   aria-hidden="true"
-                  className="absolute -left-[2.15rem] top-1.5 h-3 w-3 rounded-full border-2 border-brand-red bg-bone"
+                  className="absolute -left-[2.15rem] top-1.5 h-3 w-3 rounded-full border-2 border-brand-red-ink bg-bone"
                 />
-                <span className="font-display text-xs uppercase tracking-[0.3em] text-brand-red">
-                  {stop.time}
-                </span>
-                <h3 className="mt-2 font-display text-xl uppercase tracking-tight text-ink">
+                <h3 className="font-display text-xl uppercase tracking-tight text-ink">
                   {stop.title}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">

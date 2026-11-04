@@ -16,8 +16,15 @@ export type Post = {
   /** Fecha de publicación en ISO, para el orden y para el marcado de SEO. */
   date: string;
   minutes: number;
-  /** Foto de portada: sale en el listado, en el artículo y al compartirlo. */
-  cover: string;
+  /**
+   * Foto de portada: saldría en el listado, en el artículo y al compartirlo.
+   *
+   * **Ahora mismo no hay ninguna y es a propósito**: el cliente las añadirá
+   * más adelante. Está como opcional y no borrada porque todo lo que la usa
+   * (Open Graph, el marcado `Article`) ya sabe apañarse sin ella, así que el
+   * día que lleguen las fotos basta con rellenar este campo.
+   */
+  cover?: string;
   content: Record<Locale, PostContent>;
 };
 
@@ -26,7 +33,6 @@ export const posts: Post[] = [
     slug: 'grupaje-o-camion-completo',
     date: '2026-05-14',
     minutes: 4,
-    cover: '/media/grupaje.jpg',
     content: {
       es: {
         title: 'Grupaje o camión completo: cómo elegir según tu carga',
@@ -124,7 +130,6 @@ export const posts: Post[] = [
     slug: 'preparar-pale-azulejos',
     date: '2026-06-11',
     minutes: 3,
-    cover: '/media/picking.jpg',
     content: {
       es: {
         title: 'Cómo preparar un palé de azulejos para que llegue intacto',
@@ -222,7 +227,6 @@ export const posts: Post[] = [
     slug: 'cuanto-tarda-castellon-madrid',
     date: '2026-07-09',
     minutes: 4,
-    cover: '/media/camion-01.jpg',
     content: {
       es: {
         title: 'Cuánto tarda un envío de Castellón a Madrid (y de qué depende)',
@@ -320,7 +324,6 @@ export const posts: Post[] = [
     slug: 'documentacion-transporte-nacional',
     date: '2026-08-20',
     minutes: 3,
-    cover: '/media/ftl.jpg',
     content: {
       es: {
         title: 'Qué documentación necesitas para un transporte nacional',
@@ -408,7 +411,6 @@ export const posts: Post[] = [
     slug: 'azulejo-gran-formato-transporte',
     date: '2026-09-17',
     minutes: 4,
-    cover: '/media/almacen.jpg',
     content: {
       es: {
         title: 'Azulejo de gran formato: qué cambia al transportarlo',
@@ -503,6 +505,613 @@ export const posts: Post[] = [
           {
             type: 'p',
             text: 'We move it daily on our Castellón to Madrid route. If you are about to start serving large format, tell us before the first shipment and we will set it up properly from the start.',
+          },
+        ],
+      },
+    },
+  },
+  {
+    slug: 'medidas-y-peso-de-un-pale',
+    date: '2026-04-16',
+    minutes: 4,
+    content: {
+      es: {
+        title: 'Medidas y peso de un palé: europalé, americano y el de azulejo',
+        excerpt: 'Casi todos los líos de carga empiezan en la misma frase: «es un palé normal». Las medidas estándar y, sobre todo, lo que pesan de verdad cuando van cargados.',
+        body: [
+          {
+            type: 'p',
+            text: 'Un palé normal no existe. Existen varios formatos, y cada uno ocupa y pesa una cosa distinta. Como el precio del transporte sale justo de ahí, merece la pena tener los números a mano antes de pedir presupuesto.',
+          },
+          {
+            type: 'h',
+            text: 'Los formatos que se ven en Castellón',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Europalé (EUR/EPAL): 1200 × 800 mm. Es el estándar europeo y el que mejor aprovecha el ancho del camión.',
+              'Palé americano o industrial: 1200 × 1000 mm. Más ancho, muy habitual en material de construcción.',
+              'Medio palé: 800 × 600 mm. Para pedidos pequeños y preparación por unidades.',
+              'Palé de azulejo: según fábrica va en 1200 × 800 o en 1200 × 1000, con alturas de entre 60 y 110 cm según el formato de la pieza.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'Cuánto pesa de verdad',
+          },
+          {
+            type: 'p',
+            text: 'El palé vacío pesa entre 20 y 25 kg. Lo que cambia todo es lo que lleva encima: un palé de cerámica ronda los 1.000 a 1.400 kg y en gran formato pasa de 1.500. Para comparar, uno de cartonaje o de embalajes se queda en 200 o 300 kg.',
+          },
+          {
+            type: 'p',
+            text: 'Ese peso decide si el camión se llena por volumen o por tonelaje. Con azulejo casi siempre se llena por peso: un tráiler llega al límite legal mucho antes de quedarse sin suelo, así que de poco sirve que sobre sitio.',
+          },
+          {
+            type: 'h',
+            text: 'La altura, que es la que se olvida',
+          },
+          {
+            type: 'p',
+            text: 'La medida que falta en nueve de cada diez correos es la altura con la carga puesta. Es la que dice si el palé se puede apilar y, por tanto, si ocupa una planta del camión o dos. Como referencia, por debajo de un metro casi siempre se puede doblar; por encima de 1,20 ya no.',
+          },
+          {
+            type: 'h',
+            text: 'Lo que conviene apuntar siempre',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Largo por ancho del palé.',
+              'Altura total con la mercancía y el retractilado puestos.',
+              'Peso real por palé, no el teórico de catálogo.',
+              'Si admite otro palé encima.',
+            ],
+          },
+          {
+            type: 'p',
+            text: 'Con esos cuatro datos cualquier transportista serio te da un precio cerrado. Sin ellos, lo que te dé será una estimación que luego cambia.',
+          },
+        ],
+      },
+      en: {
+        title: 'Pallet sizes and weights: euro, industrial and the tile pallet',
+        excerpt: 'Almost every loading problem starts with the same sentence: “it is a normal pallet”. The standard sizes and, above all, what they really weigh once loaded.',
+        body: [
+          {
+            type: 'p',
+            text: 'There is no such thing as a normal pallet. There are several formats, and each one takes up a different amount of space and weighs a different amount. Since the freight price comes straight out of that, it pays to have the numbers at hand before asking for a quote.',
+          },
+          {
+            type: 'h',
+            text: 'The formats you see around Castellón',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Euro pallet (EUR/EPAL): 1200 × 800 mm. The European standard and the one that uses the width of the truck best.',
+              'Industrial pallet: 1200 × 1000 mm. Wider, and very common in building materials.',
+              'Half pallet: 800 × 600 mm. For small orders and item picking.',
+              'Tile pallet: depending on the factory it comes as 1200 × 800 or 1200 × 1000, 60 to 110 cm high depending on the tile format.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'What it actually weighs',
+          },
+          {
+            type: 'p',
+            text: 'An empty pallet weighs 20 to 25 kg. What changes everything is what sits on top: a ceramic pallet runs 1,000 to 1,400 kg, and large format goes past 1,500. For comparison, a pallet of cardboard or packaging stays at 200 or 300 kg.',
+          },
+          {
+            type: 'p',
+            text: 'That weight decides whether the truck fills up by volume or by tonnage. With tiles it is almost always weight: a trailer hits the legal limit long before it runs out of floor, so spare room is of little use.',
+          },
+          {
+            type: 'h',
+            text: 'Height, the one everyone forgets',
+          },
+          {
+            type: 'p',
+            text: 'The measurement missing from nine out of ten emails is the height with the goods on. It is what decides whether the pallet can be stacked and therefore whether it takes one deck of the truck or two. As a rule of thumb, under a metre it can usually be doubled up; over 1.20 m it cannot.',
+          },
+          {
+            type: 'h',
+            text: 'What to write down every time',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Pallet length by width.',
+              'Total height with the goods and the wrapping on.',
+              'Real weight per pallet, not the catalogue figure.',
+              'Whether another pallet can go on top.',
+            ],
+          },
+          {
+            type: 'p',
+            text: 'With those four figures any serious carrier can give you a firm price. Without them, whatever you get is an estimate that will change later.',
+          },
+        ],
+      },
+    },
+  },
+  {
+    slug: 'metros-lineales-de-carga',
+    date: '2026-07-23',
+    minutes: 4,
+    content: {
+      es: {
+        title: 'Metros lineales: cómo se mide de verdad lo que ocupa tu carga',
+        excerpt: 'La unidad con la que se cotiza un grupaje. Cómo se calcula y por qué dos envíos con los mismos palés pueden ocupar —y costar— el doble.',
+        body: [
+          {
+            type: 'p',
+            text: 'Cuando pides precio para un grupaje, lo que estás alquilando no es «un palé»: es un trozo del suelo del camión. Esa es la unidad real, y se llama metro lineal.',
+          },
+          {
+            type: 'h',
+            text: 'Qué es un metro lineal',
+          },
+          {
+            type: 'p',
+            text: 'Un semirremolque de lonas mide 13,6 metros de largo por 2,45 de ancho. Un metro lineal es una franja de un metro a lo ancho de esa caja. Como en el ancho caben dos europalés puestos de canto —dos veces 0,8 m—, cada europalé ocupa aproximadamente 0,4 metros lineales.',
+          },
+          {
+            type: 'h',
+            text: 'La cuenta rápida',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Europalé (1200 × 800) colocado a lo normal: 0,4 metros lineales.',
+              'Palé americano (1200 × 1000): 0,5 metros lineales.',
+              'Tráiler completo: 13,6 metros lineales, o 33 europalés en una sola planta.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'Dónde se tuerce la cuenta',
+          },
+          {
+            type: 'p',
+            text: 'Si el palé no se puede apilar, el hueco de encima se pierde y lo pagas igual, porque nadie puede vendérselo a otro cliente. Por eso diez palés apilables y diez sin apilar pueden tener precios muy distintos aunque pesen y midan lo mismo.',
+          },
+          {
+            type: 'p',
+            text: 'Lo mismo pasa con la mercancía que sobresale. Un palé que se pasa cinco centímetros del formato ya no deja colocar otro al lado, así que se come el ancho entero del camión en esa franja.',
+          },
+          {
+            type: 'h',
+            text: 'Para qué te sirve saberlo',
+          },
+          {
+            type: 'p',
+            text: 'Para dos cosas. La primera, comparar presupuestos de verdad: dos ofertas «por palé» pueden estar midiendo cosas distintas y no te enteras hasta que llega la factura.',
+          },
+          {
+            type: 'p',
+            text: 'La segunda, decidir cuándo dejas de pagar grupaje y te llevas el camión entero. A partir de siete u ocho metros lineales la diferencia se estrecha muchísimo, y con el camión completo te ahorras además las manipulaciones intermedias.',
+          },
+        ],
+      },
+      en: {
+        title: 'Loading metres: how the space your freight takes is really measured',
+        excerpt: 'The unit groupage is actually quoted in. How it is worked out, and why two shipments with the same pallets can take up — and cost — twice as much.',
+        body: [
+          {
+            type: 'p',
+            text: 'When you ask for a groupage price, what you are renting is not “a pallet”: it is a stretch of the truck floor. That is the real unit, and it is called a loading metre.',
+          },
+          {
+            type: 'h',
+            text: 'What a loading metre is',
+          },
+          {
+            type: 'p',
+            text: 'A curtain-sider trailer is 13.6 metres long by 2.45 wide. A loading metre is a one-metre strip across that width. Since two euro pallets fit side by side across it — two times 0.8 m — each euro pallet takes roughly 0.4 loading metres.',
+          },
+          {
+            type: 'h',
+            text: 'The quick maths',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Euro pallet (1200 × 800) loaded the usual way: 0.4 loading metres.',
+              'Industrial pallet (1200 × 1000): 0.5 loading metres.',
+              'Full trailer: 13.6 loading metres, or 33 euro pallets on a single deck.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'Where the maths goes wrong',
+          },
+          {
+            type: 'p',
+            text: 'If the pallet cannot be stacked, the space above it is lost and you pay for it anyway, because nobody can sell it to another customer. That is why ten stackable pallets and ten non-stackable ones can be priced very differently even though they weigh and measure the same.',
+          },
+          {
+            type: 'p',
+            text: 'The same goes for overhang. A pallet five centimetres over format leaves no room for another one beside it, so it eats the whole width of the truck along that strip.',
+          },
+          {
+            type: 'h',
+            text: 'Why it is worth knowing',
+          },
+          {
+            type: 'p',
+            text: 'Two reasons. First, so you can compare quotes properly: two offers priced “per pallet” may be measuring different things, and you only find out when the invoice arrives.',
+          },
+          {
+            type: 'p',
+            text: 'Second, to decide when to stop paying for groupage and take the whole truck. From seven or eight loading metres the gap narrows a lot, and with a full truck you also save the handling in between.',
+          },
+        ],
+      },
+    },
+  },
+  {
+    slug: 'seguro-de-transporte-y-cmr',
+    date: '2026-08-06',
+    minutes: 5,
+    content: {
+      es: {
+        title: 'Seguro de transporte: qué cubre y qué tienes que declarar',
+        excerpt: 'La responsabilidad del transportista está limitada por ley y se calcula por kilo, no por valor. Lo que eso significa para tu mercancía y cómo se amplía.',
+        body: [
+          {
+            type: 'p',
+            text: 'Es un tema árido y por eso casi nadie lo mira hasta que pasa algo. Merece la pena dedicarle cinco minutos antes, porque la diferencia entre cobrar lo que vale tu mercancía o una parte pequeña se decide con un dato en el papel.',
+          },
+          {
+            type: 'h',
+            text: 'La responsabilidad del transportista está limitada',
+          },
+          {
+            type: 'p',
+            text: 'En transporte nacional, la Ley del Contrato de Transporte Terrestre fija una indemnización máxima por kilo de mercancía perdida o dañada. En transporte internacional por carretera hace lo mismo el convenio CMR. Son límites por peso, no por valor: da igual lo que costara lo que iba dentro.',
+          },
+          {
+            type: 'p',
+            text: 'Para mercancía pesada y de poco valor por kilo —que es justo el caso del azulejo— ese límite suele cubrir bien. Para mercancía ligera y cara, se queda corto enseguida.',
+          },
+          {
+            type: 'h',
+            text: 'Qué puedes hacer si tu mercancía vale más',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Declarar el valor de la mercancía en la carta de porte: eleva el límite y normalmente lleva un recargo.',
+              'Contratar un seguro de daños a la mercancía, aparte del transporte. Ese cubre por valor y no por kilo.',
+              'Comprobar que tu operación concreta entra en la póliza: hay exclusiones habituales, como la mercancía mal estibada en origen.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'El papel que decide casi todo: el albarán',
+          },
+          {
+            type: 'p',
+            text: 'Cuando se descarga, quien recibe firma. Si firma sin mirar y el daño aparece al día siguiente, reclamar se complica mucho. Ante cualquier sospecha —film roto, esquina golpeada, palé movido— hay que escribirlo en el albarán en ese momento, con detalle y antes de firmar.',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Reservas por escrito en el albarán, en el momento de la entrega.',
+              'Fotos del palé tal y como llega, antes de desembalar.',
+              'Aviso al transportista cuanto antes: los plazos para reclamar son cortos.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'Cómo lo planteamos nosotros',
+          },
+          {
+            type: 'p',
+            text: 'Trabajamos con flota propia, así que la mercancía no cambia de manos por el camino y no hay que averiguar en qué tramo pasó. Si mueves material de valor alto, dínoslo al pedir el presupuesto: esto se prepara antes, no después.',
+          },
+        ],
+      },
+      en: {
+        title: 'Freight insurance: what it covers and what you need to declare',
+        excerpt: 'A carrier’s liability is capped by law and worked out per kilo, not by value. What that means for your goods and how to extend it.',
+        body: [
+          {
+            type: 'p',
+            text: 'It is a dry subject, which is why almost nobody looks at it until something happens. It is worth five minutes beforehand, because the difference between recovering what your goods are worth and recovering a fraction comes down to one line on a piece of paper.',
+          },
+          {
+            type: 'h',
+            text: 'A carrier’s liability is capped',
+          },
+          {
+            type: 'p',
+            text: 'For domestic transport in Spain, the Land Transport Contract Act sets a maximum compensation per kilo of goods lost or damaged. For international road transport, the CMR convention does the same. These are limits by weight, not by value: what the contents cost makes no difference.',
+          },
+          {
+            type: 'p',
+            text: 'For heavy goods of low value per kilo — which is exactly the case with tiles — that limit usually covers things well. For light, expensive goods it falls short very quickly.',
+          },
+          {
+            type: 'h',
+            text: 'What you can do if your goods are worth more',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Declare the value of the goods on the consignment note: it raises the cap and normally carries a surcharge.',
+              'Take out cargo insurance separately from the transport. That covers by value, not by kilo.',
+              'Check that your particular operation falls inside the policy: there are common exclusions, such as goods badly stowed at origin.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'The document that decides almost everything',
+          },
+          {
+            type: 'p',
+            text: 'At unloading, whoever receives the goods signs. If they sign without looking and the damage shows up the next day, claiming gets a lot harder. At any suspicion — torn wrap, a knocked corner, a shifted pallet — it has to be written on the delivery note there and then, in detail, before signing.',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Written reservations on the delivery note, at the moment of delivery.',
+              'Photos of the pallet as it arrives, before unwrapping.',
+              'Tell the carrier as soon as possible: claim windows are short.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'How we approach it',
+          },
+          {
+            type: 'p',
+            text: 'We run our own fleet, so the goods never change hands along the way and nobody has to work out which leg it happened on. If you move high-value material, tell us when you ask for the quote: this gets arranged before, not after.',
+          },
+        ],
+      },
+    },
+  },
+  {
+    slug: 'cuanto-cuesta-enviar-un-pale',
+    date: '2026-09-24',
+    minutes: 5,
+    content: {
+      es: {
+        title: 'Cuánto cuesta enviar un palé de Castellón a Madrid',
+        excerpt: 'No hay tarifa plana, y quien te dé un precio por teléfono sin preguntar nada se lo está inventando. Esto es lo que mira de verdad quien calcula el porte.',
+        body: [
+          {
+            type: 'p',
+            text: 'Es la pregunta que más nos llega y la que peor se responde por ahí. El precio de un palé no sale de una tabla: sale de cruzar cinco o seis datos, y si falta alguno el presupuesto se queda en una estimación que luego cambia.',
+          },
+          {
+            type: 'h',
+            text: 'Qué entra en el precio',
+          },
+          {
+            type: 'ul',
+            items: [
+              'El espacio que ocupa, medido en metros lineales de camión y no en palés sueltos.',
+              'El peso, porque un palé de azulejo pesa lo que tres de cartonaje.',
+              'El punto de recogida: no cuesta lo mismo una fábrica en Onda que una nave en el interior de la provincia.',
+              'La zona de entrega: Madrid capital con restricciones no es un polígono de Fuenlabrada.',
+              'Si hace falta descargar sin muelle, con carretilla o a pie de calle.',
+              'La frecuencia: quien manda tres palés cada semana no paga lo mismo que quien manda tres una vez al año.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'Por qué se mide en metros lineales',
+          },
+          {
+            type: 'p',
+            text: 'Un camión de lonas tiene 13,6 metros de largo. Lo que se vende en grupaje no son palés, son tramos de ese suelo: un europalé ocupa unos 0,4 metros lineales. Si tu palé es más alto de lo normal o no se puede apilar, bloquea además el hueco de arriba, y eso también se paga aunque el suelo ocupado sea el mismo.',
+          },
+          {
+            type: 'h',
+            text: 'El error más común',
+          },
+          {
+            type: 'p',
+            text: 'Pedir precio por palé sin decir si se puede apilar. Un palé apilable y otro que no lo es ocupan lo mismo en el suelo y el doble de camión. Es la diferencia más grande que hay entre dos presupuestos que a simple vista parecen iguales.',
+          },
+          {
+            type: 'h',
+            text: 'Qué darnos para que el precio sea el definitivo',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Número de palés, medidas y altura real con la carga puesta.',
+              'Peso por palé.',
+              'Si admite otro palé encima o no.',
+              'Código postal de recogida y de entrega.',
+              'Si hay muelle en destino o hay que descargar en la calle.',
+            ],
+          },
+          {
+            type: 'p',
+            text: 'Con eso te damos un precio cerrado, no una horquilla. Y si mueves volumen de forma habitual, lo que toca no es un presupuesto por envío: es una tarifa.',
+          },
+        ],
+      },
+      en: {
+        title: 'What it costs to ship a pallet from Castellón to Madrid',
+        excerpt: 'There is no flat rate, and anyone who quotes you over the phone without asking anything is making it up. Here is what actually goes into the price.',
+        body: [
+          {
+            type: 'p',
+            text: 'It is the question we get most and the one answered worst elsewhere. The price of a pallet does not come off a table: it comes from crossing five or six figures, and if one is missing the quote is only an estimate that changes later.',
+          },
+          {
+            type: 'h',
+            text: 'What goes into the price',
+          },
+          {
+            type: 'ul',
+            items: [
+              'The space it takes, measured in loading metres rather than in loose pallets.',
+              'The weight, because a tile pallet weighs what three pallets of cardboard do.',
+              'The pickup point: a factory in Onda does not cost the same as a unit inland.',
+              'The delivery area: central Madrid with access restrictions is not an industrial estate in Fuenlabrada.',
+              'Whether unloading needs a forklift or has to happen at street level, with no dock.',
+              'Frequency: someone sending three pallets a week does not pay what someone sending three once a year pays.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'Why it is measured in loading metres',
+          },
+          {
+            type: 'p',
+            text: 'A curtain-sider is 13.6 metres long. What groupage sells is not pallets but stretches of that floor: a euro pallet takes about 0.4 loading metres. If your pallet is taller than usual or cannot be stacked, it also blocks the space above, and that is charged too even though the floor used is the same.',
+          },
+          {
+            type: 'h',
+            text: 'The most common mistake',
+          },
+          {
+            type: 'p',
+            text: 'Asking for a per-pallet price without saying whether it can be stacked. A stackable pallet and a non-stackable one take the same floor and twice the truck. It is the single biggest difference between two quotes that look identical.',
+          },
+          {
+            type: 'h',
+            text: 'What to send us for a firm price',
+          },
+          {
+            type: 'ul',
+            items: [
+              'Number of pallets, dimensions and real height with the goods on.',
+              'Weight per pallet.',
+              'Whether another pallet can go on top.',
+              'Postcode for pickup and for delivery.',
+              'Whether there is a dock at destination or it has to be unloaded in the street.',
+            ],
+          },
+          {
+            type: 'p',
+            text: 'With that we give you a firm price, not a range. And if you move volume regularly, what you need is not a quote per shipment: it is a rate.',
+          },
+        ],
+      },
+    },
+  },
+  {
+    slug: 'almacen-regulador-cuando-compensa',
+    date: '2026-10-01',
+    minutes: 4,
+    content: {
+      es: {
+        title: 'Almacén regulador: cuándo deja de compensarte guardar en fábrica',
+        excerpt: 'Fabricar por lotes y servir poco a poco no cuadra sin un sitio donde la mercancía espere. Cuándo sale a cuenta sacar ese stock de la fábrica.',
+        body: [
+          {
+            type: 'p',
+            text: 'Pasa en casi todas las cerámicas: se cuece por hornadas grandes y se sirve en pedidos pequeños. Entre una cosa y otra hace falta un sitio donde la mercancía espere, y ese sitio casi siempre acaba siendo el peor posible: el patio de la propia fábrica.',
+          },
+          {
+            type: 'h',
+            text: 'Qué es un almacén regulador',
+          },
+          {
+            type: 'p',
+            text: 'Es una nave intermedia entre quien fabrica y quien compra. No se usa para guardar por guardar: se usa para separar dos ritmos que no encajan, el de producción, que va a lotes, y el de venta, que va a goteo.',
+          },
+          {
+            type: 'h',
+            text: 'Señales de que te hace falta',
+          },
+          {
+            type: 'ul',
+            items: [
+              'En temporada alta tienes palés en zonas que no son de almacén.',
+              'Frenas producción porque no tienes dónde dejar lo que sale.',
+              'Mandas camiones a medio llenar solo para hacer hueco.',
+              'Sirves a Madrid y tardas dos días porque primero hay que localizar el material.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'Qué cambia si ese stock está a las puertas de Madrid',
+          },
+          {
+            type: 'p',
+            text: 'Que el plazo deja de depender de la fábrica. Con el material ya en Fuenlabrada, un pedido que entra por la mañana puede salir esa misma tarde, sin esperar al camión que viene de Castellón.',
+          },
+          {
+            type: 'p',
+            text: 'Y que dejas de pagar transporte de urgencia. Los portes caros no son los planificados: son los que salen a medio cargar para llegar a una fecha.',
+          },
+          {
+            type: 'h',
+            text: 'Cuándo no compensa',
+          },
+          {
+            type: 'p',
+            text: 'Si tu volumen es bajo y estable, no. Un almacén regulador se paga con rotación: si la mercancía va a estar meses parada, lo que tienes no es un problema de almacenaje sino de previsión de ventas.',
+          },
+          {
+            type: 'p',
+            text: 'Nosotros tenemos más de 4.000 m² propios entre Almazora y Fuenlabrada, o sea los dos extremos del corredor. Si quieres, echamos el número contigo antes de mover nada.',
+          },
+        ],
+      },
+      en: {
+        title: 'Buffer warehousing: when storing at the factory stops paying off',
+        excerpt: 'Producing in batches and shipping a little at a time does not add up without somewhere for the goods to wait. When it is worth moving that stock out of the factory.',
+        body: [
+          {
+            type: 'p',
+            text: 'It happens at almost every tile factory: production runs in large batches and shipping happens in small orders. In between, the goods need somewhere to wait, and that somewhere almost always ends up being the worst possible place: the factory yard.',
+          },
+          {
+            type: 'h',
+            text: 'What a buffer warehouse is',
+          },
+          {
+            type: 'p',
+            text: 'It is a warehouse sitting between the maker and the buyer. It is not for storing for the sake of storing: it is for separating two rhythms that do not match, production in batches and sales in a trickle.',
+          },
+          {
+            type: 'h',
+            text: 'Signs that you need one',
+          },
+          {
+            type: 'ul',
+            items: [
+              'In high season you have pallets in places that are not storage areas.',
+              'You slow production because there is nowhere to put what comes out.',
+              'You send half-loaded trucks just to clear space.',
+              'You ship to Madrid and it takes two days because the material has to be found first.',
+            ],
+          },
+          {
+            type: 'h',
+            text: 'What changes with stock at the gates of Madrid',
+          },
+          {
+            type: 'p',
+            text: 'Lead time stops depending on the factory. With the material already in Fuenlabrada, an order that comes in during the morning can go out that same afternoon, without waiting for the truck from Castellón.',
+          },
+          {
+            type: 'p',
+            text: 'And you stop paying for rush transport. Expensive trips are not the planned ones: they are the ones that leave half loaded to hit a date.',
+          },
+          {
+            type: 'h',
+            text: 'When it does not pay off',
+          },
+          {
+            type: 'p',
+            text: 'If your volume is low and steady, it does not. A buffer warehouse pays for itself through turnover: if the goods are going to sit still for months, what you have is not a storage problem but a sales forecasting one.',
+          },
+          {
+            type: 'p',
+            text: 'We have more than 4,000 m² of our own between Almazora and Fuenlabrada, which is to say both ends of the corridor. If you like, we can run the numbers with you before anything moves.',
           },
         ],
       },

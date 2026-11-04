@@ -1,24 +1,28 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Container from '@/components/ui/Container';
-import PageHeader from '@/components/ui/PageHeader';
+import CoverPlaceholder from '@/components/ui/CoverPlaceholder';
+import PageHeader, { type PageFact } from '@/components/ui/PageHeader';
+import SectionHeading from '@/components/ui/SectionHeading';
 import { sortedPosts } from '@/content/blog';
 import { Link } from '@/i18n/navigation';
 import { routing, type Locale } from '@/i18n/routing';
-import { pageAlternates } from '@/lib/seo';
+import { pageMetadata } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'pages.blog' });
+  const meta = await getTranslations({ locale, namespace: 'meta' });
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/blog',
     title: t('title'),
     description: t('intro'),
-    alternates: pageAlternates(locale, '/blog'),
-  };
+    imageAlt: meta('ogAlt'),
+  });
 }
 
 export default async function BlogPage({ params }: Props) {
@@ -33,14 +37,44 @@ export default async function BlogPage({ params }: Props) {
     : routing.defaultLocale;
   const dateFormat = new Intl.DateTimeFormat(active, { dateStyle: 'long' });
 
+  // Los dos datos del blog salen del propio contenido, no de `messages`: un
+  // recuento escrito a mano se queda viejo en cuanto se publica un artículo, y
+  // una fecha de actualización inventada es justo lo que no puede llevar una
+  // cabecera que está ahí para dar confianza.
+  const posts = sortedPosts();
+  const monthFormat = new Intl.DateTimeFormat(active, {
+    month: 'short',
+    year: 'numeric',
+  });
+  const facts = (t.raw('facts') as PageFact[]).map((fact) => ({
+    ...fact,
+    value: fact.value
+      .replace('{count}', String(posts.length))
+      .replace(
+        '{updated}',
+        posts.length > 0 ? monthFormat.format(new Date(posts[0].date)) : '—',
+      ),
+  }));
+
   return (
     <>
-      <PageHeader title={t('title')} intro={t('intro')} />
+      <PageHeader
+        title={t('title')}
+        intro={t('intro')}
+        crumb={t('crumb')}
+        path="/blog"
+        facts={facts}
+      />
 
       <section className="py-20">
         <Container>
-          <ul className="flex flex-col divide-y divide-line border-b border-line">
-            {sortedPosts().map((post) => {
+          {/* Las interiores entraban en la rejilla sin avisar y parecían
+              de otra web: abren con la misma cabecera que la portada. */}
+          <SectionHeading
+            title={t('listTitle')}
+          />
+          <ul className="mt-16 flex flex-col divide-y divide-line border-b border-t border-line">
+            {posts.map((post) => {
               const content = post.content[active];
 
               return (
@@ -53,29 +87,31 @@ export default async function BlogPage({ params }: Props) {
                       <time dateTime={post.date}>
                         {dateFormat.format(new Date(post.date))}
                       </time>
-                      <span className="mt-2 block text-brand-red">
+                      <span className="mt-2 block text-brand-red-ink">
                         {tBlog('readTime', { minutes: post.minutes })}
                       </span>
                     </p>
 
-                    <div className="overflow-hidden rounded-xl md:col-span-3">
-                      <Image
-                        src={post.cover}
-                        alt=""
-                        width={480}
-                        height={320}
-                        sizes="(max-width: 768px) 100vw, 25vw"
-                        className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-105 md:h-32"
-                      />
-                    </div>
+                    {/* La columna de portada. Mientras no haya fotos pinta un
+                        bloque de color que ocupa su sitio exacto, para poder
+                        juzgar la página que va a quedar y no la de ahora. */}
+                    <CoverPlaceholder
+                      cover={post.cover}
+                      seed={post.slug}
+                      className="aspect-[3/2] rounded-xl md:col-span-4"
+                      sizes="(max-width: 768px) 100vw, 30vw"
+                    />
 
-                    <div className="md:col-span-6">
+                    <div className="md:col-span-5">
                       <h2 className="font-display text-2xl uppercase leading-tight tracking-tight text-ink transition-colors group-hover:text-brand-blue sm:text-3xl">
                         {content.title}
                       </h2>
                       <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
                         {content.excerpt}
                       </p>
+                      <span className="mt-5 inline-flex items-center gap-2 font-display text-xs uppercase tracking-widest text-brand-blue">
+                        {tBlog('readMore')}
+                      </span>
                     </div>
                   </Link>
                 </li>

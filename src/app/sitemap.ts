@@ -37,9 +37,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
         ? 'weekly'
         : 'monthly') as MetadataRoute.Sitemap[number]['changeFrequency'],
       alternates: {
-        languages: Object.fromEntries(
-          routing.locales.map((code) => [code, `${SITE_URL}/${code}${path}`]),
-        ),
+        languages: {
+          ...Object.fromEntries(
+            routing.locales.map((code) => [code, `${SITE_URL}/${code}${path}`]),
+          ),
+          // **El `x-default` también aquí.** Estaba en la cabecera de cada
+          // página pero no en el sitemap, así que los dos sitios donde se
+          // declara lo mismo decían cosas distintas. Es a donde se manda a
+          // quien no encaja en ninguno de los dos idiomas.
+          'x-default': `${SITE_URL}/${routing.defaultLocale}${path}`,
+        },
       },
     })),
   );

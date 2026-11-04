@@ -11,6 +11,7 @@ import {
   type Object3D,
 } from 'three';
 import { clamp } from '@/lib/utils';
+import CraneOperator from './CraneOperator';
 
 const MODEL = '/models/reach-stacker.glb';
 
@@ -22,11 +23,38 @@ const COLORS: Record<string, string> = {
   'Material.002': '#1c2530', // pluma
   'Material.003': '#d8b400', // spreader
   'Material.004': '#39414f', // estructura
-  'Material.005': '#c9ccd2',
+  'Material.005': '#cdd6e2', // cristales de la cabina
   'Material.006': '#15181d', // ruedas
 };
-const BOOM_MATERIALS = new Set(['Material.002', 'Material.003']);
+/**
+ * Los materiales que forman el conjunto de la pluma y giran con ella.
+ *
+ * **`Material.004` entró tarde y es el que arreglaba la cuña flotante.** Al
+ * girar la pluma quedaba una pieza negra suspendida en el aire junto al techo
+ * del semirremolque, sin tocar nada. No era un fallo de la coreografía: esa
+ * geometría pertenece a la pluma pero usa otro material, así que se quedaba
+ * con el chasis mientras el resto giraba.
+ *
+ * Se identificó pintando materiales de rojo uno a uno y mirando cuál se
+ * encendía. Si vuelve a aparecer algo suelto al girar, ese es el método: no
+ * se adivina por el nombre, que aquí son todos `Material.00N`.
+ */
+const BOOM_MATERIALS = new Set(['Material.002', 'Material.003', 'Material.004']);
 const DROP_MATERIALS = new Set(['Material.007', 'Material.008']);
+/**
+ * Los cristales de la cabina. Venían como un bloque gris opaco, que es por lo
+ * que la cabina se leía como una caja cerrada y no se veía que dentro hay
+ * alguien. Van translúcidos y **sin proyectar sombra**: un cristal que tapa la
+ * luz como si fuera chapa delata el truco enseguida.
+ */
+const GLASS_MATERIAL = 'Material.005';
+
+/**
+ * Dónde se sienta el operario, en coordenadas del grupo de la máquina. El
+ * hueco acristalado va de `x` 0,75 a 2,01 y de `y` 1,82 a 2,91 (medido sobre
+ * el propio GLB), así que esto lo deja dentro, mirando hacia la pluma.
+ */
+const OPERATOR = { x: 1.4, y: 1.6, z: 0 };
 
 // Medidas tomadas del propio GLB (ver scripts de inspección). Todo lo que
 // sigue está en el espacio del modelo, antes de escalar.
@@ -86,12 +114,24 @@ export default function ReachStackerModel({ boomRef }: Props) {
       }
       if (BOOM_MATERIALS.has(name)) boomParts.push(child);
 
-      child.castShadow = true;
-        child.receiveShadow = true;
-        child.material = new MeshStandardMaterial({
+      const glass = name === GLASS_MATERIAL;
+      child.castShadow = !glass;
+      child.receiveShadow = true;
+      // **El cristal refleja, no solo deja ver.** Antes era translucido y
+      // nada mas: rugosidad 0,15 pero metalicidad 0,05, o sea sin fuerza para
+      // coger el `Environment` que la escena ya monta. Lo que distingue un
+      // cristal de un hueco gris a esta distancia es el reflejo.
+      //
+      // Aqui **si se queda translucido**, al reves que en el camion, y por un
+      // motivo concreto: dentro de esta cabina hay un operario modelado, y es
+      // el unico sitio de la intro donde se ve a alguien trabajando.
+      child.material = new MeshStandardMaterial({
         color: COLORS[name] ?? '#8a8f98',
-        roughness: 0.55,
-        metalness: 0.05,
+        roughness: glass ? 0.06 : 0.55,
+        metalness: glass ? 0.45 : 0.05,
+        envMapIntensity: glass ? 2.2 : 1,
+        transparent: glass,
+        opacity: glass ? 0.42 : 1,
       });
     });
 
@@ -116,12 +156,20 @@ export default function ReachStackerModel({ boomRef }: Props) {
   }, [boom, boomRef]);
 
   return (
-    <primitive
-      object={model}
-      rotation={[0, Math.PI, 0]}
-      scale={SCALE}
-      position={[0, LIFT, 0]}
-    />
+    <>
+      <primitive
+        object={model}
+        rotation={[0, Math.PI, 0]}
+        scale={SCALE}
+        position={[0, LIFT, 0]}
+      />
+      {/* El operario va fuera del `primitive`, en coordenadas ya de la escena:
+          el GLB viene girado y escalado, y meterlo dentro obligaría a deshacer
+          esa transformación a mano cada vez que se toque la calibración. */}
+      <group position={[OPERATOR.x, OPERATOR.y, OPERATOR.z]}>
+        <CraneOperator />
+      </group>
+    </>
   );
 }
 

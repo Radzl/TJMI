@@ -6,19 +6,22 @@ import LegalSections, {
 } from '@/components/legal/LegalSections';
 import Container from '@/components/ui/Container';
 import PageHeader from '@/components/ui/PageHeader';
-import { pageAlternates } from '@/lib/seo';
+import { pageMetadata } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'pages.legal' });
+  const meta = await getTranslations({ locale, namespace: 'meta' });
 
-  return {
+  return pageMetadata({
+    locale,
+    path: '/aviso-legal',
     title: t('title'),
     description: t('intro'),
-    alternates: pageAlternates(locale, '/aviso-legal'),
-  };
+    imageAlt: meta('ogAlt'),
+  });
 }
 
 export default async function LegalNoticePage({ params }: Props) {
@@ -30,13 +33,13 @@ export default async function LegalNoticePage({ params }: Props) {
 
   return (
     <>
-      <PageHeader title={t('title')} intro={t('intro')} />
+      <PageHeader title={t('title')} intro={t('intro')} path="/aviso-legal" />
 
       <section className="py-20">
         <Container>
           <PendingNotice>{t('pending')}</PendingNotice>
 
-          <p className="mb-12 font-display text-xs uppercase tracking-[0.3em] text-muted">
+          <p className="mb-12 font-display text-xs uppercase tracking-[0.18em] sm:tracking-[0.3em] text-muted">
             {t('updated')}
           </p>
 

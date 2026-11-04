@@ -1,6 +1,8 @@
 import { useTranslations } from 'next-intl';
 import MapEmbed from '@/components/legal/MapEmbed';
+import { SITE_PHOTOS } from '@/content/media';
 import Container from '@/components/ui/Container';
+import SectionHeading from '@/components/ui/SectionHeading';
 
 type Site = {
   city: string;
@@ -19,28 +21,44 @@ export default function Sites() {
   return (
     <section data-bg="bone" className="relative z-10 bg-bone pb-28">
       <Container>
-        <h2 className="font-display text-4xl uppercase leading-none tracking-tight text-ink sm:text-5xl">
-          {t('sitesTitle')}
-        </h2>
-        <p className="mt-6 max-w-xl text-lg text-muted">{t('sitesIntro')}</p>
+        <SectionHeading
+          title={t('sitesTitle')}
+          lead={t('sitesIntro')}
+        />
 
-        <div className="mt-16 grid gap-10 md:grid-cols-2">
-          {sites.map((site) => (
-            <article
+        {/* Las dos sedes iban en tarjetas blancas con marco, una al lado de
+            otra. Puestas en dos columnas el mapa se quedaba en un sello y la
+            dirección en dos líneas apretadas, y el marco blanco sobre crema
+            apenas se distinguía: pagábamos un borde por no ganar nada.
+
+            Ahora cada sede ocupa el ancho entero y se separan con un filete,
+            que es lo mismo que hace la lista de cobertura justo encima. El
+            mapa gana la mitad del ancho y los datos respiran al lado. */}
+        <ul className="mt-16 divide-y divide-line border-t border-line">
+          {sites.map((site, index) => (
+            <li
               key={site.city}
-              className="overflow-hidden rounded-2xl border border-line bg-white"
+              className="grid gap-10 py-12 md:grid-cols-2 md:items-start md:gap-14"
             >
-              <MapEmbed
-                src={site.embedUrl}
-                title={t('mapTitle', { city: site.city })}
-                mapUrl={site.mapUrl}
-              />
+              <div className="overflow-hidden rounded-xl">
+                <MapEmbed
+                  src={site.embedUrl}
+                  title={t('mapTitle', { city: site.city })}
+                  mapUrl={site.mapUrl}
+                  photo={SITE_PHOTOS[index]?.src}
+                />
+              </div>
 
-              <div className="p-8">
-                <h3 className="font-display text-2xl uppercase tracking-tight text-ink">
+              <div className="md:pt-2">
+                <span className="font-display text-xs tabular-nums tracking-widest text-brand-red-ink">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+
+                <h3 className="mt-4 font-display text-display-sm uppercase text-ink">
                   {site.city}
                 </h3>
-                <p className="mt-4 text-base leading-relaxed text-muted">
+
+                <p className="mt-5 max-w-sm text-base leading-relaxed text-muted">
                   {site.address}
                 </p>
 
@@ -53,10 +71,10 @@ export default function Sites() {
                   </div>
                 </dl>
 
-                <div className="mt-6 flex flex-wrap items-center gap-6">
+                <div className="mt-8 flex flex-wrap items-center gap-6">
                   <a
                     href={`tel:${site.phoneHref}`}
-                    className="font-display text-xl tracking-tight text-brand-blue hover:text-brand-blue-dark"
+                    className="font-display text-2xl tracking-tight text-brand-blue transition-colors hover:text-brand-blue-dark"
                   >
                     {site.phone}
                   </a>
@@ -64,15 +82,15 @@ export default function Sites() {
                     href={site.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-muted underline underline-offset-4 hover:text-brand-blue"
+                    className="group inline-flex items-center gap-2 text-sm text-muted underline underline-offset-4 transition-colors hover:text-brand-blue"
                   >
                     {t('mapLink')}
                   </a>
                 </div>
               </div>
-            </article>
+            </li>
           ))}
-        </div>
+        </ul>
       </Container>
     </section>
   );

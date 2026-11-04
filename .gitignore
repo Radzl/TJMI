@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Regresión visual: las referencias se versionan, lo demás no.
+tests/visual/salida/

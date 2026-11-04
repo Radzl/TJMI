@@ -8,19 +8,37 @@ export default function Cta() {
 
   return (
     // TODO: F6 — aquí irá el formulario de presupuesto
-    <section data-bg="bone" className="relative z-10 bg-bone pb-28 pt-20">
-      <Container>
-        <div className="rounded-3xl bg-night px-8 py-20 text-center text-white sm:px-16">
-          <p className="font-display text-xs uppercase tracking-[0.3em] text-white/50">
-            {t('eyebrow')}
-          </p>
-          <h2 className="mx-auto mt-6 max-w-2xl font-display text-3xl uppercase leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+    //
+    // Es el final de la página y era la pieza más pequeña de todas: una
+    // tarjeta azul centrada de poco más de media pantalla, con el titular a
+    // tamaño de subtítulo. Ahora es una sección entera en azul noche, con el
+    // titular a tamaño cartel y alineado a la izquierda como el resto.
+    //
+    // El fondo de la página vira a azul noche aquí (`data-bg`), así que el
+    // oscuro no entra como un rectángulo: lo funde `Backdrop`. Y como el pie
+    // es blanco, el corte final es azul → blanco, que cierra en seco.
+    <section
+      data-bg="night"
+      className="relative z-10 overflow-hidden bg-night-depth py-28 text-white lg:py-40"
+    >
+      {/* Sangra por la derecha: centrada y entera se leería como otro titular
+          en vez de como el fondo que es. */}
+
+      <Container className="relative">
+        <div className="max-w-3xl">
+          {/* Aquí había un «Presupuesto sin compromiso» en versales. Se ha
+              quitado entero: era venta, no información, y el titular de debajo
+              ya pide exactamente lo que hay que pedir. El formulario que viene
+              a continuación deja claro por sí solo que es un presupuesto. */}
+          <h2 className="font-display text-display-xl uppercase">
             {t('title')}
           </h2>
-          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-white/70">
+
+          <p className="mt-8 max-w-xl text-lg leading-relaxed text-white/70">
             {t('subtitle')}
           </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
+
+          <div className="mt-12 flex flex-wrap gap-4">
             <Button href="/contacto" variant="accent">
               {t('button')}
             </Button>

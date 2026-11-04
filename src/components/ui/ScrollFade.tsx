@@ -12,6 +12,18 @@ type Props = {
   inTo?: number;
   outFrom?: number;
   outTo?: number;
+  /**
+   * Dónde empieza y acaba el disparador.
+   *
+   * Por defecto mide la sección entera cruzando la pantalla, que es lo que
+   * quiere un bloque que entra y sale por su cuenta. Pero cuando el fundido
+   * tiene que **cuadrar con un momento del 3D** hay que pasarle el mismo
+   * `start` y `end` que usa `ScrollChoreography` para esa escena: los dos
+   * disparadores miden tramos distintos, así que una fracción del uno no es la
+   * misma fracción del otro, y a ojo el fundido cae medio pantallazo antes.
+   */
+  start?: string;
+  end?: string;
 };
 
 /**
@@ -26,6 +38,8 @@ export default function ScrollFade({
   inTo = 0,
   outFrom = 1,
   outTo = 1,
+  start = 'top bottom',
+  end = 'bottom top',
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -36,9 +50,9 @@ export default function ScrollFade({
 
     const trigger = ScrollTrigger.create({
       trigger: section,
-      start: 'top bottom',
-      end: 'bottom top',
-      scrub: true,
+      start,
+      end,
+      scrub: 1,
       onUpdate: (self) => {
         const appear = inTo > inFrom ? range(self.progress, inFrom, inTo) : 1;
         const leave = outTo > outFrom ? range(self.progress, outFrom, outTo) : 0;
@@ -50,7 +64,7 @@ export default function ScrollFade({
       trigger.kill();
       element.style.opacity = '';
     };
-  }, [inFrom, inTo, outFrom, outTo]);
+  }, [inFrom, inTo, outFrom, outTo, start, end]);
 
   return (
     <div ref={ref} className={className}>

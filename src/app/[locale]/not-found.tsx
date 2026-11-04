@@ -12,12 +12,12 @@ export default function NotFound() {
   return (
     <section className="flex min-h-[70svh] items-center py-24">
       <Container>
-        <p className="flex items-center gap-4 font-display text-xs uppercase tracking-[0.3em] text-muted">
+        <p className="flex items-center gap-4 font-display text-xs uppercase tracking-[0.18em] sm:tracking-[0.3em] text-muted">
           <span className="h-px w-10 bg-brand-red" aria-hidden="true" />
           {t('code')}
         </p>
 
-        <h1 className="mt-6 max-w-3xl font-display text-4xl uppercase leading-[0.95] tracking-tight text-ink sm:text-5xl lg:text-6xl">
+        <h1 className="mt-6 max-w-3xl font-display text-4xl uppercase leading-[0.96] tracking-tight text-ink sm:text-5xl lg:text-6xl">
           {t('title')}
         </h1>
 

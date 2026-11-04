@@ -39,7 +39,13 @@ export default function ContainerModel({
         const name = (child.material as MeshStandardMaterial)?.name ?? '';
         // mat15 es la chapa corrugada; el resto son herrajes y marcos, que
         // van un punto más oscuros pero dentro de la misma gama.
-        child.castShadow = true;
+        //
+        // **Y solo la chapa proyecta sombra.** El GLB trae cinco piezas y las
+        // cinco proyectaban, o sea cinco dibujos en el mapa de sombras por
+        // contenedor cuando hay diecisiete en el patio. Los herrajes van
+        // pegados a la chapa: su sombra es la misma que la de la caja, así que
+        // se pagaba cuatro veces por el mismo contorno.
+        child.castShadow = name === 'mat15';
         child.receiveShadow = true;
         child.material = new MeshStandardMaterial({
           color: name === 'mat15' ? color : '#2a4470',

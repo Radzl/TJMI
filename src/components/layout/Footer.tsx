@@ -1,13 +1,16 @@
 import { useTranslations } from 'next-intl';
 import CookiePreferencesButton from '@/components/legal/CookiePreferencesButton';
 import Container from '@/components/ui/Container';
+import { SERVICES } from '@/content/services';
 import { Link } from '@/i18n/navigation';
+import type { ServiceDetail } from '@/components/ui/ServiceDialog';
 import Wordmark from './Wordmark';
 
 const navLinks = [
   { href: '/servicios', key: 'services' },
   { href: '/nosotros', key: 'about' },
   { href: '/blog', key: 'blog' },
+  { href: '/faq', key: 'faq' },
   { href: '/contacto', key: 'contact' },
 ] as const;
 
@@ -28,11 +31,13 @@ export default function Footer() {
   const t = useTranslations('footer');
   const tNav = useTranslations('nav');
   const tContact = useTranslations('contact');
+  const tServices = useTranslations('services');
   const sites = tContact.raw('sites') as Site[];
+  const serviceItems = tServices.raw('items') as ServiceDetail[];
 
   return (
     <footer className="relative z-10 border-t border-line bg-white">
-      <Container className="grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-4">
+      <Container className="grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1.2fr_1fr_1.3fr]">
         <div>
           <Wordmark />
           <p className="mt-6 max-w-xs text-sm leading-relaxed text-muted">
@@ -49,6 +54,29 @@ export default function Footer() {
               <li key={link.href}>
                 <Link href={link.href} className="hover:text-brand-blue">
                   {tNav(link.key)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* **Los seis servicios, enlazados desde todas las páginas.** No es
+            por llenar el pie: cada uno tiene ahora su propia página, y una
+            página a la que solo se llega desde el listado le cuesta mucho más
+            posicionarse que una enlazada desde el sitio entero. Es, además,
+            donde la gente busca cuando no encuentra algo en el menú. */}
+        <div>
+          <h2 className="font-display text-xs uppercase tracking-widest text-ink">
+            {tNav('services')}
+          </h2>
+          <ul className="mt-5 flex flex-col gap-3 text-sm text-muted">
+            {SERVICES.map((service) => (
+              <li key={service.slug}>
+                <Link
+                  href={`/servicios/${service.slug}`}
+                  className="hover:text-brand-blue"
+                >
+                  {serviceItems[service.index].title}
                 </Link>
               </li>
             ))}
