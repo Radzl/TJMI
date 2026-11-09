@@ -121,6 +121,23 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       className={`${body.variable} ${display.variable} h-full`}
+      /* **Obligatorio desde que el script de la cabecera marca el `<html>`.**
+         Ese script pone `data-cookies="hecho"` **antes** de que React hidrate,
+         así que React se encuentra en el `<html>` un atributo que él no había
+         renderizado y avisa: «A tree hydrated but some attributes of the
+         server rendered HTML didn't match the client properties».
+
+         Se cazó en el aviso «1 Issue» de las herramientas de Next, y medido
+         aparecía en **todas** las páginas y **solo cuando ya había cookie**,
+         que es justo cuando el script hace algo. La portada sin cookie daba
+         cero.
+
+         Esto silencia el aviso **de este elemento y de su texto directo, nada
+         más**: cualquier descuadre de verdad más adentro sigue avisando. Es
+         el mismo apaño que usa `next-themes` y por el mismo motivo —un script
+         que decide algo antes de pintar tiene que tocar el `<html>`, y el
+         `<html>` lo renderiza React—. */
+      suppressHydrationWarning
     >
       <head>
         {/* **Lo único que bloquea en esta cabecera, y se gana el sitio.**

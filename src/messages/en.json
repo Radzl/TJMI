@@ -15,7 +15,8 @@
     "closeMenu": "Close menu",
     "language": "Language",
     "skipToContent": "Skip to content",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "coverage": "Coverage"
   },
   "hero": {
     "eyebrow": "National and international transport",
@@ -315,7 +316,8 @@
       }
     ],
     "railFrom": "Castellón",
-    "railTo": "Madrid"
+    "railTo": "Madrid",
+    "coverageLink": "See the full coverage"
   },
   "cta": {
     "title": "Tell us what you need to move",
@@ -488,6 +490,86 @@
       ],
       "crumb": "About us",
       "seoDescription": "Transportes José María Ibáñez has spent forty years moving palletised freight between Castellón and Madrid, with its own warehouses in Almazora and Fuenlabrada."
+    },
+    "coverage": {
+      "title": "Where we collect and where we deliver",
+      "intro": "A daily corridor between Castellón and Madrid, and from it, coverage across the rest of Spain and the European Union.",
+      "crumb": "Coverage",
+      "seoTitle": "Coverage: Castellón ⇄ Madrid and the rest of Spain",
+      "seoDescription": "We collect in more than 150 towns across the province of Castellón and deliver in Madrid and the surrounding area within 24 hours. From there, the rest of Spain and the EU.",
+      "facts": [
+        {
+          "value": "+150",
+          "label": "Collection points in Castellón"
+        },
+        {
+          "value": "420 km",
+          "label": "Each way, every working day"
+        },
+        {
+          "value": "24 h",
+          "label": "Delivery in Madrid"
+        }
+      ],
+      "areasTitle": "How far we go",
+      "areasIntro": "The daily route is the backbone, and everything else grows out of it: it all goes through one of our two warehouses.",
+      "areas": [
+        {
+          "name": "Castellón ⇄ Madrid, every day",
+          "detail": "Our own corridor, both ways, every working day.",
+          "points": [
+            "Collection in more than 150 towns across the province of Castellón.",
+            "420 km along the A-3, with no transfers and no middlemen.",
+            "What we load today is delivered tomorrow, and the other way round."
+          ]
+        },
+        {
+          "name": "Madrid and neighbouring provinces",
+          "detail": "We distribute from our own warehouse in Fuenlabrada, not from someone else’s hub.",
+          "points": [
+            "Door-to-door delivery across the Madrid region.",
+            "Nearby provinces on the same daily departure.",
+            "Delivery notice and shipment tracking."
+          ]
+        },
+        {
+          "name": "Rest of Spain",
+          "detail": "Outside the daily corridor we run scheduled departures from Almazora.",
+          "points": [
+            "Departures to national destinations from our Almazora warehouse.",
+            "Groupage or full truckload depending on volume.",
+            "Over 4,000 m² of our own warehousing to pace the departures."
+          ]
+        },
+        {
+          "name": "European Union",
+          "detail": "For European customers, from the same origin and with a single point of contact.",
+          "points": [
+            "Groupage and full truckload for the European Union.",
+            "Transport paperwork prepared by us (CMR, delivery notes).",
+            "A single point of contact for the whole journey."
+          ]
+        }
+      ],
+      "townsTitle": "The whole province of Castellón",
+      "townsIntro": "Collection reaches more than 150 towns across the province, which is practically all of it. These are the ones in the tile cluster, where we pass through every day:",
+      "towns": [
+        "Almazora",
+        "Castellón de la Plana",
+        "Onda",
+        "Vila-real",
+        "L'Alcora",
+        "Nules",
+        "Betxí",
+        "Borriol",
+        "Burriana",
+        "La Vall d’Uixó",
+        "Alquerías del Niño Perdido",
+        "Sant Joan de Moró"
+      ],
+      "townsNote": "Don’t see yours? Just ask: if it’s in the province, chances are we already go there.",
+      "sitesTitle": "The two warehouses",
+      "sitesIntro": "Nobody else gets involved between one and the other. They are ours, and that is why goods come in and go out when they need to."
     },
     "contact": {
       "title": "Ask for a quote",

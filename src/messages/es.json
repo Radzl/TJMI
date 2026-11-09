@@ -15,7 +15,8 @@
     "closeMenu": "Cerrar menú",
     "language": "Idioma",
     "skipToContent": "Saltar al contenido",
-    "faq": "Preguntas frecuentes"
+    "faq": "Preguntas frecuentes",
+    "coverage": "Cobertura"
   },
   "hero": {
     "eyebrow": "Transporte nacional e internacional",
@@ -315,7 +316,8 @@
       }
     ],
     "railFrom": "Castellón",
-    "railTo": "Madrid"
+    "railTo": "Madrid",
+    "coverageLink": "Ver la cobertura completa"
   },
   "cta": {
     "title": "Cuéntanos qué necesitas mover",
@@ -488,6 +490,86 @@
       ],
       "crumb": "Nosotros",
       "seoDescription": "Transportes José María Ibáñez lleva cuarenta años moviendo mercancía paletizada entre Castellón y Madrid, con nave propia en Almazora y en Fuenlabrada."
+    },
+    "coverage": {
+      "title": "Dónde recogemos y dónde entregamos",
+      "intro": "Un corredor diario entre Castellón y Madrid, y desde él, cobertura en el resto de España y en la Unión Europea.",
+      "crumb": "Cobertura",
+      "seoTitle": "Cobertura: Castellón ⇄ Madrid y resto de España",
+      "seoDescription": "Recogemos en más de 150 localidades de la provincia de Castellón y entregamos en Madrid y alrededores en 24 horas. Desde ahí, resto de España y Unión Europea.",
+      "facts": [
+        {
+          "value": "+150",
+          "label": "Localidades de recogida en Castellón"
+        },
+        {
+          "value": "420 km",
+          "label": "Por trayecto, cada día laborable"
+        },
+        {
+          "value": "24 h",
+          "label": "Entrega en Madrid"
+        }
+      ],
+      "areasTitle": "Hasta dónde llegamos",
+      "areasIntro": "La ruta diaria es el eje, y lo demás sale de ella: todo pasa por una de nuestras dos naves.",
+      "areas": [
+        {
+          "name": "Castellón ⇄ Madrid, cada día",
+          "detail": "El corredor de la casa, en los dos sentidos y todos los días laborables.",
+          "points": [
+            "Recogida en más de 150 localidades de la provincia de Castellón.",
+            "420 km por la A-3, sin transbordos y sin intermediarios.",
+            "Lo que se carga hoy se entrega mañana, y al revés."
+          ]
+        },
+        {
+          "name": "Madrid y provincias colindantes",
+          "detail": "Repartimos desde nuestra propia nave de Fuenlabrada, no desde una plataforma ajena.",
+          "points": [
+            "Entrega puerta a puerta en la Comunidad de Madrid.",
+            "Provincias cercanas con la misma salida diaria.",
+            "Aviso de entrega y seguimiento del envío."
+          ]
+        },
+        {
+          "name": "Resto de España",
+          "detail": "Fuera del corredor diario trabajamos con salidas programadas desde Almazora.",
+          "points": [
+            "Salidas a destinos nacionales desde nuestra nave de Almazora.",
+            "Grupaje o camión completo según el volumen.",
+            "Más de 4.000 m² de almacenaje propio para regular las salidas."
+          ]
+        },
+        {
+          "name": "Unión Europea",
+          "detail": "Para clientes europeos, con el mismo origen y un solo interlocutor.",
+          "points": [
+            "Grupaje y camión completo para la Unión Europea.",
+            "Documentación de transporte preparada por nosotros (CMR, albaranes).",
+            "Un único interlocutor para todo el trayecto."
+          ]
+        }
+      ],
+      "townsTitle": "La provincia de Castellón, entera",
+      "townsIntro": "La recogida llega a más de 150 localidades de la provincia, que es prácticamente toda. Estas son las del clúster azulejero, donde pasamos cada día:",
+      "towns": [
+        "Almazora",
+        "Castellón de la Plana",
+        "Onda",
+        "Vila-real",
+        "L'Alcora",
+        "Nules",
+        "Betxí",
+        "Borriol",
+        "Burriana",
+        "La Vall d’Uixó",
+        "Alquerías del Niño Perdido",
+        "Sant Joan de Moró"
+      ],
+      "townsNote": "¿No ves la tuya? Pregúntanos: si está en la provincia, lo más probable es que ya pasemos por allí.",
+      "sitesTitle": "Las dos naves",
+      "sitesIntro": "Entre una y otra no interviene nadie más. Son nuestras, y por eso la mercancía entra y sale cuando hace falta."
     },
     "contact": {
       "title": "Pide presupuesto",

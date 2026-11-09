@@ -1,4 +1,5 @@
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import Container from '@/components/ui/Container';
 import CountUp from '@/components/ui/CountUp';
 import SectionHeading from '@/components/ui/SectionHeading';
@@ -81,9 +82,25 @@ export default function Route() {
           ))}
         </ul>
 
-        <p className="mt-12 font-display text-sm uppercase tracking-widest text-brand-blue">
-          {t('sites')}
-        </p>
+        {/* **La línea de las sedes y el enlace a la cobertura, en la misma
+            fila.** Las cuatro frases de arriba son un resumen, y un resumen
+            sin salida se lee como todo lo que hay. La página entera cuenta
+            hasta dónde llega cada nivel, con qué nave y en cuánto tiempo.
+
+            Van al lado y no uno debajo del otro: son dos renglones cortos y
+            apilados dejaban dos líneas sueltas al pie de una sección que ya
+            es larga. */}
+        <div className="mt-12 flex flex-wrap items-baseline gap-x-6 gap-y-3">
+          <p className="font-display text-sm uppercase tracking-widest text-brand-blue">
+            {t('sites')}
+          </p>
+          <Link
+            href="/cobertura"
+            className="font-display text-sm uppercase tracking-widest text-brand-red-ink transition-colors hover:text-brand-blue"
+          >
+            {t('coverageLink')}
+          </Link>
+        </div>
       </Container>
     </section>
   );

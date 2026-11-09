@@ -16,6 +16,7 @@ export const SITE_PATHS = [
   // añadir un servicio allí lo mete en el sitemap sin tocar nada aquí.
   ...SERVICE_PATHS,
   '/nosotros',
+  '/cobertura',
   '/blog',
   '/faq',
   '/contacto',

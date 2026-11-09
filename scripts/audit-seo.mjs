@@ -33,6 +33,7 @@ const RUTAS = [
   '/servicios/picking',
   '/servicios/contenedores',
   '/nosotros',
+  '/cobertura',
   '/blog',
   '/faq',
   '/contacto',

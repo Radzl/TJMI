@@ -927,6 +927,36 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - Van separados por filete y **no por viñetas**: una viñeta a la derecha, en las filas en espejo, cuelga del lado que no es. El filete funciona en los dos sentidos.
 - **Si añades un servicio son tres sitios**: el texto en `messages.services.items` —con sus tres `highlights`—, la foto en `content/media.ts` y la entrada en `content/services.ts`. El sitemap lo recoge solo, porque `lib/seo.ts` lee esa lista.
 
+## La página de cobertura (`/cobertura`)
+
+- **«Rutas y cobertura» vivía solo como sección de la portada**, o sea cuatro frases de una línea a once pantallas de scroll de la cabecera. Dicho de otra forma: la web no competía por **ninguna** búsqueda de cobertura, que es justo lo que teclea un cliente —«transporte Castellón Madrid», «recogida de palés en Onda», «envío a Madrid desde Castellón»—. Es el mismo razonamiento que partió `/servicios` en seis páginas: **una página con seis cosas compite por una búsqueda; seis páginas compiten por seis.**
+- Y no es una página de relleno: el corredor diario **es** el producto de esta empresa. Hasta ahora lo contaba el 3D, que no lee Google, y cuatro renglones al final de la portada.
+
+### De dónde sale el contenido, que es la parte delicada
+
+- **De cosas ya publicadas, no de afirmaciones nuevas.** Los cuatro niveles salen de `route.coverage`; los tres puntos de cada uno, de los `includes` de los servicios; las paradas del mapa, de `route.mapStops`. Ni una afirmación nueva sobre la empresa.
+- **Y no repite lo que ya dice otra página.** Dos páginas con el mismo contenido compiten entre ellas, que es lo que se corrigió al acortar el listado de servicios. Aquí no se cuenta qué es el grupaje: se cuenta **hasta dónde llega**.
+- **La excepción, y hay que confirmarla con el cliente: la lista de localidades.** La web ya publica «+150 localidades de recogida en la provincia de Castellón», y la provincia tiene 135 municipios, así que ese número solo cuadra si se cuenta prácticamente toda la provincia y sus pedanías. Sobre esa base se nombran doce del clúster azulejero —Almazora, Castellón, Onda, Vila-real, l’Alcora, Nules, Betxí, Borriol, Burriana, la Vall d’Uixó, Alquerías, Sant Joan de Moró— con un «entre ellas» por delante y un «¿no ves la tuya? pregúntanos» por detrás. **Es el texto de esta web que más fácil puede estar mal, y es el primero que hay que enseñarle al cliente.**
+
+### Las decisiones de maquetación
+
+- **El mapa de la ruta es el mismo componente de la portada** (`RouteMap`). Repetir el componente no es repetir contenido: lo que posiciona es el texto de alrededor, que aquí es otro, y esa pieza explica el corredor sin una palabra de más.
+- **Los cuatro ámbitos van en rejilla pegada con filete**, como la banda de cifras y las sedes, y no en tarjetas con marco: cuatro tarjetas convertirían cuatro ámbitos en cuatro productos, y no lo son —son el mismo servicio llegando más o menos lejos—.
+- **Las localidades van como etiquetas**, el mismo recurso que las del bloque destacado de Servicios. Son nombres sueltos, no frases: en columna darían una lista de doce renglones de dos palabras.
+- **Aquí no va `Sites`**, aunque haya un bloque de sedes. Aquel componente monta el hueco del mapa, que arrastra el consentimiento de cookies y un bloque alto por sede. En esta página las naves son un dato de cobertura —de dónde sale y dónde llega—, no una invitación a visitarlas: para eso está `/contacto`.
+
+### Cómo se llega, y por qué no desde el menú
+
+- **Desde el pie**, que va en todas las páginas, y **desde la propia sección de cobertura de la portada**, con un enlace al lado de la línea de las dos sedes. Un resumen sin salida se lee como todo lo que hay.
+- **No desde el menú.** Son ya cinco entradas, y una sexta en condensada y versales empieza a apretar en portátiles. El pie es enlazado de sitio completo igualmente, que es lo que importa.
+- **Si añades otra página, son tres sitios**: `SITE_PATHS` en `lib/seo.ts` (o no entra en el sitemap), la lista `RUTAS` de `scripts/audit-seo.mjs` (o el arnés no la mira — ya pasó: auditaba 30 páginas con 32 publicadas) y el pie.
+
+### El aviso «1 Issue» que salió al mirarla
+
+- La página salió bien a la primera, pero la captura enseñó el aviso de las herramientas de Next. Era un **descuadre de hidratación**, y no era de esta página: medido, salía en **todas** y **solo cuando ya había cookie de consentimiento**.
+- La causa es el script de la cabecera: pone `data-cookies="hecho"` en el `<html>` **antes** de que React hidrate, así que React se encuentra un atributo que él no había renderizado. Se arregla con `suppressHydrationWarning` en el `<html>`, que es el apaño que usa `next-themes` y por el mismo motivo —un script que decide algo antes de pintar tiene que tocar el `<html>`, y el `<html>` lo renderiza React—.
+- Silencia **ese elemento y su texto directo, nada más**: cualquier descuadre de verdad más adentro sigue avisando.
+
 ## La calculadora de palés: quitada
 
 - **Estuvo en `/blog/calculadora-palets` y la quitó el cliente.** Contestaba
@@ -1439,7 +1469,7 @@ Esto se auditó midiendo el HTML que de verdad se sirve en las 32 páginas (16 r
 ### Lo que ya estaba bien y no se toca
 
 - `src/app/sitemap.ts` genera `/sitemap.xml` y `src/app/robots.ts` el `/robots.txt`. Van fuera de `[locale]` a propósito: el proxy de idiomas no las toca porque su filtro deja fuera todo lo que lleva punto en el nombre. Son 52 URL: 16 rutas fijas y 10 artículos, por dos idiomas.
-- **Si añades una página, añádela a `SITE_PATHS` en `src/lib/seo.ts`** o no entrará en el sitemap. Dos excepciones, que se sacan solas: los artículos del blog salen de `content/blog.ts` y las seis páginas de servicio de `content/services.ts`.
+- **Si añades una página, son tres sitios**: `SITE_PATHS` en `src/lib/seo.ts` (o no entra en el sitemap), la lista `RUTAS` de `scripts/audit-seo.mjs` (o el arnés no la mira — ya pasó con `/cobertura`: auditaba 30 páginas con 32 publicadas) y el pie, que es el enlazado interno. Dos excepciones, que se sacan solas: los artículos del blog salen de `content/blog.ts` y las seis páginas de servicio de `content/services.ts`.
 - **Canonical y hreflang** (`pageAlternates`) correctos en las 32 páginas, con `x-default` al español.
 - **Un solo `h1` por página** en las 32, y **ninguna imagen sin `alt`**.
 - Las direcciones inventadas devuelven **404 de verdad**, no un 200 vacío. Comprobado en `/es/loquesea`, `/es/servicios/no-existe` y `/es/blog/no-existe`. La raíz redirige a `/es` y `/es/` redirige a `/es`.
