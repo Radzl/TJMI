@@ -978,6 +978,40 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - **Ahora mismo no hay fotos de portada y es a propósito**: las añadirá el cliente más adelante. El campo `cover` sigue existiendo pero es **opcional**, y todo lo que lo usaba sabe apañarse sin él: el listado se queda sin columna de foto (el titular pasa de seis a nueve columnas), el artículo abre directamente con el texto, y Open Graph y el marcado `Article` **omiten la imagen** en vez de apuntar a un archivo que no existe. El día que lleguen las fotos basta con rellenar `cover`.
 - Los temas se eligen por **búsqueda real, no por lucimiento**: medidas y peso de un palé, metros lineales, cuánto cuesta enviar un palé a Madrid, qué cubre el seguro de transporte y cuándo compensa un almacén regulador. Todos responden a algo que un cliente teclea de verdad y todos acaban donde acaba el negocio: la ruta Castellón ⇄ Madrid y el azulejo.
 - Las fechas van repartidas por el año y **nunca en el futuro**: un artículo fechado mañana se lee como un error y los buscadores lo tratan como tal.
+## Seguridad de la cabecera (`next.config.ts`)
+
+- **No había ninguna cabecera de seguridad.** Ese archivo tenía once líneas y lo único que hacía era apagar el distintivo de desarrollo. Sin `frame-ancestors`, cualquiera puede meter esta web dentro de un iframe y hacerla pasar por suya: es el fraude más barato que existe con la web de una empresa.
+- Van seis: `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` y `Strict-Transport-Security`.
+
+### La política se puede apretar porque esta web casi no tiene terceros
+
+Y eso no es casualidad, es la regla del proyecto. Comprobado antes de escribirla:
+
+- Las tipografías van por **`next/font/google`, que las descarga en el build y las sirve desde nuestro dominio**. No hay ni una petición a Google en tiempo de ejecución, así que `font-src` no se abre.
+- El 3D monta su `Environment` con `Lightformer` dentro de la escena, no con un HDRI descargado.
+- **El único tercero es el iframe de Google Maps**, y solo existe en el DOM cuando hay consentimiento. De ahí el `frame-src`.
+
+Lo que sí hay que abrir, con el motivo:
+
+- **`'unsafe-inline'` en scripts**: Next inyecta scripts en línea para la hidratación. Quitarlo pide nonces por petición, o sea pasar todo por el proxy y renunciar al prerenderizado estático de las 30 páginas. No compensa.
+- **`'unsafe-inline'` en estilos**: Tailwind y Next escriben estilos en línea. El riesgo es mucho menor que en scripts.
+- **`'unsafe-eval'` y `ws:` solo en desarrollo**, que son el recargado en caliente. En producción no se abren.
+
+### `connect-src` es el que rompe el 3D, y no se ve venir
+
+- Con `connect-src 'self'` a secas **el 3D no arranca**. `GLTFLoader` saca las texturas de los GLB **creando un blob por cada una y pidiéndolas con `fetch`**, así que el navegador las bloquea una a una («Couldn't load texture blob:...») y el lienzo se queda sin montar, a 300 px.
+- **Se vio leyendo la consola, no mirando la página**: la portada seguía pintándose entera —navbar, titular, textos— y el fallo era que detrás no había nada. Una cabecera escrita sin comprobar habría llegado a producción con el 3D muerto, que es lo único que esta web tiene y la competencia no.
+- La política lleva `blob:` en `img-src`, `worker-src` **y `connect-src`**.
+- **Cómo se comprueba, y son cuatro vías**: que las cabeceras se sirvan (`curl -sI`), que el canvas monte a su tamaño real y no a 300 px, que **una pestaña nueva** no dé ni un error en consola —en la misma pestaña quedan los del cargue anterior y engañan— y que `check:3d` siga a 0,00 %.
+
+## Comprobaciones automáticas (`.github/workflows/comprobaciones.yml`)
+
+- **No había CI.** `lint`, `build`, `check:fotos`, `check:seo` y `check:3d` solo se lanzaban a mano, o sea cuando alguien se acordaba.
+- Entran los que no necesitan nada más que Node: **`lint`, `check:fotos`, `build` y `npm audit`**. El audit mira **solo producción**: una vulnerabilidad en una herramienta de desarrollo no la sufre el visitante.
+- **`check:3d` y `check:seo` no entran**, y es decisión. Los dos necesitan un servidor levantado, y el visual además un Chrome y las referencias versionadas: en una máquina distinta a la de las capturas las diferencias de renderizado darían falsos fallos, y un arnés que salta solo se deja de mirar a la tercera. Siguen siendo una puerta local.
+- **`check:fotos` informa pero no bloquea** (`continue-on-error`), y también es decisión: hoy ya falla, porque tres de las ocho fotos son verticales en huecos apaisados, y eso lo arregla el cliente mandando archivos. Una comprobación que nace en rojo y seguirá en rojo durante semanas enseña a ignorar el aviso. **Cuando lleguen las fotos buenas, se quita esa línea y pasa a bloquear.**
+- El build de la CI va **sin `--webpack`** y en Linux, así que comprueba de paso la compilación que hará el servidor de producción.
+
 ## Cookies y consentimiento (obligatorio)
 - **Nada de terceros se carga antes del consentimiento.** Si añades un servicio externo (analítica, píxel, vídeo incrustado, fuentes de terceros), va detrás del gate, no suelto.
 - El estado vive en `src/lib/consent.ts`: cookie propia `tjmi_consent` (12 meses) con la fecha y la versión. Se lee con `useConsent()` (usa `useSyncExternalStore`, no `useState` en efectos).
@@ -1259,11 +1293,12 @@ src/
 public/models/          *.glb
 ```
 
-## Servidor de desarrollo en este equipo
+## Servidor de desarrollo: Turbopack ya funciona
 
-- Windows (Control de aplicaciones) está **bloqueando el binario nativo de Next** (@next/swc-win32-x64-msvc). Next cae a WASM y entonces **Turbopack no arranca**, así que npm run dev muere con código 1.
-- Mientras eso siga así hay que usar **webpack**: npx next dev --webpack (hay una entrada transportes-jmi-webpack en .claude/launch.json) y npx next build --webpack.
-- No es cosa del proyecto, es una política del equipo. Lo que toca de verdad es desbloquear ese archivo, no quedarse en webpack para siempre.
+- **Durante mucho tiempo este proyecto fue con `--webpack`**, porque Control de Aplicaciones de Windows bloqueaba el binario nativo de Next (`@next/swc-win32-x64-msvc`), Next caía a WASM y entonces Turbopack no arrancaba: `npm run dev` moría con código 1.
+- **Con Next 16.4.5 arranca.** Comprobado: `next dev` levanta en **300 ms** y `next build` compila en **514 ms**, contra los ~800 ms y los 8,6 s de webpack. Y lo que de verdad importaba: el arnés visual da **0,00 % en las quince tomas** compilado con Turbopack, así que la escena sale idéntica.
+- Se han quitado todas las banderas: la entrada `transportes-jmi-webpack` de `.claude/launch.json` y los mensajes de `check-3d.mjs` y `audit-seo.mjs` que mandaban levantar el servidor con ella. **Los comandos son `npm run dev` y `npm run build`, sin más.**
+- Si algún día vuelve a fallar, el síntoma es el mismo de siempre —muere con código 1 nada más arrancar— y el apaño sigue siendo `--webpack`. Pero no se vuelve a eso sin comprobar antes que es eso.
 
 ## Forma de trabajar (para el agente)
 - Trabaja por fases (ver abajo). Antes de programar una fase, propone un plan breve y espera confirmación.

@@ -8,7 +8,7 @@
 // campo a campo entre capas: si una página no lo define, hereda el del layout
 // entero.
 //
-// Necesita el servidor levantado (`npx next dev --webpack`). Si escucha en
+// Necesita el servidor levantado (`npm run dev`). Si escucha en
 // otro puerto: `SEO_BASE=http://localhost:3001 npm run check:seo`.
 //
 // Sin librerías de parseo: expresiones regulares sobre el HTML, que para
@@ -73,7 +73,7 @@ for (const locale of ['es', 'en']) {
     } catch {
       console.error(
         `\n  No hay nadie escuchando en ${BASE}.\n` +
-          '  Levanta el servidor con `npx next dev --webpack`, o pasa el\n' +
+          '  Levanta el servidor con `npm run dev`, o pasa el\n' +
           '  puerto: SEO_BASE=http://localhost:3001 npm run check:seo\n',
       );
       process.exit(1);

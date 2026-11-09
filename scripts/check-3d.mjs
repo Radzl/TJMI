@@ -38,7 +38,8 @@
 //
 // `playwright-core` y no `playwright`: el segundo se descarga su propio
 // Chromium al instalarlo, y en este equipo Control de aplicaciones de Windows
-// ya bloquea binarios (es el motivo de que el proyecto vaya con `--webpack`).
+// ya bloquea binarios, y durante un tiempo eso obligo a compilar con
+// `--webpack`. Ya no: con Next 16.4.5 Turbopack arranca.
 // `playwright-core` no descarga nada y se le dice que use el Chrome que ya
 // está instalado.
 //
@@ -356,7 +357,7 @@ async function main() {
       } catch {
         throw new Error(
           `No hay nadie escuchando en ${BASE_URL}.\n` +
-            'Levanta el servidor antes:  npx next dev --webpack',
+            'Levanta el servidor antes:  npm run dev',
         );
       }
 

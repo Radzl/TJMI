@@ -1,0 +1,71 @@
+# Comprobaciones automáticas en cada subida.
+#
+# Hasta ahora `lint`, `build`, `check:fotos`, `check:seo` y `check:3d` solo se
+# lanzaban a mano, o sea cuando alguien se acordaba. Esto es lo mínimo que
+# tiene que pasar siempre.
+#
+# Qué entra y qué no, y por qué:
+#
+# - `lint` y `build` entran: no necesitan nada más que Node.
+# - `check:fotos` entra: lee las cabeceras de los JPEG a mano, sin navegador
+#   ni servidor. Es el que avisa de una foto ampliada al triple.
+# - `npm audit` entra, y **solo mira producción**: una vulnerabilidad en una
+#   herramienta de desarrollo no la sufre el visitante.
+# - `check:3d` y `check:seo` **no entran, de momento**. Los dos necesitan un
+#   servidor levantado, y el visual además un Chrome y las referencias
+#   versionadas: en una máquina distinta a la de las capturas, las diferencias
+#   de renderizado darían falsos fallos y el aviso se dejaría de mirar a la
+#   tercera, que es como muere un arnés. Siguen siendo una puerta local.
+#
+# El build va **sin `--webpack`**, al revés que en local. Aquí no está el
+# bloqueo de Control de Aplicaciones de Windows que obliga a usarlo, así que
+# esto comprueba de paso que la compilación normal —la que hará el servidor de
+# producción— también pasa.
+
+name: Comprobaciones
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+
+      # `npm ci` y no `npm install`: instala exactamente lo que dice
+      # `package-lock.json`, así que lo que se comprueba aquí es lo mismo que
+      # hay en el disco de quien subió el cambio.
+      - name: Instalar
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # **Informa, no bloquea**, y esto es deliberado: hoy ya falla, porque
+      # tres de las ocho fotos son verticales metidas en huecos apaisados y
+      # eso lo arregla el cliente mandando archivos, no nadie tocando código.
+      # Una comprobación que nace en rojo y seguirá en rojo durante semanas
+      # enseña a ignorar el aviso, que es como muere un arnés. Cuando lleguen
+      # las fotos buenas, se quita esta línea y pasa a bloquear.
+      - name: Comprobar las fotos
+        run: npm run check:fotos
+        continue-on-error: true
+
+      - name: Compilar
+        run: npx next build
+
+      # Va al final y no corta la compilación: una vulnerabilidad nueva
+      # aparece sin que nadie toque el código, y lo que hace falta es
+      # enterarse, no quedarse sin poder subir nada.
+      - name: Vulnerabilidades en producción
+        run: npm audit --omit=dev --audit-level=high
