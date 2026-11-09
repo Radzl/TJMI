@@ -426,9 +426,24 @@ Heredó 0,78 → 1 con 12,5 m y **a 0,90 la carretilla seguía en cuadro**. El p
 - **Va FUERA del grupo del modelo**, igual que en la grúa y por lo mismo: ahí dentro hay un `scale` de 1,35 y la figura saldría un 35 % más alta, o sea un conductor de 1,55 m sentado.
 - El rotativo baja de 4,35 m a **2,05**: estaba a la altura de la cabina de la grúa, que mide el doble.
 
-### Un aviso que salió al pasar y no se ha tocado
+### El aviso que salió al pasar, y que era verdad: las pilas estaban enterradas
 
-`GROUND_Y` era «la altura del centro del lote apoyado en el suelo» y la usaba la grúa para saber de dónde recogerlo. Pero **las pilas de contenedores del patio también tiraban de ella** como altura de apoyo, y un contenedor no mide lo que un lote de palés: su media altura es `CONTAINER.height / 2`, no `PALLET_LOAD.height / 2`. O coinciden por casualidad, o las pilas llevan tiempo un pelo hundidas o flotando. Se ha renombrado a **`PILE_BASE_Y`** con el valor exacto que tenía y el aviso escrito: cambiarlo mueve el decorado del encuadre de apertura y merece su propia pasada con el arnés delante.
+`GROUND_Y` era «la altura del centro del lote apoyado en el suelo» y la usaba la grúa para saber de dónde recogerlo. Pero **las pilas de contenedores del patio también tiraban de ella** como altura de apoyo, y un contenedor no mide lo que un lote de palés. Quedó renombrada a `PILE_BASE_Y` con el valor exacto que tenía y el aviso escrito. **Esta es la pasada que lo comprobó, y no coincidían:**
+
+| | alto | centro apoyado en el suelo |
+| --- | --- | --- |
+| lote de palés | 1,72 m | **0,860** |
+| contenedor | 2,45 m | **1,227** |
+
+- Con 0,860, la base de cada pila caía en **−0,367 m**: por debajo del suelo, **un 15 % del alto del contenedor**. Como el suelo lo tapa, no se veía como un fallo —se veía como contenedores un poco bajos—, que es la forma que tienen estas cosas de durar meses.
+- **Antes de arreglarlo había que saber dónde está el origen del modelo**, porque con la otra convención el arreglo sería justo al revés: `ContainerModel` compensa el centro del GLB con `RAW_CENTER` y pone el logo del techo en `+CONTAINER.height / 2`, así que **el origen es el centro**. Comprobado leyéndolo, no supuesto.
+- El suelo del patio está en `FLOOR_Y = 0.01`, así que apoyados en 0 quedan al ras: ese centímetro es el que separa el pavimento pintado del plano para que no se peleen.
+- `PILE_BASE_Y` **solo la usan las dos rejillas de pilas**, así que el arreglo no arrastra nada más.
+
+#### Lo que el arnés dijo, que es por qué el aviso pedía su propia pasada
+
+- Se mueven **tres tomas y las tres son del patio**: `grua-maniobra-pc` un 1,06 %, `patio-reposo-movil` un 0,84 % y `patio-reposo-pc`. Las otras doce, a 0,00 %.
+- **Ojo con `--update`: reescribe las quince aunque solo cambien tres.** Las tomas de carretera se buscan por kilómetro y no caen en el mismo píxel exacto, así que el archivo cambia aunque la imagen mida 0,00 % de diferencia. Si se dejan todas, el diff del commit dice que cambió media intro cuando cambió el patio. Lo que toca es **devolver las que medían 0,00 %** y volver a pasar el arnés para confirmar que sigue en verde.
 
 ### Lo que el arnés dijo del cambio
 

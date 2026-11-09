@@ -144,19 +144,32 @@ const STAGING_Z = -4.5;
 /**
  * Altura a la que se apoya el primer contenedor de cada pila.
  *
- * **Y aquí hay algo que huele mal, anotado al pasar por encima.** Esto se
- * llamaba `GROUND_Y` y era «la altura del centro del lote de palés apoyado en
- * el suelo»: lo usaba la grúa para saber de dónde recogerlo. Pero las pilas
- * de contenedores del patio **también** tiraban de ella como altura de apoyo,
- * y un contenedor no mide lo que un lote de palés: su media altura es
- * `CONTAINER.height / 2`, no `PALLET_LOAD.height / 2`.
+ * **Era `PALLET_LOAD.height / 2` y estaba mal: los contenedores llevaban
+ * tiempo enterrados 37 cm.**
  *
- * Que coincidan es casualidad, o no coinciden y las pilas llevan tiempo un
- * pelo hundidas o flotando. **No se toca ahora**: cambiarlo mueve el decorado
- * del encuadre de apertura y eso merece su propia pasada con el arnés
- * delante. Se deja el valor exacto que había y el aviso escrito.
+ * Esto se llamaba `GROUND_Y` y era «la altura del centro del lote de palés
+ * apoyado en el suelo»: lo usaba la grúa para saber de dónde recogerlo. Las
+ * pilas del patio tiraban de la misma constante como altura de apoyo, y un
+ * contenedor no mide lo que un lote de palés. Quedó anotado como sospecha y
+ * esta es la pasada que lo comprobó. Los números:
+ *
+ *   · lote de palés    1,72 m de alto → centro a **0,860**
+ *   · contenedor       2,45 m de alto → centro a **1,227**
+ *
+ * O sea que la base de cada pila caía en **−0,367 m**: por debajo del suelo,
+ * un 15 % del alto del contenedor. Como el suelo lo tapa, no se veía como un
+ * fallo —se veía como contenedores un poco bajos—, que es la forma que tienen
+ * estas cosas de durar meses.
+ *
+ * El origen del modelo **es su centro**, no su base: `ContainerModel`
+ * compensa el centro del GLB con `RAW_CENTER` y pone el logo del techo en
+ * `+CONTAINER.height / 2`. Comprobado antes de tocar nada, porque con la otra
+ * convención el arreglo habría sido justo al revés.
+ *
+ * **Y es la única cosa que usa esta constante** (las dos rejillas de pilas),
+ * así que no arrastra nada más.
  */
-const PILE_BASE_Y = PALLET_LOAD.height / 2;
+const PILE_BASE_Y = CONTAINER.height / 2;
 
 // Escena 0: la carretilla cruza el patio con el lote en las horquillas, se
 // acerca al primer plano y gira a la derecha hasta encarar la cola del camión.
