@@ -997,6 +997,15 @@ Lo que sí hay que abrir, con el motivo:
 - **`'unsafe-inline'` en estilos**: Tailwind y Next escriben estilos en línea. El riesgo es mucho menor que en scripts.
 - **`'unsafe-eval'` y `ws:` solo en desarrollo**, que son el recargado en caliente. En producción no se abren.
 
+### `wasm-unsafe-eval`: sin ella, en producción no hay 3D
+
+- **Esta cabecera ha roto el 3D dos veces, por dos directivas distintas, y las dos veces de la misma manera: pasando la comprobación en el sitio equivocado.**
+- `truck.glb` **requiere** `EXT_meshopt_compression` —lo declara en su propio `extensionsRequired`, se lee abriendo el archivo— y ese descompresor es **WebAssembly**. Con `script-src 'self' 'unsafe-inline'` el navegador lo bloquea: «Could not load /models/truck.glb: WebAssembly.instantiate() violates the following Content Security policy directive». Sin camión no hay escena, así que la página entera se iba al modo `sin3d` **en producción**.
+- **Y se coló porque `'unsafe-eval'` se abrió solo en desarrollo**, que es donde se comprobó que el 3D seguía funcionando. En desarrollo el wasm pasa por esa puerta; la cabecera de producción **no se había mirado nunca con la escena delante**.
+- La directiva que hace falta es la estrecha: **`'wasm-unsafe-eval'`**, que permite compilar WebAssembly y nada más —en particular **no** permite `eval()` de cadenas de JavaScript, que es el riesgo de verdad—. Va en producción también. La entienden Chrome 97+, Firefox 102+ y Safari 16.4+; uno más viejo la ignora, no abre wasm y cae en el respaldo `sin3d`, que para eso está.
+- **Cómo se cazó, que es lo que vale para la próxima**: no mirando la página —se pintaba entera— sino **leyendo la consola de una compilación de producción servida con `next start`**. Está en `tests/perf/medidas/motivo-sin3d.mjs`: carga la portada y imprime el aviso que `marcarSin3D()` deja siempre con el motivo. Si el 3D vuelve a no salir, ese guion lo dice en una línea.
+- **Regla que queda:** cualquier cambio en esta cabecera se comprueba contra `next start`, no contra `next dev`. Son dos políticas distintas a propósito, así que probar una no dice nada de la otra.
+
 ### `connect-src` es el que rompe el 3D, y no se ve venir
 
 - Con `connect-src 'self'` a secas **el 3D no arranca**. `GLTFLoader` saca las texturas de los GLB **creando un blob por cada una y pidiéndolas con `fetch`**, así que el navegador las bloquea una a una («Couldn't load texture blob:...») y el lienzo se queda sin montar, a 300 px.
@@ -1011,6 +1020,170 @@ Lo que sí hay que abrir, con el motivo:
 - **`check:3d` y `check:seo` no entran**, y es decisión. Los dos necesitan un servidor levantado, y el visual además un Chrome y las referencias versionadas: en una máquina distinta a la de las capturas las diferencias de renderizado darían falsos fallos, y un arnés que salta solo se deja de mirar a la tercera. Siguen siendo una puerta local.
 - **`check:fotos` informa pero no bloquea** (`continue-on-error`), y también es decisión: hoy ya falla, porque tres de las ocho fotos son verticales en huecos apaisados, y eso lo arregla el cliente mandando archivos. Una comprobación que nace en rojo y seguirá en rojo durante semanas enseña a ignorar el aviso. **Cuando lleguen las fotos buenas, se quita esa línea y pasa a bloquear.**
 - El build de la CI va **sin `--webpack`** y en Linux, así que comprueba de paso la compilación que hará el servidor de producción.
+
+## Rendimiento de la portada, medido en producción
+
+Todo lo de aquí sale de medir una **compilación de producción** servida con
+`next start`, no el servidor de desarrollo. Los guiones están en
+`tests/perf/medidas/` y el informe en `tests/perf/linea-base.md`.
+
+### Lo primero: la nota que había era falsa
+
+- La portada marcaba **58** de rendimiento en móvil, y era mentira: se estaba
+  midiendo **una página sin 3D**, porque la cabecera de seguridad bloqueaba el
+  wasm del camión y la escena no llegaba a montarse (ver «`wasm-unsafe-eval`»).
+  Sin 3D, el hilo principal casi no tiene trabajo.
+- Arreglada la cabecera, la nota honesta era **46**. O sea que la mejora
+  aparente de la pasada anterior era el precio de haber roto lo único que esta
+  web tiene y la competencia no.
+- **Lección, y es general:** una métrica que mejora de golpe sin que nadie haya
+  optimizado nada es sospechosa. Lo primero que hay que preguntarse no es
+  «cuánto he ganado», es **«qué ha dejado de ejecutarse»**.
+
+### El CLS de 0,383, que era el mismo fallo por otra puerta
+
+- Lighthouse señalaba **un único desplazamiento** que se llevaba 0,3827 de los
+  0,3830: la sección del índice aparecía a **508 px** del principio de la
+  página cuando, detrás de un hero de 420svh, tendría que estar a más de 3.400.
+- Medido con `tests/perf/medidas/cls.mjs`: al cargar, el hero medía 3.457 px
+  y el índice estaba a 3.538; asentada la página, el hero medía **427** y el
+  índice **508**. La página se encogía de 20.677 px a 14.059 **después del
+  primer pintado**.
+- Era el respaldo `sin3d` activándose —correctamente— al caerse la escena, solo
+  que **después de pintar**. Arreglada la cabecera: **0,3831 → 0,0003** en
+  móvil y 0,3912 → 0,0001 en escritorio.
+- **Lo que queda escrito de esto:** el modo `sin3d` cambia el alto de la página
+  en varias pantallas. Mientras la decisión se tome en JavaScript después de
+  pintar, activarlo **siempre** costará un CLS enorme a quien lo sufra. Hoy no
+  le pasa a casi nadie porque casi todo el mundo tiene WebGL; si algún día hay
+  que decidirlo antes, lee lo de abajo sobre scripts que bloquean.
+
+### El 3D no se carga hasta que el navegador tiene un hueco
+
+- Medido: el LCP tenía **5,7 s de «render delay»** sobre 0,45 de servidor, y
+  había **8.812 ms de evaluación de JavaScript**, con un trozo de 1,1 MB
+  —three, r3f, drei y el postprocesado— bloqueando casi un segundo.
+- `dynamic(..., { ssr: false })` ya partía ese trozo en un archivo aparte, pero
+  **no lo apartaba del momento crítico**: en cuanto React hidrata, el
+  componente se renderiza y el trozo se pide y se evalúa justo mientras la
+  portada intenta pintar su primera línea. Lo que hacía falta no era
+  separarlo, era **no renderizarlo todavía**.
+- Ahora `ExperienceCanvas` espera **lo primero de tres cosas**: que el
+  navegador diga que está libre (`requestIdleCallback`, y no antes del primer
+  pintado), que alguien toque la página, o un tope de 1.200 ms. Las tres hacen
+  falta: sin la segunda, quien baje el dedo enseguida entra en cuatro
+  pantallas de intro vacía; sin la tercera, una pestaña que no se queda quieta
+  nunca podría no montar la escena jamás.
+- **No cambia lo que ve el visitante**, y es lo que lo hace barato: el
+  `Preloader` vive **dentro** de `Experience`, así que ya hoy aparecía después
+  del primer pintado —sobre 1,5 s con red normal—. Lo que se mueve son unos
+  centenares de milisegundos de algo que ya pasaba en ese orden.
+- Resultado medido: evaluación de JavaScript **8.812 → 6.466 ms**, hilo
+  bloqueado **2.760 → 1.540 ms**, Speed Index 4,5 → 3,8 s. Y el arnés visual a
+  **0,00 % en las quince tomas**.
+- **El que no se puede diferir es GSAP**, y conviene saberlo antes de
+  intentarlo: lo importan **catorce** módulos repartidos por toda la página
+  —`ScrollFade`, `Backdrop`, `SmoothScroll`, `CountUp`, `RevealText`…—, así que
+  entra en el primer paquete haga lo que haga el 3D. Son 132 KB y, medido, la
+  tarea más larga de la carga (2.050 ms). Apartarlo pide refactorizar esos
+  catorce sitios, no una línea.
+
+### Fuera el cargador de Draco, que era una mina
+
+- drei trae `useDraco = true` por defecto en `useGLTF`, así que construye un
+  `DRACOLoader` y le apunta el descompresor a
+  **`https://www.gstatic.com/draco/...`**. Hoy no se dispara, porque ninguno de
+  los tres GLB usa esa extensión —se comprobó leyendo el `extensionsRequired`
+  de cada archivo—, pero el cargador entra en el paquete **y** queda una
+  petición a Google esperando el día que alguien comprima un modelo con Draco.
+  Eso va contra la regla de este proyecto de no cargar nada de terceros.
+- Los tres `useGLTF(MODEL)` y los tres `useGLTF.preload(MODEL)` llevan ahora un
+  `false` detrás. **Si añades un modelo, pónselo también.**
+
+### El banner de cookies era el elemento del LCP
+
+- **Es el bloque de texto más grande que se pinta en la portada**, así que es
+  el elemento que mide esa métrica. Y llevaba `useHydrated()` en su condición,
+  que vale `false` en el servidor: no existía en el HTML y aparecía **cuando
+  hidrataba la página entera**. Medido: **LCP de 5,8 s con 5,4 de «render
+  delay»**, cuando el primer pintado ya había ocurrido a los 0,9 s.
+- O sea que la peor métrica de la portada **no la causaba el 3D**: la causaba
+  un banner esperando a JavaScript para aparecer.
+- Ese `useHydrated()` estaba ahí por un motivo bueno, y no se puede quitar a
+  secas: en el servidor no se puede leer la cookie, así que un banner servido
+  en el HTML **le parpadearía en cada página a quien ya decidió**. Eso es peor
+  que tardar.
+- Lo que lo resuelve es tomar la decisión **antes del primer pintado**: el
+  banner sale en el HTML y un script que bloquea en la cabecera lee la cookie
+  —que es **propia**, así que no hay ninguna petición a nadie— y pone
+  `data-cookies="hecho"` en el `<html>`; el CSS lo esconde con eso.
+- **Comprobado en el primer pintado y con la hidratación bloqueada** (abortando
+  solo los `.js`, no los `.css`, que en Turbopack viven en la misma carpeta y
+  bloquear los dos da un falso fallo): primera visita → banner en el DOM y
+  visible; quien ya decidió → atributo puesto y banner invisible. Sin
+  parpadeo.
+- Vive en **`src/lib/consentCookie.ts`**, un archivo sin nada de React, porque
+  el layout es un componente de servidor y Next rechaza de plano importar algo
+  que dependa de `useSyncExternalStore`. `consent.ts` lo vuelve a exportar para
+  que el resto del proyecto no note la diferencia. El nombre de la cookie, la
+  versión, el atributo y el script salen **del mismo sitio**: con la cadena
+  copiada a mano, subir `CONSENT_VERSION` dejaría el script mirando la versión
+  vieja y **nadie volvería a preguntar**, que es justo lo que la AEPD exige que
+  no pase.
+- `useHydrated()` **sigue haciendo falta en `MapEmbed`**, y es otro caso: allí
+  lo que no puede existir antes de saberlo es un **iframe de Google**, y eso no
+  se arregla con CSS, porque un iframe escondido ya ha hecho la petición.
+
+### Un script que bloquea solo se gana el sitio si lo que pregunta es gratis
+
+Esta es la regla que sale de las dos decisiones de arriba, y están medidas las
+dos:
+
+| | cuesta | ¿va en la cabecera? |
+| --- | --- | --- |
+| leer una cookie propia | microsegundos | **sí** (el consentimiento) |
+| abrir el primer contexto WebGL | **1.277 ms** | **no** |
+
+El segundo número es el que importa y es el que no se ve venir: se midió con
+`tests/perf/medidas/sonda-webgl.mjs`, diez veces. La **primera** vez cuesta
+1.277 ms —es el proceso de la GPU arrancando— y las nueve siguientes 1,8 ms de
+mediana. O sea que mover la comprobación de WebGL a un script que bloquea
+habría cambiado 0,38 de CLS por **un segundo y cuarto de pantalla en blanco**.
+Se descartó antes de escribirlo.
+
+### Simulado contra frenado real: 50 contra 86
+
+- Con el modo por defecto de Lighthouse (`--throttling-method=simulate`) la
+  portada da **50**, con un LCP de 5,9 s. Con frenado **real**
+  (`--throttling-method=devtools`) da **86**, con un LCP de 2,0 s.
+- La diferencia no es ruido: el modo simulado **supone** que el párrafo del
+  banner no puede pintarse hasta que acabe todo el JavaScript que bloquea, y
+  medido eso no es verdad. Observando lo que declara el propio navegador con
+  la CPU a 1/4 (`tests/perf/medidas/lcp.mjs`), ese párrafo es el único
+  candidato a LCP y **se pinta a 1.420 ms, con el primer pintado**.
+- **Cuál es el bueno, para no discutirlo cada vez:** el objetivo del proyecto
+  es «Performance ≥ 80 en móvil» y hoy se cumple con frenado real. El número
+  simulado se apunta igual, porque es el que enseña PageSpeed Insights y es el
+  que va a ver el cliente si lo prueba.
+
+| | simulado | frenado real |
+| --- | --- | --- |
+| FCP | 0,9 s (100) | 2,0 s (85) |
+| LCP | 5,9 s (14) | **2,0 s (97)** |
+| CLS | 0 (100) | **0 (100)** |
+| hilo bloqueado | 1.580 ms (12) | 450 ms (63) |
+| Speed Index | 3,9 s (83) | 2,6 s (97) |
+| **nota** | **50** | **86** |
+
+### Lo que queda, por orden de lo que devolvería
+
+1. **Partir `Scene.tsx`**, que son 1.665 líneas y entra entero en el paquete
+   del 3D.
+2. **Que el postprocesado no viaje al móvil.** La viñeta está apagada por
+   debajo de 768 px desde hace tiempo, pero el módulo se descarga y se evalúa
+   igual.
+3. **GSAP**, que es la tarea más larga de la carga y hoy no se puede diferir
+   sin tocar catorce archivos.
 
 ## Accesibilidad: los dos fallos reales, arreglados
 

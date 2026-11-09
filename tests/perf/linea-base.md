@@ -9,6 +9,19 @@ sustos por juzgar a ojo —la viñeta llevaba meses montada **sin ejecutarse**, 
 las sombras de contacto igual—, y los dos se cazaron midiendo. Esto es el
 punto de partida contra el que comparar.
 
+
+> **Aviso de 9 de noviembre de 2026: esta línea base midió una página con el
+> 3D vivo, y las dos medidas siguientes no.** Entre medias se añadió la
+> cabecera de seguridad, y su `script-src` bloqueaba el wasm que descomprime
+> `truck.glb`: la escena no montaba y el hilo principal se quedaba casi vacío,
+> así que la nota **subía** sin que nadie hubiera optimizado nada. Está contado
+> en «Rendimiento de la portada, medido en producción» de `CLAUDE.md`. Al
+> comparar contra esta foto, comprueba antes que el 3D cargaba en las dos.
+>
+> También cambió el comando: ya no lleva `--webpack` (Turbopack funciona desde
+> Next 16.4.5) y los guiones de medida viven ahora en `tests/perf/medidas/`,
+> que **sí** se versiona.
+
 ## Cómo se reprodujo
 
 Contra una compilación de **producción**, no el servidor de desarrollo, que
@@ -189,3 +202,55 @@ del scroll, que está afinado y tiene su propia sección en `CLAUDE.md`.
   `/faq` como control sin 3D.
 - El contraste de ese `h3` a todas las alturas de scroll (ver arriba).
 - Las llamadas de dibujo del 3D, que se miden aparte y están en `CLAUDE.md`.
+
+---
+
+## 9 de noviembre de 2026: la portada, con el 3D vivo otra vez
+
+Medido sobre `npx next build` + `npx next start -p 3100` con Lighthouse 12,
+en móvil. Los guiones de apoyo están en `tests/perf/medidas/`.
+
+### Lo que pasó, en orden
+
+| | hilo bloqueado | CLS | nota |
+| --- | --- | --- | --- |
+| con el 3D roto por la CSP | 180 ms | 0,383 | 58 |
+| con el 3D vivo | 2.760 ms | 0 | 46 |
+| tras diferir el 3D y quitar Draco | **1.540 ms** | **0** | **51** |
+
+**El 58 era falso**: medía una página sin escena. El número honesto de
+partida era 46.
+
+### Simulado contra frenado real
+
+Mismo commit, misma máquina, mismo Lighthouse. Lo único que cambia es
+`--throttling-method`:
+
+| | `simulate` (por defecto) | `devtools` (frenado real) |
+| --- | --- | --- |
+| FCP | 0,9 s (100) | 2,0 s (85) |
+| LCP | 5,9 s (14) | **2,0 s (97)** |
+| CLS | 0 (100) | 0 (100) |
+| hilo bloqueado | 1.580 ms (12) | 450 ms (63) |
+| Speed Index | 3,9 s (83) | 2,6 s (97) |
+| **nota** | **50** | **86** |
+
+La diferencia no es ruido: el modo simulado **supone** que el párrafo del
+banner de cookies —que es el elemento del LCP— no puede pintarse hasta que
+acabe todo el JavaScript que bloquea. Medido con el observador del propio
+navegador y la CPU a 1/4 (`tests/perf/medidas/lcp.mjs`), ese párrafo es el
+único candidato a LCP y se pinta a **1.420 ms**, con el primer pintado.
+
+El objetivo del proyecto —«Performance ≥ 80 en móvil»— se cumple con frenado
+real. El número simulado se apunta igual, porque es el que enseña PageSpeed
+Insights.
+
+### Lo medido por su cuenta, sin Lighthouse
+
+| | antes | ahora | guion |
+| --- | --- | --- | --- |
+| CLS móvil | 0,3831 | **0,0003** | `medidas/cls.mjs` |
+| CLS escritorio | 0,3912 | **0,0001** | `medidas/cls.mjs` |
+| alto de página al asentarse | 20.677 → 14.059 px | **sin cambio** | `medidas/cls.mjs` |
+| primer contexto WebGL | — | **1.277 ms** | `medidas/sonda-webgl.mjs` |
+| arnés visual | — | **0,00 % en 15 tomas** | `npm run check:3d` |

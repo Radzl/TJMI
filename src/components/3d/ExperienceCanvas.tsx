@@ -1,11 +1,22 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useReducedMotion } from '@/lib/gsap';
 import { marcarSin3D, soportaWebGL } from '@/lib/sin3d';
 import Canvas3DBoundary from './Canvas3DBoundary';
 import ScrollChoreography from './ScrollChoreography';
+
+/**
+ * Tope de espera antes de montar la escena, en milisegundos.
+ *
+ * Es el seguro de `requestIdleCallback`: en una pestaña que no se queda
+ * quieta nunca puede no llegar jamás. Mismo criterio que el tope de 4 s del
+ * `Preloader`, solo que más corto, porque aquí no se está esperando a que
+ * descargue nada: se está esperando un hueco que normalmente llega en el
+ * primer cuadro libre.
+ */
+const TOPE_ARRANQUE = 1200;
 
 // Todo el 3D se carga solo en cliente: nada de WebGL en el render del servidor.
 const Experience = dynamic(() => import('./Experience'), { ssr: false });
@@ -70,7 +81,93 @@ export default function ExperienceCanvas() {
     }
   }, [reducedMotion, webgl]);
 
-  if (reducedMotion || webgl !== true) return null;
+  // **El 3D no se carga hasta que el navegador tiene un hueco libre.**
+  //
+  // Medido en una compilación de producción con el móvil frenado: el texto
+  // del hero tardaba **6,2 s** en pintarse, y de eso solo 0,45 era el
+  // servidor; los otros **5,7 s eran «render delay»**, o sea el párrafo
+  // esperando a que el hilo principal lo dejara pintar. Y lo que lo ocupaba
+  // son **8,8 s de evaluación de JavaScript**, con un solo trozo de 1,1 MB
+  // —three, r3f, drei y el postprocesado— que bloquea casi un segundo.
+  //
+  // `dynamic(..., { ssr: false })` ya parte ese trozo en un archivo aparte,
+  // pero **no lo aparta del momento crítico**: en cuanto React hidrata, el
+  // componente se renderiza y el trozo se pide y se evalúa, justo mientras la
+  // portada intenta pintar su primera línea. Lo que hace falta no es
+  // separarlo, es **no renderizarlo todavía**.
+  //
+  // El hueco se abre con **lo primero de tres cosas**, y las tres hacen
+  // falta:
+  //
+  //  1. Que el navegador diga que está libre (`requestIdleCallback`), y no
+  //     antes del primer pintado: de ahí los dos cuadros de espera. Sin
+  //     ellos, «libre» puede llegar antes de que se haya pintado nada y no se
+  //     gana nada.
+  //  2. **Que alguien toque la página.** Si se baja el dedo antes de que haya
+  //     hueco, la escena tiene que montarse ya: nadie debe entrar en cuatro
+  //     pantallas de intro vacía por esperar a que el hilo se calme.
+  //  3. **Un tope de tiempo.** Si la pestaña no se queda quieta nunca,
+  //     `requestIdleCallback` puede no llegar jamás. Mismo criterio que el
+  //     tope de 4 s del `Preloader`: un mecanismo que puede quedarse
+  //     esperando para siempre es peor que no tenerlo.
+  //
+  // **Esto no cambia lo que ve el visitante**, y es lo que lo hace barato: el
+  // `Preloader` vive dentro de `Experience`, así que ya hoy aparece **después**
+  // del primer pintado —sobre 1,5 s con red normal, está medido en
+  // `CLAUDE.md`—. Lo que se mueve son unos centenares de milisegundos de algo
+  // que ya pasaba en ese orden.
+  const [arrancado, setArrancado] = useState(false);
+
+  useEffect(() => {
+    if (reducedMotion || webgl !== true || arrancado) return;
+
+    const eventos = ['scroll', 'pointerdown', 'keydown'] as const;
+    let hecho = false;
+    let hueco: number | undefined;
+
+    const abrir = () => {
+      if (hecho) return;
+      hecho = true;
+      recoger();
+      setArrancado(true);
+    };
+
+    function recoger() {
+      window.clearTimeout(tope);
+      if (hueco !== undefined) {
+        if (typeof window.cancelIdleCallback === 'function') {
+          window.cancelIdleCallback(hueco);
+        } else {
+          window.clearTimeout(hueco);
+        }
+      }
+      for (const nombre of eventos) window.removeEventListener(nombre, abrir);
+    }
+
+    const tope = window.setTimeout(abrir, TOPE_ARRANQUE);
+    for (const nombre of eventos) {
+      window.addEventListener(nombre, abrir, { passive: true });
+    }
+
+    const pedirHueco = () => {
+      hueco =
+        typeof window.requestIdleCallback === 'function'
+          ? window.requestIdleCallback(abrir, { timeout: TOPE_ARRANQUE })
+          : window.setTimeout(abrir, 200);
+    };
+
+    // Dos cuadros: el primero es el que pinta, el segundo ya está después.
+    const cuadro = requestAnimationFrame(() =>
+      requestAnimationFrame(pedirHueco),
+    );
+
+    return () => {
+      cancelAnimationFrame(cuadro);
+      recoger();
+    };
+  }, [reducedMotion, webgl, arrancado]);
+
+  if (reducedMotion || webgl !== true || !arrancado) return null;
 
   return (
     <Canvas3DBoundary>

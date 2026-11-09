@@ -110,7 +110,7 @@ export const FORKLIFT = {
 };
 
 export default function ForkliftModel() {
-  const { scene } = useGLTF(MODEL);
+  const { scene } = useGLTF(MODEL, false);
 
   const model = useMemo(() => {
     const root = scene.clone(true);
@@ -149,4 +149,12 @@ export default function ForkliftModel() {
   );
 }
 
-useGLTF.preload(MODEL);
+// **Sin Draco, y el segundo argumento no es cosmético.** drei trae
+// `useDraco = true` por defecto, así que construye un `DRACOLoader` y le
+// apunta el descompresor a `https://www.gstatic.com/draco/...`: una
+// petición a Google esperando el día que alguien comprima un modelo con
+// Draco, y eso va contra la regla de este proyecto de no cargar nada de
+// terceros. Hoy no se dispara —ninguno de los tres GLB usa esa extensión;
+// el camión usa `EXT_meshopt_compression`, que lleva su propio wasm— pero
+// el cargador entra igual en el paquete. A `false` desaparecen las dos.
+useGLTF.preload(MODEL, false);

@@ -29,6 +29,27 @@
   }
 }
 
+/* ── El banner de cookies de quien ya decidió ─────────────────────────────
+
+   El banner **se sirve en el HTML**, porque esperar a React le costaba 5,8 s
+   de LCP a la portada: es el bloque de texto más grande que se pinta y por
+   tanto el elemento que mide esa métrica. Lo que impide que le parpadee a
+   quien ya eligió es esta regla, más el script que pone el atributo en el
+   `<html>` antes del primer pintado (ver `CONSENT_ATTRIBUTE` en
+   `lib/consent.ts`).
+
+   Va con `display: none` y no con opacidad ni con un desplazamiento: tiene
+   que salir del flujo y no capturar un solo clic, y tiene que estar decidido
+   antes de pintar, no animado después.
+
+   **Es solo el puente hasta que React hidrata.** En cuanto hidrata, el
+   componente ve la cookie y no devuelve el nodo, así que esta regla deja de
+   tener a quién esconder. Si alguna vez el banner deja de aparecer para
+   alguien que no ha decidido, el sospechoso es el atributo, no esto. */
+html[data-cookies='hecho'] [data-banner-cookies] {
+  display: none;
+}
+
 @theme {
   --color-brand-blue: #34548a;
   --color-brand-blue-dark: #27406b;

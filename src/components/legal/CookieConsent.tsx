@@ -10,7 +10,6 @@ import {
   onPreferencesRequested,
   saveConsent,
   useConsent,
-  useHydrated,
   type Choices,
 } from '@/lib/consent';
 
@@ -28,7 +27,6 @@ const buttonBase =
 export default function CookieConsent() {
   const t = useTranslations('cookies');
   const consent = useConsent();
-  const hydrated = useHydrated();
 
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Choices>(ALL_REJECTED);
@@ -97,15 +95,32 @@ export default function CookieConsent() {
     setOpen(false);
   };
 
-  // Hasta saber qué hay guardado no se pinta nada, para que el banner no le
-  // parpadee a quien ya decidió.
-  const showBanner = hydrated && consent === null && !open;
+  // **El banner sale en el HTML, y antes esperaba a la hidratación.**
+  //
+  // Llevaba `hydrated &&`, o sea «hasta saber qué hay guardado no se pinta
+  // nada», y el motivo era bueno: en el servidor no se puede leer la cookie,
+  // así que servirlo en el HTML le parpadearía a quien ya decidió. Lo que no
+  // se había medido es el precio: **este banner es el elemento del LCP de la
+  // portada** —es el bloque de texto más grande que se pinta— y esperar a
+  // React le costaba **5,8 s de LCP**, con 5,4 de ellos de puro «render
+  // delay», cuando el primer pintado ya había ocurrido a los 0,9 s.
+  //
+  // Ahora la decisión la toma el script de la cabecera (ver
+  // `CONSENT_ATTRIBUTE` en `lib/consent.ts`), que pone un atributo en el
+  // `<html>` **antes del primer pintado** y el CSS esconde el banner con él.
+  // Así el parpadeo sigue evitado y el banner se pinta con la página.
+  //
+  // `useHydrated()` sigue haciendo falta en `MapEmbed`, que es otro caso: allí lo
+  // que no puede existir antes de saberlo es un **iframe de Google**, y eso no
+  // se arregla con CSS porque un iframe escondido ya ha hecho la petición.
+  const showBanner = consent === null && !open;
 
   return (
     <>
       {showBanner && (
         <section
           aria-labelledby="cookie-banner-title"
+          data-banner-cookies=""
           className="fixed inset-x-0 bottom-0 z-[60] border-t border-line bg-white p-6 shadow-[0_-8px_32px_rgba(17,21,28,0.08)] sm:p-8"
         >
           <div className="mx-auto flex max-w-5xl flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">

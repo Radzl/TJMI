@@ -38,10 +38,30 @@ const dev = process.env.NODE_ENV === 'development';
  *   pintándose entera y el fallo era que detrás no había nada.
  * - En desarrollo hacen falta además `'unsafe-eval'` y `ws:`, que son el
  *   recargado en caliente. **En producción no se abren.**
+ *
+ *   **`'wasm-unsafe-eval'` sí, y en producción también: sin ella no hay 3D.**
+ *   Es el segundo fallo de esta misma cabecera que no se ve venir, y es
+ *   hermano del de `connect-src`. `truck.glb` **requiere**
+ *   `EXT_meshopt_compression` —lo declara en su propio `extensionsRequired`—
+ *   y ese descompresor es **WebAssembly**, así que el navegador lo bloquea:
+ *   «Could not load /models/truck.glb: WebAssembly.instantiate() violates the
+ *   following Content Security policy directive». Sin camión no hay escena, y
+ *   la página se iba al modo «sin 3D» en producción.
+ *
+ *   **Y se coló porque la comprobación se hizo en desarrollo**, donde
+ *   `'unsafe-eval'` está abierto y por tanto el wasm pasa. La cabecera de
+ *   producción no se había mirado nunca con la escena delante.
+ *
+ *   La directiva que hace falta es la estrecha, no `'unsafe-eval'`:
+ *   `'wasm-unsafe-eval'` permite compilar WebAssembly y **nada más** —en
+ *   particular no permite `eval()` de cadenas de JavaScript, que es el
+ *   riesgo de verdad—. La entienden Chrome 97+, Firefox 102+ y Safari 16.4+;
+ *   un navegador más viejo la ignora, no abre wasm y cae en el respaldo
+ *   `sin3d`, que para eso está.
  */
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ''}`,
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${dev ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",

@@ -9,6 +9,7 @@ import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
 import SmoothScroll from '@/components/layout/SmoothScroll';
 import WhatsAppButton from '@/components/layout/WhatsAppButton';
+import { CONSENT_INLINE_SCRIPT } from '@/lib/consentCookie';
 import { routing } from '@/i18n/routing';
 import { COMPANY_NAME, SITE_URL } from '@/lib/site';
 import '../globals.css';
@@ -104,6 +105,23 @@ export default async function LocaleLayout({
       lang={locale}
       className={`${body.variable} ${display.variable} h-full`}
     >
+      <head>
+        {/* **Lo único que bloquea en esta cabecera, y se gana el sitio.**
+
+            El banner de cookies es, medido, el elemento del LCP de la
+            portada, y se pintaba al hidratar: 5,8 s de LCP con 5,4 de
+            «render delay» cuando el primer pintado ya había ocurrido a los
+            0,9. Sacado en el HTML se pinta con lo demás, pero entonces le
+            parpadearía a quien ya decidió —en el servidor no se puede leer la
+            cookie—. Esto lee la cookie, que es **propia**, y pone el atributo
+            antes de que se pinte nada; el CSS hace el resto.
+
+            El porqué de que un script que bloquea esté permitido aquí y no
+            para el 3D está escrito en `CONSENT_ATTRIBUTE`: leer una cookie
+            cuesta microsegundos y abrir un contexto WebGL costó 1.277 ms
+            medidos. */}
+        <script dangerouslySetInnerHTML={{ __html: CONSENT_INLINE_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col antialiased">
         <NextIntlClientProvider>
           <Backdrop />

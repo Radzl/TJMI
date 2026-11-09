@@ -1,4 +1,19 @@
 import { useSyncExternalStore } from 'react';
+import {
+  CONSENT_COOKIE,
+  CONSENT_VERSION,
+} from './consentCookie';
+
+// Lo que no necesita React vive en `consentCookie.ts`, porque el layout es
+// un componente de servidor y no puede importar un archivo que dependa de
+// `useSyncExternalStore`. Se vuelve a exportar aquí para que el resto del
+// proyecto siga pidiéndoselo a este módulo, como siempre.
+export {
+  CONSENT_ATTRIBUTE,
+  CONSENT_COOKIE,
+  CONSENT_INLINE_SCRIPT,
+  CONSENT_VERSION,
+} from './consentCookie';
 
 /**
  * Consentimiento de cookies.
@@ -20,12 +35,6 @@ export type Consent = Choices & {
   date: string;
 };
 
-export const CONSENT_COOKIE = 'tjmi_consent';
-/**
- * Subir este número invalida los consentimientos ya dados y vuelve a
- * preguntar. Hay que hacerlo si se añade una categoría o un servicio nuevo.
- */
-export const CONSENT_VERSION = 1;
 /** 12 meses: pasado ese tiempo se vuelve a preguntar. */
 export const CONSENT_MAX_AGE = 60 * 60 * 24 * 365;
 
