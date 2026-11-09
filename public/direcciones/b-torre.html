@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dirección B · Torre de control · Transportes José María Ibáñez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @property --km { syntax:'<integer>'; initial-value:0; inherits:false }
+  @property --giro { syntax:'<angle>'; initial-value:0deg; inherits:false }
+  :root{
+    --fondo:#070d16; --noche:#0f1a2e; --panel:rgba(255,255,255,.045);
+    --filo:rgba(255,255,255,.10); --filo-vivo:rgba(84,140,222,.55);
+    --azul:#4b7fd4; --azul-luz:#7fb0f5; --rojo:#d03b40; --rojo-suave:#de5a5e;
+    --texto:#f2f4f8; --texto-2:rgba(242,244,248,.72); --texto-3:rgba(242,244,248,.46);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fondo);color:var(--texto);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;
+    -webkit-font-smoothing:antialiased;overflow-x:clip}
+  .d{font-family:Archivo,system-ui,sans-serif;font-variation-settings:'wdth' 78;
+    text-transform:uppercase;text-wrap:balance;font-weight:600;line-height:.94}
+  .m{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--texto-3)}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+  a{color:inherit}
+
+  /* Trama y resplandor: con degradados, no con canvas. Un hero de particulas
+     costaria fotogramas, y el problema medido de esta web es justo el hilo. */
+  .cielo{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(90rem 50rem at 72% -10%, rgba(75,127,212,.20), transparent 60%),
+      radial-gradient(50rem 40rem at 8% 18%, rgba(208,59,64,.10), transparent 62%),
+      linear-gradient(180deg,#0a1322 0%,var(--fondo) 46%,#060b13 100%)}
+  .trama{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background-image:linear-gradient(var(--filo) 1px,transparent 1px),
+      linear-gradient(90deg,var(--filo) 1px,transparent 1px);
+    background-size:72px 72px;
+    mask-image:radial-gradient(70rem 50rem at 60% 0%,#000 30%,transparent 78%)}
+  main{position:relative;z-index:1}
+
+  .barra{position:fixed;top:0;left:0;right:0;height:2px;z-index:50;
+    background:linear-gradient(90deg,var(--rojo),var(--azul-luz));
+    transform-origin:0 50%;transform:scaleX(0)}
+
+  nav{position:sticky;top:0;z-index:40;border-bottom:1px solid var(--filo);
+    background:rgba(7,13,22,.72);backdrop-filter:blur(14px)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .logo{font-family:Archivo,sans-serif;font-variation-settings:'wdth' 74;
+    text-transform:uppercase;font-weight:700;font-size:15px}
+  .logo i{font-style:normal;color:var(--rojo-suave)}
+  .btn{display:inline-block;text-decoration:none;font-family:Archivo,sans-serif;
+    text-transform:uppercase;letter-spacing:.1em;font-size:12px;padding:11px 20px;
+    border:1px solid var(--filo-vivo);background:rgba(75,127,212,.14);color:var(--texto);
+    transition:background .2s,border-color .2s}
+  .btn:hover{background:rgba(75,127,212,.26);border-color:var(--azul-luz)}
+  .btn-rojo{border-color:rgba(208,59,64,.6);background:rgba(208,59,64,.18)}
+  .btn-rojo:hover{background:rgba(208,59,64,.3);border-color:var(--rojo-suave)}
+  .volver{position:fixed;left:16px;bottom:16px;z-index:60;background:var(--texto);
+    color:var(--fondo);text-decoration:none;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;font-family:Archivo,sans-serif;padding:9px 14px}
+  .badge{position:fixed;right:16px;bottom:16px;z-index:60;border:1px solid var(--filo);
+    background:rgba(7,13,22,.8);font-family:Archivo,sans-serif;text-transform:uppercase;
+    letter-spacing:.12em;font-size:11px;padding:9px 14px;color:var(--texto-2)}
+
+  /* Hero: titular grande y un panel de control al lado. */
+  .hero{min-height:92vh;display:grid;align-items:center}
+  .hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center;
+    padding-top:72px;padding-bottom:72px}
+  h1{font-size:clamp(46px,7vw,112px);margin:16px 0 26px;letter-spacing:-.015em}
+  h1 em{font-style:normal;color:var(--azul-luz)}
+  .sub{font-size:clamp(17px,1.5vw,20px);line-height:1.6;color:var(--texto-2);max-width:44ch;margin:0 0 34px}
+  .acciones{display:flex;gap:12px;flex-wrap:wrap}
+
+  .panel{border:1px solid var(--filo);background:var(--panel);backdrop-filter:blur(10px);
+    padding:22px}
+  .panel-cab{display:flex;align-items:center;justify-content:space-between;
+    padding-bottom:14px;border-bottom:1px solid var(--filo)}
+  .vivo{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:.14em;color:var(--rojo-suave);text-transform:uppercase}
+  .punto{width:7px;height:7px;border-radius:50%;background:var(--rojo-suave)}
+  .panel dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:0}
+  .panel dt{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--texto-3);padding:14px 0;border-bottom:1px solid var(--filo)}
+  .panel dd{margin:0;padding:14px 0;border-bottom:1px solid var(--filo);text-align:right;
+    font-family:Archivo,sans-serif;font-variation-settings:'wdth' 88;font-size:17px;
+    text-transform:uppercase;letter-spacing:.01em}
+  .panel dd.ok{color:var(--azul-luz)}
+  .radar{position:relative;height:120px;margin-top:18px;border:1px solid var(--filo);
+    overflow:hidden;background:rgba(0,0,0,.25)}
+  .radar::before{content:'';position:absolute;inset:-40%;
+    background:conic-gradient(from var(--giro),rgba(127,176,245,.42),transparent 24%);
+    animation:barrer 4.5s linear infinite}
+  .radar::after{content:'';position:absolute;inset:0;
+    background-image:linear-gradient(var(--filo) 1px,transparent 1px),
+      linear-gradient(90deg,var(--filo) 1px,transparent 1px);background-size:24px 24px}
+  @keyframes barrer{to{--giro:360deg}}
+
+  /* El momento: los cuatro pasos se apilan. Sticky puro, sin JavaScript. */
+  .pasos{padding:120px 0 0}
+  .pasos h2{font-size:clamp(32px,4.4vw,62px);margin:0 0 14px}
+  .pasos .intro{color:var(--texto-2);max-width:52ch;line-height:1.65;margin:0 0 56px}
+  /* El escalon entre tarjetas tiene que medir lo mismo que la cabecera, o la
+     ultima tapa a las anteriores y deja de leerse como una baraja. Son 58 px:
+     lo justo para que se vea el numero y el titulo de cada paso ya apilado. */
+  .pila{list-style:none;margin:0;padding:0}
+  /* El aire del final va DENTRO del flujo, no como `padding-bottom`: la caja
+     de contencion de un `sticky` es el content box del padre, asi que un
+     padding no alarga el recorrido y las tarjetas se despegan antes de
+     tiempo. Con un ::after en el flujo, cada una se queda pegada el rato que
+     le toca. */
+  .pila::after{content:'';display:block;height:76vh}
+  .pila li{position:sticky;margin-bottom:28px}
+  .pila li:nth-child(1){top:11vh}
+  .pila li:nth-child(2){top:calc(11vh + 58px)}
+  .pila li:nth-child(3){top:calc(11vh + 116px)}
+  .pila li:nth-child(4){top:calc(11vh + 174px)}
+  .tarjeta{border:1px solid var(--filo);
+    background:linear-gradient(180deg,rgba(26,40,64,.98),rgba(11,19,33,.98));
+    backdrop-filter:blur(8px)}
+  .cab{display:flex;align-items:center;gap:16px;height:58px;padding:0 26px;
+    border-bottom:1px solid var(--filo)}
+  .cab .n{font-family:Archivo,sans-serif;font-variation-settings:'wdth' 70;
+    font-size:24px;font-weight:700;line-height:1;color:var(--rojo-suave)}
+  .cab h3{font-family:Archivo,sans-serif;font-variation-settings:'wdth' 84;
+    text-transform:uppercase;font-size:20px;font-weight:600;margin:0;letter-spacing:.01em}
+  .cab .lugar{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--azul-luz)}
+  .cuerpo{display:grid;grid-template-columns:auto 1fr auto;gap:34px;align-items:center;
+    padding:34px 26px;min-height:188px}
+  .cuerpo .grande{font-family:Archivo,sans-serif;font-variation-settings:'wdth' 70;
+    font-size:clamp(50px,7vw,96px);font-weight:700;line-height:.8;color:rgba(222,90,94,.22)}
+  .cuerpo p{margin:0;color:var(--texto-2);line-height:1.65;max-width:46ch;font-size:16px}
+  .cifra{font-family:Archivo,sans-serif;font-variation-settings:'wdth' 86;
+    font-size:clamp(22px,2.4vw,34px);text-align:right;white-space:nowrap}
+  .cifra small{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;
+    letter-spacing:.14em;color:var(--texto-3);margin-top:8px;text-transform:uppercase}
+
+  /* La flota recorre el trazado. `offset-path` nativo: ni una libreria. */
+  .ruta{padding:120px 0 130px;overflow:hidden}
+  .ruta h2{font-size:clamp(30px,3.8vw,54px);margin:0 0 10px}
+  .ruta .intro{color:var(--texto-2);max-width:50ch;line-height:1.65;margin:0 0 10px}
+  .pista{position:relative;width:1200px;height:200px;margin:34px auto 0;left:50%;
+    transform:translateX(-50%)}
+  .pista svg{position:absolute;inset:0;width:1200px;height:200px}
+  .pista .asfalto{fill:none;stroke:rgba(255,255,255,.14);stroke-width:2;stroke-dasharray:14 12}
+  .flota{position:absolute;inset:0}
+  .flota span{position:absolute;top:0;left:0;display:block;
+    font-family:Archivo,sans-serif;font-variation-settings:'wdth' 80;text-transform:uppercase;
+    font-size:15px;letter-spacing:.06em;white-space:nowrap;color:var(--texto);
+    padding:7px 14px;border:1px solid var(--filo-vivo);background:rgba(13,22,38,.9);
+    offset-path:path("M 20 150 C 240 40 400 182 620 108 C 800 48 980 170 1180 78");
+    offset-rotate:auto;offset-distance:0%;
+    animation:rodar var(--vel,26s) linear infinite;
+    /* El retardo va en FRACCION de la duracion, no en segundos fijos. Con
+       segundos fijos, al cambiar la velocidad con el scroll cada pieza se
+       desplazaba distinto y la fila se amontonaba en un extremo. */
+    animation-delay:calc(var(--vel,26s) * -0.2 * var(--i))}
+  @keyframes rodar{to{offset-distance:100%}}
+  .pista .extremo{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;
+    fill:var(--texto-3);text-transform:uppercase}
+
+  /* Servicios como tabla de datos. */
+  .serv{padding:0 0 120px}
+  .serv h2{font-size:clamp(30px,3.8vw,54px);margin:0 0 34px}
+  .tabla{border:1px solid var(--filo);background:var(--panel)}
+  .tabla a{display:grid;grid-template-columns:56px 1fr 1fr auto;gap:20px;align-items:center;
+    padding:22px 24px;text-decoration:none;border-bottom:1px solid var(--filo);
+    transition:background .2s}
+  .tabla a:last-child{border-bottom:0}
+  .tabla a:hover{background:rgba(75,127,212,.12)}
+  .tabla .id{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--rojo-suave);letter-spacing:.1em}
+  .tabla .nom{font-family:Archivo,sans-serif;font-variation-settings:'wdth' 86;
+    text-transform:uppercase;font-size:clamp(17px,1.9vw,24px);font-weight:600}
+  .tabla .det{color:var(--texto-2);font-size:14px}
+  .tabla .ir{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+    color:var(--azul-luz);text-transform:uppercase}
+
+  .cierre{border-top:1px solid var(--filo);padding:110px 0 120px}
+  .cierre h2{font-size:clamp(36px,5.4vw,84px);margin:0 0 24px;max-width:20ch}
+  .cierre p{color:var(--texto-2);max-width:46ch;line-height:1.65;margin:0 0 34px}
+  .tel{margin-left:22px;font-size:14px;text-decoration:none;color:var(--texto-2)}
+
+  .rev{opacity:1;transform:none}
+  @supports (animation-timeline: scroll()){
+    .barra{animation:crecer linear both;animation-timeline:scroll(root block)}
+    @keyframes crecer{to{transform:scaleX(1)}}
+    .rev{animation:entrar linear both;animation-timeline:view();animation-range:entry 6% entry 56%}
+    @keyframes entrar{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .radar::before,.flota span{animation:none!important}
+    .rev{animation:none!important;opacity:1!important;transform:none!important}
+    .pila li{position:static!important}
+  }
+  @media (max-width:980px){
+    .hero .wrap{grid-template-columns:1fr;gap:36px}
+    .tarjeta{grid-template-columns:auto 1fr;gap:20px;padding:26px;min-height:0}
+    .tarjeta .cifra{grid-column:1 / -1;text-align:left}
+    .tabla a{grid-template-columns:40px 1fr;gap:10px}
+    .tabla .det,.tabla .ir{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="cielo"></div><div class="trama"></div>
+<div class="barra"></div>
+<a class="volver" href="index.html">← Las tres</a>
+<span class="badge">Dirección B · Torre de control</span>
+
+<main>
+<nav><div class="wrap">
+  <span class="logo">José María <i>Ibáñez</i></span>
+  <a class="btn btn-rojo" href="#cierre">Pide presupuesto</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div>
+    <p class="m">Corredor Castellón ⇄ Madrid · desde 1986</p>
+    <h1 class="d">420 km, <em>cada día laborable</em></h1>
+    <p class="sub">Recogemos en más de 150 fábricas de la provincia y entregamos en Madrid en 24 horas. Dos naves nuestras en los extremos y nadie en medio.</p>
+    <div class="acciones">
+      <a class="btn btn-rojo" href="#cierre">Pide presupuesto</a>
+      <a class="btn" href="#pasos">Cómo trabajamos</a>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-cab">
+      <span class="m">Ruta 01 · A-3</span>
+      <span class="vivo"><span class="punto"></span>En servicio</span>
+    </div>
+    <dl>
+      <dt>Origen</dt><dd>Almazora</dd>
+      <dt>Destino</dt><dd>Fuenlabrada</dd>
+      <dt>Trayecto</dt><dd>420 km</dd>
+      <dt>Entrega</dt><dd class="ok">24 h</dd>
+      <dt>Transbordos</dt><dd class="ok">Ninguno</dd>
+    </dl>
+    <div class="radar" aria-hidden="true"></div>
+  </div>
+</div></header>
+
+<section class="pasos" id="pasos"><div class="wrap">
+  <h2 class="d rev">De tu muelle al de tu cliente</h2>
+  <p class="intro rev">Cuatro pasos, en este orden y sin nadie más por medio. La ruta va en los dos sentidos.</p>
+
+  <ol class="pila">
+    <li><div class="tarjeta">
+      <div class="cab"><span class="n">01</span><h3>Recogemos</h3><span class="lugar">Castellón</span></div>
+      <div class="cuerpo"><span class="grande">01</span>
+        <p>Pasamos por tu fábrica o tu almacén. Más de 150 localidades de la provincia, con carretilla propia si no tienes muelle.</p>
+        <span class="cifra">+150<small>Localidades</small></span></div>
+    </div></li>
+    <li><div class="tarjeta">
+      <div class="cab"><span class="n">02</span><h3>Agrupamos</h3><span class="lugar">Almazora</span></div>
+      <div class="cuerpo"><span class="grande">02</span>
+        <p>Todo entra en nuestra nave y sale consolidado en el mismo camión. Nada cambia de manos por el camino.</p>
+        <span class="cifra">+4.000 m²<small>Almacén propio</small></span></div>
+    </div></li>
+    <li><div class="tarjeta">
+      <div class="cab"><span class="n">03</span><h3>Transportamos</h3><span class="lugar">A-3</span></div>
+      <div class="cuerpo"><span class="grande">03</span>
+        <p>El camión sale todos los días laborables, vaya como vaya de carga. Esa es la parte que no negociamos.</p>
+        <span class="cifra">420 km<small>Por trayecto</small></span></div>
+    </div></li>
+    <li><div class="tarjeta">
+      <div class="cab"><span class="n">04</span><h3>Entregamos</h3><span class="lugar">Madrid</span></div>
+      <div class="cuerpo"><span class="grande">04</span>
+        <p>Descargamos en nuestra nave de Fuenlabrada y repartimos en Madrid y provincias colindantes.</p>
+        <span class="cifra">24 h<small>Puerta a puerta</small></span></div>
+    </div></li>
+  </ol>
+</div></section>
+
+<section class="ruta">
+  <div class="wrap">
+    <h2 class="d rev">La flota en marcha</h2>
+    <p class="intro rev">Haz scroll y mira la fila: acelera, frena y cambia de sentido contigo.</p>
+  </div>
+  <div class="pista">
+    <svg viewBox="0 0 1200 200" aria-hidden="true">
+      <path class="asfalto" d="M 20 150 C 240 40 400 182 620 108 C 800 48 980 170 1180 78"/>
+      <text class="extremo" x="20" y="176">Almazora</text>
+      <text class="extremo" x="1180" y="66" text-anchor="end">Fuenlabrada</text>
+    </svg>
+    <div class="flota" aria-hidden="true">
+      <span style="--i:0">33 palés</span>
+      <span style="--i:1">Azulejo</span>
+      <span style="--i:2">Grupaje</span>
+      <span style="--i:3">Gran formato</span>
+      <span style="--i:4">Completo</span>
+    </div>
+  </div>
+</section>
+
+<section class="serv"><div class="wrap">
+  <h2 class="d rev">Servicios</h2>
+  <div class="tabla rev">
+    <a href="#cierre"><span class="id">S-01</span><span class="nom">Grupaje de palés</span><span class="det">Desde un palé, sin transbordos</span><span class="ir">Ver →</span></a>
+    <a href="#cierre"><span class="id">S-02</span><span class="nom">Camión completo</span><span class="det">13,6 m · 33 palés · carga lateral</span><span class="ir">Ver →</span></a>
+    <a href="#cierre"><span class="id">S-03</span><span class="nom">Nacional e internacional</span><span class="det">Salidas desde Almazora a la UE</span><span class="ir">Ver →</span></a>
+    <a href="#cierre"><span class="id">S-04</span><span class="nom">Almacenaje</span><span class="det">Nave cerrada y zona abierta</span><span class="ir">Ver →</span></a>
+    <a href="#cierre"><span class="id">S-05</span><span class="nom">Picking</span><span class="det">Pedidos por referencia y cantidad</span><span class="ir">Ver →</span></a>
+    <a href="#cierre"><span class="id">S-06</span><span class="nom">Carga y descarga</span><span class="det">Carretilla propia y paletizado</span><span class="ir">Ver →</span></a>
+  </div>
+</div></section>
+
+<section class="cierre" id="cierre"><div class="wrap">
+  <h2 class="d rev">Cuéntanos qué necesitas mover</h2>
+  <p class="rev">Dinos de dónde a dónde, cuántos palés y cuándo. Te contestamos con un precio.</p>
+  <a class="btn btn-rojo" href="#">Pide presupuesto</a>
+  <a class="tel" href="#">964 53 24 00</a>
+</div></section>
+</main>
+
+<script>
+  /* La velocidad del scroll manda en la fila. Idea tomada del
+     «Marquee Along SVG Path» de danielpetho (21st.dev), reimplementada sin
+     libreria: el recorrido lo hace `offset-path` de CSS y esto solo escribe
+     una variable con la duracion y el sentido. */
+  (function(){
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var flota = document.querySelector('.flota');
+    if (!flota) return;
+    var y = scrollY, v = 0, base = 26;
+    addEventListener('scroll', function(){
+      var d = scrollY - y; y = scrollY;
+      v = v * 0.78 + d * 0.22;
+    }, { passive:true });
+    (function marco(){
+      var r = Math.min(Math.abs(v) / 26, 3.4);
+      flota.style.setProperty('--vel', (base / (1 + r * 2.6)).toFixed(2) + 's');
+      flota.style.animationDirection = v < -0.6 ? 'reverse' : 'normal';
+      for (var i = 0; i < flota.children.length; i++) {
+        flota.children[i].style.animationDirection = v < -0.6 ? 'reverse' : 'normal';
+      }
+      v *= 0.93;
+      requestAnimationFrame(marco);
+    })();
+  })();
+</script>
+</body>
+</html>

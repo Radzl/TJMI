@@ -20,10 +20,7 @@ import {
   type OrthographicCamera as OrthoCamera,
 } from 'three';
 import ContainerModel, { CONTAINER } from './models/ContainerModel';
-import ReachStackerModel, {
-  SPREADER_TOP,
-  boomPose,
-} from './models/ReachStackerModel';
+import ForkliftModel, { FORKLIFT } from './models/ForkliftModel';
 import Facility, { FACILITY_CENTRE_X } from './models/Facility';
 import TerminalYard, { Sheds, TerminalYardNear } from './models/TerminalYard';
 import YardMarkings from './models/YardMarkings';
@@ -38,14 +35,21 @@ import Road, { ROAD_CURVE } from './models/Road';
 import TruckModel, { TRUCK } from './models/TruckModel';
 import { ROAD_CAM, ROAD_LEAD, roadFrameWidth, roadProgress } from '@/lib/route';
 import { useScrollStore, writeTravel } from '@/lib/store';
-import { clamp, damp, easeLag, lerp, range, smoothstep } from '@/lib/utils';
+import { damp, easeLag, lerp, range, smoothstep } from '@/lib/utils';
 
 // Distribución de la maqueta, en metros. El camión mira hacia +X.
 const TRUCK_X = 0;
-const STACKER_Z = -4.5;
 
-/** Hueco entre el lote de palés y el spreader que lo agarra. */
-const GRIP = PALLET_LOAD.height / 2 + 0.25;
+/**
+ * Lo que sobresalen las horquillas por delante de la máquina.
+ *
+ * Sustituye al alcance variable de la pluma, que iba de 3,81 m con la carga
+ * en alto a casi 4,5 con ella en el suelo. Una carretilla no tiene alcance:
+ * tiene horquillas, y miden lo que miden. Esto es lo que más cambia la
+ * coreografía — la máquina pasa de estar a cuatro metros del lote a estar
+ * pegada a él.
+ */
+const FORK_REACH = 1.25;
 
 /**
  * Profundidad a la que acaba el lote dentro del semirremolque.
@@ -70,34 +74,111 @@ const CARGO_Z = 0.5;
  * Ahora cae justo dentro del borde del piso, apoyado: hay chapa debajo y la
  * pluma lo suelta encima de algo.
  */
-const STAGE = {
-  x: TRUCK_X + 0.9,
-  y: TRUCK.deckTop + PALLET_LOAD.height / 2,
-};
+const STAGE = { x: TRUCK_X + 0.9 };
 /** Y dónde acaba, ya dentro de la caja. */
-const DROP = {
-  x: TRUCK_X + 2.2,
-  y: TRUCK.deckTop + PALLET_LOAD.height / 2,
-};
-// De dónde sale: en alto, con la pluma en su pose más levantada.
-const PICK = { x: -3, y: SPREADER_TOP - GRIP };
+const DROP = { x: TRUCK_X + 2.2 };
+/**
+ * Dónde espera el lote antes de entrar, con la carretilla ya encarada.
+ *
+ * El metro y medio que lo separa de `STAGE` es lo que da los **dos tiempos**:
+ * primero se arrima y solo entonces empuja. Con un solo movimiento continuo
+ * la maniobra se lee como un empujón, no como una máquina trabajando. Es la
+ * misma idea que tenía la grúa con `place` y `lower`, solo que aquí los dos
+ * tiempos son horizontales: una carretilla no baja la carga, la mete.
+ */
+const HOLD = { x: STAGE.x - 1.6 };
 
-/** Pose de la pluma con la carga arriba del todo, que es como la transporta. */
-const REST_POSE = boomPose(SPREADER_TOP);
-/** Altura del centro del lote apoyado en el suelo. */
-const GROUND_Y = PALLET_LOAD.height / 2;
-/** Y la pose con la que lo engancha del suelo, al principio de todo. */
-const PICK_POSE = boomPose(GROUND_Y + GRIP);
+/**
+ * La altura a la que viaja el lote, y es **constante**.
+ *
+ * Esta es la consecuencia grande de cambiar de máquina. La grúa levantaba la
+ * carga del suelo y la llevaba en alto; la carretilla **no eleva** —el mástil
+ * de este modelo va en la misma malla que las ruedas, así que no se puede
+ * animar—, de modo que el lote viaja a la altura del piso del camión desde el
+ * primer fotograma: la carretilla llega del almacén **ya cargada**, que es lo
+ * que de verdad pasa.
+ *
+ * 1,20 m de piso + medio lote (0,86) = 2,06 m al centro.
+ */
+const CARRY_Y = TRUCK.deckTop + PALLET_LOAD.height / 2;
 
-// Escena 0: la grúa coge un contenedor de la pila del fondo, avanza hacia el
-// primer plano y gira a la derecha hasta quedar de perfil frente al camión.
+/** Dónde trabaja la carretilla en profundidad: alineada con el lote. */
+const FORKLIFT_Z = CARGO_Z;
+
+/** Cuánto recula para salir de plano. Ver la nota de `exit`. */
+const EXIT_RUN = 18;
+
+/**
+ * Cuánto se abre el encuadre de la carretera al irse la escena.
+ *
+ * **La escena entraba moviéndose y se iba apagándose**, y eso es lo que se
+ * notaba como «desaparece de golpe» aunque el fundido durase lo mismo: la
+ * entrada gira la cámara entera de perfil a cenital (`topView`) mientras el
+ * telón se abre, y la salida no movía nada. El telón tapaba una escena
+ * congelada.
+ *
+ * Ahora la cámara **se aleja**: el encuadre se abre al 190 %, así que la
+ * nave, el camión y la carretera se van haciendo pequeños mientras el telón
+ * se cierra encima.
+ *
+ * **Y se hace abriendo el encuadre, no subiendo la cámara.** Con cámara
+ * ortográfica alejarse no encoge nada —un plano ocupa lo que ocupa esté donde
+ * esté—, y subirla mirando al mismo punto lo que haría es **enderezar la
+ * vista a plomo**, que es otro efecto distinto y le quita al camión el poco
+ * volumen que tiene. Lo único que aleja de verdad aquí es el ancho de mundo.
+ */
+const LEAVE_WIDEN = 0.9;
+
+/**
+ * Dónde termina el acercamiento, en profundidad.
+ *
+ * **Son los mismos −4,5 de la grúa, y eso no es pereza: es que la cámara está
+ * afinada contra ese recorrido.** Lo puse primero en `FORKLIFT_Z` (0,5),
+ * pensando que la máquina debía llegar ya alineada con el lote, y la dejé
+ * fuera de cuadro: el encuadre en tres cuartos sigue a la máquina solo al
+ * 50 % en profundidad (`followZ`), así que cinco metros de más la sacan por
+ * abajo. La alineación con la lona se hace después, en el relevo.
+ */
+const STAGING_Z = -4.5;
+
+/**
+ * Altura a la que se apoya el primer contenedor de cada pila.
+ *
+ * **Y aquí hay algo que huele mal, anotado al pasar por encima.** Esto se
+ * llamaba `GROUND_Y` y era «la altura del centro del lote de palés apoyado en
+ * el suelo»: lo usaba la grúa para saber de dónde recogerlo. Pero las pilas
+ * de contenedores del patio **también** tiraban de ella como altura de apoyo,
+ * y un contenedor no mide lo que un lote de palés: su media altura es
+ * `CONTAINER.height / 2`, no `PALLET_LOAD.height / 2`.
+ *
+ * Que coincidan es casualidad, o no coinciden y las pilas llevan tiempo un
+ * pelo hundidas o flotando. **No se toca ahora**: cambiarlo mueve el decorado
+ * del encuadre de apertura y eso merece su propia pasada con el arnés
+ * delante. Se deja el valor exacto que había y el aviso escrito.
+ */
+const PILE_BASE_Y = PALLET_LOAD.height / 2;
+
+// Escena 0: la carretilla cruza el patio con el lote en las horquillas, se
+// acerca al primer plano y gira a la derecha hasta encarar la cola del camión.
 const APPROACH_FROM = { x: -24, z: -24, angle: Math.PI / 2 };
-const APPROACH_TO = { x: PICK.x - REST_POSE.reach, z: STACKER_Z, angle: 0 };
+const APPROACH_TO = {
+  x: HOLD.x - FORK_REACH,
+  z: STAGING_Z,
+  angle: 0,
+};
 
-/** Dónde queda el contenedor que se lleva: en la punta de la pluma. */
+/**
+ * La pila de contenedores del fondo.
+ *
+ * **El número está clavado a mano a propósito.** Antes salía de
+ * `APPROACH_FROM.z - PICK_POSE.reach`, o sea del alcance de la pluma al
+ * agarrar del suelo (4,47 m). Esa pluma ya no existe, pero la pila es
+ * decorado y moverla cambiaría el encuadre de apertura, que está afinado. Se
+ * queda donde estaba.
+ */
 const PILE = {
   x: APPROACH_FROM.x,
-  z: APPROACH_FROM.z - PICK_POSE.reach,
+  z: APPROACH_FROM.z - 4.47,
 };
 /** Hueco entre contenedores de la pila, a lo ancho. */
 const PILE_GAP = CONTAINER.width + 0.9;
@@ -314,8 +395,17 @@ const TRUCK_CONTACTS: Contacto[] = [
  * sus dos ejes están a tres metros, así que entre ellos no hay hueco que
  * contar.
  */
-const STACKER_CONTACTS: Contacto[] = [
-  { x: 0.1, z: 0, width: 6.4, depth: 3.4 },
+/**
+ * La sombra de contacto de la carretilla.
+ *
+ * Era 6,4 × 3,4, la huella de la reach stacker. Una carretilla mide 3,12 de
+ * largo por 1,15 de ancho, así que con la mancha vieja se habría leído como
+ * una sombra que sobra por los cuatro lados. Va centrada en el cuerpo: el
+ * origen del modelo está en la punta de las horquillas, y el cuerpo queda
+ * detrás, en las x negativas.
+ */
+const FORKLIFT_CONTACTS: Contacto[] = [
+  { x: -FORKLIFT.length / 2, z: 0, width: FORKLIFT.length + 0.3, depth: 1.4 },
 ];
 
 // Avance del camión antes de salir a ruta. Es largo a propósito: con pocos
@@ -410,8 +500,7 @@ const roadBulge = new Vector3();
 
 export default function Scene() {
   const cameraRef = useRef<OrthoCamera>(null);
-  const boomRef = useRef<Group>(null);
-  const stackerRef = useRef<Group>(null);
+  const forkliftRef = useRef<Group>(null);
   const cargoRef = useRef<Group>(null);
   const truckRef = useRef<Group>(null);
   const bandRef = useRef<Group>(null);
@@ -426,10 +515,6 @@ export default function Scene() {
   const fogRef = useRef<Fog>(null);
   // Estado de los muelles. Van en refs y no en estado de React: cambian en
   // cada fotograma y no deben provocar ni un solo render.
-  const boomAngle = useRef(Number.NaN);
-  const loadSwing = useRef(0);
-  const loadSwingVel = useRef(0);
-  const lastCargoX = useRef(0);
   const beaconRef = useRef<Mesh>(null);
   const veilRef = useRef<MeshBasicMaterial>(null);
   const trailRef = useRef<Group>(null);
@@ -613,10 +698,40 @@ export default function Scene() {
     // Se deja un respiro entre que el camión aparca y empieza el fundido: sin
     // esa pausa no se lee como "ha llegado", se lee como un corte.
     // Se deja un respiro **de verdad** entre que el camión aparca y empieza
-    // el fundido: el camión llega en 0,84 y esto no arranca hasta 0,92, o sea
-    // unos 300 px de llegada a la vista. Con el reparto anterior eran 76 px y
-    // la nave de destino se veía ya oscurecida.
-    const closing = smoothstep(range(route, 0.9, 0.99));
+    // el fundido: el camión llega en 0,84 y esto no arranca hasta 0,88, o sea
+    // unos 170 px de llegada a la vista. Con el reparto más antiguo eran 76 px
+    // y la nave de destino se veía ya oscurecida.
+    //
+    // **Y el fundido dura lo más parecido posible al de entrada, que es el
+    // mismo telón.** Estaba en 0,90 → 0,99: nueve centésimas, **389 px**,
+    // contra los 605 px que tarda en abrirse al entrar. O sea que la escena
+    // entraba con un fundido y se iba con un parpadeo, y es justo lo que se
+    // veía como «se acaba de golpe».
+    //
+    // La ironía es que la entrada **estuvo en esas mismas nueve centésimas** y
+    // se cambió por esto mismo: «un fundido de medio segundo de scroll no es
+    // un fundido, es un parpadeo lento». La salida se quedó con el valor que
+    // la entrada ya había descartado.
+    //
+    // Ahora son 0,88 → 1, o sea **518 px**: un 33 % más largo. Igualarlo del
+    // todo (605) pedía arrancar en 0,86 y eso se come la llegada, que está
+    // afinada aparte. Si hiciera falta más, lo que toca es adelantar el final
+    // del recorrido (`ROAD_RUN.to`), no robarle a la pausa.
+    const closing = smoothstep(range(route, 0.88, 1));
+
+    // **Y la escena se va moviéndose, no solo apagándose.** Arranca en 0,86,
+    // justo cuando la cámara acaba de posarse sobre la nave (`arriving`), y
+    // por tanto **antes** de que el telón empiece a cerrarse en 0,88: igual
+    // que a la entrada, donde la cámara empieza a girar en 0,19 y el telón no
+    // se abre hasta 0,26. El movimiento abre y cierra la escena; el telón solo
+    // tapa la costura.
+    // Nombre largo a propósito: dentro del bloque de cámara ya hay un
+    // `leaving`, el del camión saliendo de plano en `InRoute`, y una variable
+    // declarada más adentro **tapa** a la de fuera sin dar ningún error. El
+    // encuadre se abría durante la salida del camión en vez de al final de la
+    // carretera, que es justo el tipo de fallo que compila y se ve tres
+    // pantallas más abajo.
+    const roadLeaving = smoothstep(range(route, 0.86, 1));
 
     // Cuánto queda de vista en tres cuartos. Se usa también para el suelo:
     // desde una cámara elevada la franja oscura deja de ser una franja y se
@@ -635,11 +750,20 @@ export default function Scene() {
       smoothstep(range(hero, 0.84, 1)) *
       (1 - smoothstep(range(inRoute, 0.02, 0.14)));
 
-    // --- Escena 0: coge el contenedor de la pila, avanza y gira ----------
-    // Aquí manda la grúa: la carga va colgada de su pluma y la seguimos.
-    // Tres tiempos encadenados: levanta la caja, viene hacia nosotros y gira
-    // a la derecha hasta quedar de perfil delante del camión.
-    const lift = smoothstep(range(hero, 0.02, 0.16));
+    // --- Escena 0: cruza el patio con el lote y encara la cola -----------
+    // Aquí manda la carretilla: el lote va en sus horquillas y la seguimos.
+    //
+    // **Ya no hay tiempo de «levantar»**: la grúa abría cogiendo la carga del
+    // suelo porque tenía pluma, y esta máquina no eleva. Entra en plano con el
+    // lote ya a la altura del piso.
+    //
+    // Pero el arranque **sigue en 0,14 y no en 0,02**, que fue mi primer
+    // intento. Adelantarlo parecía gratis —el hueco que dejaba `lift` estaba
+    // libre— y lo que hace es sacar la máquina de cuadro: durante ese tramo
+    // la cámara todavía está encuadrando la pila del fondo, y si la carretilla
+    // se va antes, se va sola. Los dos primeros compases son de ralentí, con
+    // el lote ya en las horquillas, y eso también cuenta algo: la máquina
+    // esperando a que arranque la escena.
     const advance = smoothstep(range(hero, 0.14, 0.3));
     const swing = smoothstep(range(hero, 0.28, 0.46));
     // Cómo sigue la cámara a la grúa. En profundidad solo la acompaña a
@@ -652,7 +776,6 @@ export default function Scene() {
     const craneX0 = lerp(APPROACH_FROM.x, APPROACH_TO.x, swing);
     const craneZ0 = lerp(APPROACH_FROM.z, APPROACH_TO.z, advance);
     const craneAngle = lerp(APPROACH_FROM.angle, APPROACH_TO.angle, swing);
-    const cargoY0 = lerp(GROUND_Y, PICK.y, lift);
 
     // --- Escena 1: se abre la lona y el lote entra por el costado --------
     // A partir de aquí manda la carga y la grúa se coloca donde haga falta.
@@ -662,8 +785,7 @@ export default function Scene() {
     // imposible: este semirremolque tiene techo.
     const place = smoothstep(range(hero, 0.5, 0.62));
     const insert = smoothstep(range(hero, 0.63, 0.78));
-    const cargoX1 = lerp(lerp(PICK.x, STAGE.x, place), DROP.x, insert);
-    const cargoY1 = lerp(lerp(PICK.y, STAGE.y, place), DROP.y, insert);
+    const cargoX1 = lerp(lerp(HOLD.x, STAGE.x, place), DROP.x, insert);
 
     // La lona se abre antes de que el lote llegue y se cierra cuando ya está
     // dentro. Abrir mientras el lote entra se leería como que estorba.
@@ -677,84 +799,78 @@ export default function Scene() {
 
 
     // --- Escena 2: suelta la carga y sale de plano -----------------------
-    // Entre que se posa y que la pluma se separa hay un compás de silencio:
+    // Entre que se posa y que la máquina se separa hay un compás de silencio:
     // sin esa pausa no se lee "ya está", se lee "salió corriendo".
-    const exit = smoothstep(range(hero, 0.78, 1));
+    //
+    // **Se retira antes y más lejos que la grúa, y es por el primer plano.**
+    // Heredó 0,78 → 1 con 12,5 m, y a 0,90 la carretilla seguía en cuadro: el
+    // primer plano arranca en 0,84 y existe para que el camión esté **solo**
+    // en pantalla, que es el único rato en que se le miran los detalles. Una
+    // máquina dando marcha atrás por el borde se come justo eso.
+    //
+    // Ahora son 18 m entre 0,74 y 0,95, así que para cuando el plano se
+    // cierra ya no está. Y el ritmo sigue siendo de máquina, no de corte: una
+    // carretilla anda a 12 km/h, bastante más que una reach stacker, así que
+    // retirarse más rápido además es lo propio.
+    const exit = smoothstep(range(hero, 0.74, 0.95));
 
     // Relevo entre los dos actos. Coinciden en el punto de unión, así que la
     // mezcla es corta y no se nota el cambio de quién manda a quién.
     const act = smoothstep(range(hero, 0.46, 0.5));
 
-    // Altura de la carga: el balanceo, solo cuando ya cuelga; apoyada, quieta.
-    const cargoY = lerp(cargoY0, cargoY1, act) + sway * lift;
-
-    // **La pluma apunta a la carga y no la suelta levantándose.** Hubo un
-    // levantamiento de 1,7 m al soltar y era imposible: la punta se iba a
-    // 4,87 y el techo del semirremolque está a 4,30, o sea lo atravesaba.
-    // Ahora la pluma se queda a la altura del lote y lo que la separa es que
-    // la máquina retrocede, que es como se desengancha de verdad.
-    const carryPose = boomPose(cargoY + GRIP);
+    // **La altura del lote es constante.** No hay nada que interpolar: la
+    // carretilla no eleva, así que el lote va a la altura del piso del camión
+    // desde que entra en plano. Lo único que se mueve en vertical es la
+    // respiración de la escena, y muy poco: lo que se nota en una carretilla
+    // parada es el ralentí, no un balanceo.
+    const cargoY = CARRY_Y + sway * 0.35;
 
     const cargoX = lerp(
-      craneX0 + Math.cos(craneAngle) * carryPose.reach,
+      craneX0 + Math.cos(craneAngle) * FORK_REACH,
       cargoX1,
       act,
     );
-    // En profundidad la carga acaba pegada a la lona mientras la grúa se
-    // queda por detrás del camión: es la misma licencia que ya usaba la
-    // escena de carga, y además es lo que deja al lote por delante de lo que
-    // el semirremolque ya lleva dentro.
+    // En profundidad el lote acaba pegado a la lona. La carretilla trabaja en
+    // esa misma línea, así que aquí ya no hay licencia que pedir: antes la
+    // grúa se quedaba detrás del camión y alcanzaba con la pluma; ahora la
+    // máquina está donde tiene que estar para que las horquillas lleguen.
+    // Y va con `act`, no con `swing`: la máquina y su lote tienen que moverse
+    // **juntos**. Con `swing` el lote se deslizaba de lado hacia la lona
+    // mientras la carretilla seguía cinco metros por detrás, o sea el lote
+    // saliéndose de las horquillas de costado.
     const cargoZ = lerp(
-      craneZ0 - Math.sin(craneAngle) * carryPose.reach,
+      craneZ0 - Math.sin(craneAngle) * FORK_REACH,
       CARGO_Z,
-      swing,
+      act,
     );
 
-    // **La pluma acompaña al lote solo hasta la cola, nunca dentro.**
+    // **Las horquillas sí entran en la caja, y por eso esto cambia.**
     //
-    // Antes seguía al lote hasta el fondo de la caja y eso es geométricamente
-    // imposible: el techo del semirremolque está a 4,30 m, el spreader agarra
-    // el lote a 3,17 —o sea ya dentro— y al soltar subía a 4,87, **atravesando
-    // el techo**. Era lo que se veía y no había forma de disimularlo.
+    // La pluma tenía prohibido pasar de la cola: el techo está a 4,30 m y el
+    // spreader agarraba el lote a 3,17, así que al soltar lo atravesaba. Unas
+    // horquillas van a 1,20 m, por debajo del piso de carga, y miden 1,25:
+    // entran el metro y pico que hace falta para dejar el lote dentro y
+    // salen. Que es exactamente lo que hace la de verdad.
     //
-    // Clavando el objetivo de la pluma en la cola, la máquina deja el lote en
-    // el borde del piso y de ahí entra deslizando. De perfil y con la lona
-    // abierta se lee como que lo empujan dentro, que es lo que pasa de verdad.
-    const boomTargetX = Math.min(cargoX1, STAGE.x);
-    // **La salida va con el scroll, no a 32 metros de golpe.** Estaba en
-    // `exit * 32` repartido en el 12 % final de la sección: eso son casi tres
-    // metros por cada punto de scroll, o sea que la máquina desaparecía de un
-    // tirón. Con 14 m repartidos en un tramo más largo se retira al ritmo al
-    // que uno baja, que es lo que se espera de una máquina de obra.
-    const craneX = lerp(craneX0, boomTargetX - carryPose.reach, act) - exit * 14;
-    const craneZ = lerp(craneZ0, APPROACH_TO.z, act);
+    // Por eso la máquina **sigue al lote hasta el final** en vez de clavarse
+    // en la cola: lo empuja dentro y luego retrocede.
+    const forkliftX = lerp(craneX0, cargoX1 - FORK_REACH, act) - exit * EXIT_RUN;
+    const forkliftZ = lerp(craneZ0, FORKLIFT_Z, act);
 
-    // La pluma no salta a su sitio: llega un pelo tarde, como un brazo
-    // hidráulico de verdad. Es el detalle que más separa "animación" de
-    // "maquinaria". En el primer fotograma se coloca de golpe, para no verla
-    // entrar girando desde cero.
-    if (boomRef.current) {
-      boomAngle.current = Number.isFinite(boomAngle.current)
-        ? damp(boomAngle.current, carryPose.rotation, 9, dt)
-        : carryPose.rotation;
-      boomRef.current.rotation.z = boomAngle.current;
-    }
-
-    // Balanceo de la carga colgada: un muelle empujado por su propia
-    // velocidad. Al acelerar se queda atrás, al frenar se adelanta, y se va
-    // parando sola. Solo mientras cuelga: una vez posada, quieta.
-    const cargoSpeed = dt > 0 ? (cargoX - lastCargoX.current) / dt : 0;
-    lastCargoX.current = cargoX;
-
-    // El balanceo se apaga antes, porque el lote se posa antes.
-    const hanging = 1 - smoothstep(range(hero, 0.56, 0.64));
-    const swingTarget = clamp(-cargoSpeed * 0.011, -0.11, 0.11);
-    loadSwingVel.current += (swingTarget - loadSwing.current) * 40 * dt;
-    loadSwingVel.current *= Math.exp(-3.4 * dt);
-    loadSwing.current += loadSwingVel.current * dt;
-    if (stackerRef.current) {
-      stackerRef.current.position.set(craneX, 0, craneZ);
-      stackerRef.current.rotation.y = craneAngle;
+    // **El balanceo del lote se quita, y no es un recorte: es que ya no toca.**
+    //
+    // Era un muelle empujado por la propia velocidad de la carga: al acelerar
+    // se quedaba atrás, al frenar se adelantaba. Eso es lo que hace una carga
+    // **colgada de un cable**, y era de lo mejor que tenía la escena de la
+    // grúa. Sobre unas horquillas no pasa: el lote va calzado contra el
+    // respaldo y es solidario con la máquina. Dejarlo balanceándose sería el
+    // mismo tipo de error que la pluma atravesando el techo, solo que al
+    // revés — física de más en vez de de menos.
+    //
+    // Lo que sí se queda es el cabeceo del conjunto, que lo pone `sway`.
+    if (forkliftRef.current) {
+      forkliftRef.current.position.set(forkliftX, 0, forkliftZ);
+      forkliftRef.current.rotation.y = craneAngle;
     }
 
     // --- Camión y carga: primero en llano, después por la carretera ------
@@ -873,7 +989,7 @@ export default function Scene() {
       // La carga se inclina con el camión: si no, el contenedor se quedaría
       // plano mientras el morro sube.
       cargoRef.current.rotation.z =
-        sway * 0.02 + pull * 0.013 * (1 - onRoad) + loadSwing.current * hanging;
+        sway * 0.02 + pull * 0.013 * (1 - onRoad);
     }
 
     // --- Suelo oscuro de la terminal y carretera --------------------------
@@ -1151,8 +1267,8 @@ export default function Scene() {
       // se lee como que baja por la pantalla (sin perspectiva no hay otra
       // forma de contarlo) y pasar a perfil es solo bajar la cámara, sin
       // volteos raros. Además va siguiendo a la máquina.
-      const quarterX = lerp(PILE_VIEW.x, craneX, swing) + quarterShift;
-      const quarterZ = lerp(PILE_VIEW.z, craneZ, followZ);
+      const quarterX = lerp(PILE_VIEW.x, forkliftX, swing) + quarterShift;
+      const quarterZ = lerp(PILE_VIEW.z, forkliftZ, followZ);
 
       const aimX = lerp(sideX, quarterX, quarter);
       const aimYTarget = lerp(aimY - 0.4, quarterY, quarter);
@@ -1205,7 +1321,11 @@ export default function Scene() {
 
       camera.zoom =
         size.width /
-        ((lerp(lerp(sideWidth, quarterWidth, quarter), roadWidth, topView) +
+        ((lerp(
+          lerp(sideWidth, quarterWidth, quarter),
+          roadWidth * (1 + LEAVE_WIDEN * roadLeaving),
+          topView,
+        ) +
           swell) *
           creep);
       camera.updateProjectionMatrix();
@@ -1424,7 +1544,7 @@ export default function Scene() {
             {pile.colors.map((color, level) => (
               <group
                 key={color + level}
-                position={[0, GROUND_Y + level * (CONTAINER.height + 0.06), 0]}
+                position={[0, PILE_BASE_Y + level * (CONTAINER.height + 0.06), 0]}
                 rotation={[0, Math.PI / 2, 0]}
               >
                 <ContainerModel color={color} />
@@ -1447,7 +1567,7 @@ export default function Scene() {
             {stack.colors.map((color, level) => (
               <group
                 key={color + level}
-                position={[0, GROUND_Y + level * (CONTAINER.height + 0.06), 0]}
+                position={[0, PILE_BASE_Y + level * (CONTAINER.height + 0.06), 0]}
               >
                 <ContainerModel color={color} />
               </group>
@@ -1456,15 +1576,22 @@ export default function Scene() {
         ))}
 
 
-        <group ref={stackerRef} position={[0, 0, STACKER_Z]}>
+        <group ref={forkliftRef} position={[0, 0, FORKLIFT_Z]}>
           {/* La sombra de contacto cuelga del grupo de la máquina, así que la
               sigue sola mientras maniobra. */}
-          <ContactShadow puntos={STACKER_CONTACTS} fuerza={0.3} />
-          <ReachStackerModel boomRef={boomRef} />
-          {/* Rotativo sobre la cabina. Parpadea siempre: es lo que mantiene
-              viva la escena mientras alguien lee el titular sin hacer scroll. */}
-          <mesh ref={beaconRef} position={[-1.4, 4.35, 0]}>
-            <sphereGeometry args={[0.24, 10, 10]} />
+          <ContactShadow puntos={FORKLIFT_CONTACTS} fuerza={0.3} />
+          <ForkliftModel />
+          {/* Rotativo sobre el techo protector. Parpadea siempre: es lo que
+              mantiene viva la escena mientras alguien lee el titular sin hacer
+              scroll.
+
+              **Baja de 4,35 m a 2,05.** Estaba a la altura de la cabina de la
+              grúa, que mide el doble; dejado ahí quedaría flotando un palmo
+              por encima de la carretilla. Va justo sobre el techo (1,92 m) y
+              retrasado hacia el cuerpo, porque el origen del modelo está en la
+              punta de las horquillas. */}
+          <mesh ref={beaconRef} position={[-1.9, 2.05, 0]}>
+            <sphereGeometry args={[0.16, 10, 10]} />
             <meshBasicMaterial color="#ff9d2e" toneMapped={false} />
           </mesh>
         </group>

@@ -5,18 +5,25 @@ import { useRef } from 'react';
 import type { Group } from 'three';
 
 /**
- * El operario, sentado en la cabina de la grúa.
+ * El operario de la máquina que carga el camión.
  *
  * No es un adorno: una máquina moviéndose sola se lee como un juguete, y lo
  * que cuenta esta intro es gente trabajando. Además da escala, que es lo que
- * más le faltaba a la cabina.
+ * más le faltaba al puesto de conducción.
  *
  * Va con primitivas, como el resto de la maqueta, y con el chaleco en el mismo
  * naranja del rotativo: a este tamaño el chaleco **es** el personaje, lo único
- * que se distingue de verdad. Mira hacia +X, que es adonde apunta la pluma, y
- * como cuelga del grupo de la máquina gira con ella sin hacer nada más.
+ * que se distingue de verdad. Mira hacia +X, que es adonde trabaja la máquina,
+ * y como cuelga de su grupo gira con ella sin hacer nada más.
  *
- * El origen va en el suelo de la cabina.
+ * **Se llamaba `CraneOperator` y conducía la reach stacker.** Al cambiar la
+ * máquina por una carretilla no hubo nada que tocar de la figura: es genérica
+ * —alguien sentado, con chaleco y casco— y lo único específico era dónde se
+ * sienta, que lo pone quien la usa. De ahí el nombre neutro.
+ *
+ * El origen va en el **suelo del puesto**, y `SEAT` es la altura del asiento
+ * sobre él: quien coloque la figura tiene que poner el origen a
+ * `altura del asiento − SEAT`.
  */
 
 const VEST = '#ff9d2e';
@@ -27,7 +34,7 @@ const HELMET = '#f2f4f7';
 /** Altura del asiento sobre el suelo de la cabina. */
 const SEAT = 0.42;
 
-export default function CraneOperator() {
+export default function Operator() {
   const bodyRef = useRef<Group>(null);
   const headRef = useRef<Group>(null);
 

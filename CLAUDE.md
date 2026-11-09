@@ -94,7 +94,7 @@ Next.js (App Router) + React + TypeScript · Tailwind CSS · Three.js + @react-t
 Referencia de ritmo: intro de scroll tipo "maqueta lateral" (grúa carga contenedor → camión → sección oscura sube → servicios en scroll horizontal → vista cenital de la carretera). Contenido 100 % propio de TJMI.
 
 Decisiones cerradas:
-- La escena de apertura es **grúa portacontenedores + contenedor**, no carretilla con palés.
+- La escena de apertura fue **grúa portacontenedores + contenedor**. Esa decisión se cerró cuando la carga era un contenedor; al pasar la carga a palés, la máquina se quedó sin sentido y hoy es **una carretilla elevadora con un lote de palés**. Ver «La carretilla que carga el camión».
 - La rotulación de la intro es la real: **"José María Ibáñez" en rojo sobre la lona** y el **escudo en el techo**. En la puerta de la tractora no va logo, ahí van las rayas roja y azul de la casa.
 - Los modelos 3D salen de **stock gratuito** (CC0/CC-BY, créditos en el aviso legal). Si el resultado no da el nivel, se valorará comprar modelos.
 - Los modelos se **retexturizan**: se quitan los logos del fabricante, se ajustan los colores a la marca y se pega el logo de TJMI.
@@ -114,11 +114,11 @@ Decisiones cerradas:
 - El fondo del patio (`TerminalYard.tsx`) son suelo y vallado, y **no es decoración**: sin nada fijo detrás, el camión avanzando ocho metros no se lee como que avanza porque no hay contra qué medirlo.
 - Ese vallado viene **en dos piezas**. La lejana (x < −19) se ve siempre. La cercana, la que cruza por detrás del camión, solo se enciende con `quarter < 0.45`: en tres cuartos pasaría por detrás del titular en escritorio, y ahí todavía queda fuera de plano por la derecha, así que encenderla no se nota.
 - El suelo del patio llevó un tiempo material **sin luz y con `toneMapped={false}`**, porque cualquier crema se saturaba a blanco. Era un parche y ya no está: la causa era el mapeo de tonos y la escala de las luces, las dos arregladas (ver «Iluminación del 3D»). Hoy es un plano normal que recibe luz y sombra como todo lo demás.
-- **La pluma nunca entra en la caja, y esto era un fallo de geometría, no de gusto.** Seguía al lote hasta el fondo del semirremolque, y los números no dan: el techo está a **4,30 m**, el spreader agarraba el lote a **3,17** —ya dentro— y al soltar subía a **4,87**, atravesando el techo. Ahora el objetivo de la pluma se clava en la cola (`boomTargetX`) y el levantamiento tras soltar baja de 1,7 a 0,55 m, así que la punta se queda en 3,72 y pasa por debajo.
+- *(Historia de la grúa, que ya no está. Se queda porque la lección vale para cualquier máquina que se ponga:)* **la pluma nunca entraba en la caja, y era un fallo de geometría, no de gusto.** Seguía al lote hasta el fondo del semirremolque, y los números no dan: el techo está a **4,30 m**, el spreader agarraba el lote a **3,17** —ya dentro— y al soltar subía a **4,87**, atravesando el techo. Ahora el objetivo de la pluma se clava en la cola (`boomTargetX`) y el levantamiento tras soltar baja de 1,7 a 0,55 m, así que la punta se queda en 3,72 y pasa por debajo.
 - **Y el lote se posa sobre el piso, no en el aire.** Estuvo 3,4 m por detrás de la cola y 15 cm por encima del piso: daba igual mientras la pluma lo sujetaba hasta el fondo, pero al dejar de entrar se quedaba colgado de nada. Ahora cae justo dentro del borde del piso.
-- **Pendiente de fondo, y es el que de verdad importa: la máquina está mal elegida.** Una reach stacker agarra contenedores **desde arriba** con un spreader, y un semirremolque de lonas **tiene techo**: no hay forma geométrica de que meta un palé dentro. El guion cerró «grúa portacontenedores, no carretilla» cuando la carga era un contenedor; después la carga pasó a ser palés y la máquina no cambió. En `public/media/camion-02.jpg` se ve quién hace ese trabajo de verdad: **una carretilla elevadora**, por el costado y con las horquillas a la altura del piso. Lo de ahora es el apaño que mejor se lee sin cambiar de máquina.
+- ~~Pendiente de fondo: la máquina está mal elegida.~~ **Resuelto: ahora es una carretilla elevadora.** Ver «La carretilla que carga el camión». La reach stacker y su GLB están borrados.
 - La carga se posa en **dos tiempos** (`place` y `lower`): primero se sitúa sobre el chasis y solo entonces baja en vertical. En diagonal parecía de juguete.
-- **Había una cuña negra flotando en el aire** justo cuando el lote entra en el camión, y era una pieza de la pluma que se quedaba atrás. El GLB trae **una malla por material**, así que lo que gira con la pluma se decide por material, no por nodo: faltaba `Material.004` en `BOOM_MATERIALS` (`ReachStackerModel.tsx`), de modo que esa parte seguía clavada al chasis mientras el resto subía. **Esto no se adivina por el nombre** —en este modelo todos son `Material.00N`—: se encontró tiñendo materiales de uno en uno de rojo y mirando cuál se encendía. Si vuelve a aparecer un trozo suelto, ese es el método.
+- *(También de la grúa, y el método es lo que importa:)* **había una cuña negra flotando en el aire** justo cuando el lote entraba en el camión, y era una pieza de la pluma que se quedaba atrás. El GLB trae **una malla por material**, así que lo que gira con la pluma se decide por material, no por nodo: faltaba `Material.004` en `BOOM_MATERIALS` (`ReachStackerModel.tsx`), de modo que esa parte seguía clavada al chasis mientras el resto subía. **Esto no se adivina por el nombre** —en este modelo todos son `Material.00N`—: se encontró tiñendo materiales de uno en uno de rojo y mirando cuál se encendía. Si vuelve a aparecer un trozo suelto, ese es el método.
 - **La grúa se retira con el scroll, no de un salto.** Estuvo saliendo 32 metros repartidos en el 12 % final de la sección, o sea casi tres veces su propia longitud en un palmo de rueda: se leía como un corte de vídeo, no como una máquina marchándose. Ahora son 14 metros repartidos en el 22 % final (`exit` en `Scene.tsx`), que es lo justo para salir de plano a velocidad de máquina.
 - **Al posarse la carga, el camión no se mueve**, y es una decisión, no un olvido. Hubo un hundimiento con rebote (`LANDING_DIP`) para contar que lo que le acaban de dejar encima pesa veinte toneladas. El problema es dónde pasa: justo en el primer plano, que es el único momento en que el camión está solo en pantalla y se le miran los detalles. Un meneo ahí no se lee como peso, se lee como que el modelo baila. La carga se posa y ya está.
 - Entre que se posa y que la pluma se separa hay un compás de silencio. Sin esa pausa no se lee "ya está", se lee "salió corriendo".
@@ -160,11 +160,11 @@ Decisiones cerradas:
 - El rótulo va **un pelo corrido hacia la cola** (`TEXT_CENTRE`) y es a propósito: por el centro pasa la junta entre las dos mitades, y centrado del todo el pliegue partía "María" por la mitad al abrirse. Corrido, el corte cae en el hueco entre palabras y lo que queda a la vista es "Ibáñez". Cerrado, que es como se ve casi siempre, el metro de diferencia no se aprecia.
 - **El costado del semirremolque son tres franjas, no una lona lisa**, copiando el camión real: tableros de aluminio abajo, lona en medio y perfil del techo arriba. Las dos claras **no se mueven al abrir**, que es justo lo que se ve en la foto del camión cargando. Sin ellas el semirremolque era un rectángulo azul plano.
 - El azul de la lona **no es el azul corporativo**: es el del toldo real, mucho más vivo. El `#34548a` quedaba apagado al lado de la foto y el camión perdía el poco color que tiene. Sigue siendo acento; lo masivo de la página es el crema.
-- **Hay un operario dentro de la grúa** (`CraneOperator.tsx`). No es adorno: una máquina moviéndose sola se lee como un juguete, y lo que cuenta la intro es gente trabajando. Además da escala a la cabina, que era un bloque sin referencia.
-- Para que se viera hubo que **acristalar la cabina**. El GLB traía los cristales (`Material.005`) como un bloque gris opaco; ahora van translúcidos y **sin proyectar sombra**, porque un cristal que tapa la luz como si fuera chapa delata el truco.
+- **Hay un operario en la máquina** (`Operator.tsx`, antes `CraneOperator`). No es adorno: una máquina moviéndose sola se lee como un juguete, y lo que cuenta la intro es gente trabajando. Además da escala al puesto, que era un bloque sin referencia. Dónde se sienta en la carretilla está medido en «La carretilla que carga el camión».
+- *(De la grúa:)* para que se viera hubo que **acristalar la cabina**, porque el GLB traía los cristales como un bloque gris opaco. En la carretilla no hace falta: el puesto es abierto, que es como son de verdad.
 - Va con primitivas, como el resto de la maqueta, y con el **chaleco en el mismo naranja del rotativo**: a este tamaño el chaleco *es* el personaje, es lo único que se distingue. El casco achatado es lo que lo separa de una cabeza a secas cuando mide seis píxeles.
-- Cuelga del grupo de la máquina, así que **gira con ella sin hacer nada más**, y mira hacia +X, que es adonde apunta la pluma.
-- Su sitio sale de medir el GLB: el hueco acristalado va de `x` 0,75 a 2,01 y de `y` 1,82 a 2,91 en coordenadas del grupo de la grúa. Se sienta a 1,60 para que **la cabeza quede dentro del cristal y las piernas por debajo**, detrás del panel de la puerta, que es como se ve en una cabina de verdad.
+- Cuelga del grupo de la máquina, así que **gira con ella sin hacer nada más**, y mira hacia +X, que es adonde esa máquina trabaja.
+- **Su sitio sale siempre de medir el GLB**, nunca de ponerlo a ojo. Es la regla que sobrevive al cambio de máquina.
 - Respira con su propio `useFrame`, muy poco. Si se nota el movimiento, está mal: lo que tiene que notarse es que ahí dentro hay alguien.
 - **La nave de `Facility` no sirve como fondo del patio**: está modelada para verse desde arriba y, sin perspectiva que la achique, ocupa el plano entero y su franja de marca cruza el titular. Ya se probó.
 
@@ -346,6 +346,70 @@ Decisiones cerradas:
 - **No hay estado de React.** El disparador escribe `data-shown` sobre cada `<li>` y la transición la hace el CSS, igual que la barra del desfile de servicios.
 - **El listado ya no intenta coincidir con el camión, y es deliberado.** Se probó y el resultado era peor: para que el texto blanco se leyera había que subir el horizonte con el camión aún en pantalla, y entonces parecía que el camión se paraba. Ahora los cuatro pasos se encienden uno a uno cuando la sección ya está montada en azul, que es cuando se pueden leer.
 
+## La carretilla que carga el camión (`ForkliftModel.tsx`)
+
+- **Sustituye a la reach stacker, y el motivo era geométrico, no de gusto.** Una reach stacker agarra contenedores **desde arriba** con un spreader y un semirremolque de lonas **tiene techo**: no hay forma de que meta un palé dentro. En `public/media/camion-02.jpg` se ve quién hace ese trabajo de verdad.
+- **Modelo:** «Forklift» de KolosStudios, en poly.pizza, **CC-BY 3.0**. El crédito es obligación de la licencia y está puesto en el aviso legal. 134 KB, glTF 2.0, **sin texturas** —color plano en el material, que es el acabado de maqueta del resto de la escena—.
+- **Va sin repintar y es decisión del cliente.** El amarillo que trae es el de una carretilla de verdad; repintarla a los colores de la casa la alejaría de la foto. La marca ya la llevan el camión y las naves.
+- Al borrarla, la grúa se llevó **377 KB**: los GLB bajan de 2,10 a 1,72 MB.
+
+### Medirlo costó dos errores, y los dos vuelven si no se leen
+
+- **El nodo trae un cuaternión y escala no uniforme** (la conversión Z-up → Y-up de FBX2glTF). Multiplicar por la escala e ignorar la rotación da una caja de 1,42 × 2,31 × 0,85 plantada en `x ≈ 53`, que no es nada. **Hay que transformar las ocho esquinas** de la caja, no el mínimo y el máximo.
+- **Cuál de los dos extremos es el frente hay que MIRARLO.** Se dedujo del reparto de materiales —el material oscuro llega hasta `z = 4,19`, así que ahí estaría el mástil— y era al revés: ese extremo es el contrapeso. Se vio poniendo la máquina un momento al lado del camión. El frente está en `z = 1,88`.
+
+### La escala, y por qué 1,35
+
+El mismo factor cuadra los tres ejes a la vez, que es lo que dice que es el bueno:
+
+| | modelo | × 1,35 | contrapesada real |
+| --- | --- | --- | --- |
+| largo | 2,31 | **3,12 m** | 3,0–3,3 m con horquillas |
+| ancho | 0,85 | **1,15 m** | 1,15 m |
+| alto | 1,42 | **1,92 m** | ~2,1 m de techo protector |
+
+Los 2,31 del archivo **incluyen las horquillas**: por eso el largo encaja en el rango de la máquina completa y no en el del cuerpo.
+
+**El origen va en la punta de las horquillas, a ras de suelo.** Es el punto que de verdad se coloca: al situar la carretilla, lo que se sitúa es **dónde va a quedar el palé**. Con el origen en el centro habría que sumar medio vehículo en cada cuenta de la coreografía.
+
+### El mástil no se puede animar, y eso manda en todo lo demás
+
+- Los cuatro materiales no separan el mástil: `Material.002` lleva **2.182 vértices de 0,02 a 1,44 de alto**, o sea mástil, ruedas y techo protector en la misma primitiva. En la grúa las piezas sí se separaban por material (`BOOM_MATERIALS`); aquí no.
+- Consecuencia: **la carretilla no eleva**. El lote viaja a la altura del piso del camión (1,20 + medio lote = **2,06 m**) desde el primer fotograma, porque la máquina **llega del almacén ya cargada**. Es la licencia que sustituye a todo el acto de levantar la carga.
+- Si algún día se quiere el gesto completo, hay que partir la malla en Blender y reexportar. No se ha hecho: el cliente prefirió dejarlo tal cual.
+
+### Qué cambió en la coreografía al cambiar de máquina
+
+- **Fuera el tramo de levantar** (`lift`, 0,02 → 0,16). No hay nada que levantar.
+- **Fuera el balanceo del lote.** Era un muelle empujado por la propia velocidad de la carga, y es lo que hace una carga **colgada de un cable**. Sobre horquillas va calzada contra el respaldo y es solidaria con la máquina. Dejarlo sería el mismo error que la pluma atravesando el techo, al revés: física de más.
+- **El alcance deja de ser variable.** La pluma iba de 3,81 m a 4,47 según la altura; unas horquillas miden lo que miden, `FORK_REACH = 1,25`. La máquina va pegada al lote: su posición es `lote − 1,25`.
+- **Y ahora sí entra en la caja.** La pluma tenía prohibido pasar de la cola porque al soltar atravesaba el techo. Unas horquillas van a 1,20 m, por debajo del piso: entran el metro y pico que hace falta y salen. Por eso la máquina **sigue al lote hasta el final** en vez de clavarse en el borde.
+
+### Dos cosas que parecían gratis y sacaron la máquina de cuadro
+
+- **Adelantar el avance a 0,02**, aprovechando el hueco que dejaba `lift`. Durante ese tramo la cámara todavía encuadra la pila del fondo: si la carretilla se va antes, se va sola. Vuelve a **0,14**, y los dos primeros compases son de ralentí con el lote ya en las horquillas.
+- **Terminar el acercamiento en `z = 0,5`**, alineada con la lona, que es donde tiene que acabar. También la saca de plano: el encuadre en tres cuartos sigue a la máquina **solo al 50 %** en profundidad (`followZ`), así que cinco metros de más la tiran por abajo. El acercamiento termina en los mismos **−4,5** de la grúa y la alineación se hace después, en el relevo (`act`).
+- Por lo mismo, **el lote se alinea con `act` y no con `swing`**: la máquina y su carga tienen que moverse juntas. Con `swing` el lote se deslizaba de lado hacia la lona mientras la carretilla seguía cinco metros por detrás, o sea saliéndose de las horquillas de costado.
+
+### La retirada va antes y más lejos que la de la grúa
+
+Heredó 0,78 → 1 con 12,5 m y **a 0,90 la carretilla seguía en cuadro**. El primer plano arranca en 0,84 y existe para que el camión esté **solo** en pantalla, que es el único rato en que se le miran los detalles; una máquina dando marcha atrás por el borde se come justo eso. Ahora son **18 m entre 0,74 y 0,95**. El ritmo sigue siendo de máquina y no de corte: una carretilla anda bastante más rápido que una reach stacker, así que retirarse antes es además lo propio.
+
+### El operario se queda, y ahora se llama `Operator`
+
+- Se llamaba `CraneOperator` y conducía la grúa. Al cambiar de máquina **no hubo nada que tocar de la figura**: es genérica —alguien sentado, con chaleco y casco— y lo único específico era dónde se sienta, que lo pone quien la usa.
+- **Dónde se sienta está medido**, en metros de la escena: el capó amarillo acaba a **0,98** de alto y el techo protector va de 1,86 a 1,92. En una contrapesada el asiento va encima del capó, y como el origen de la figura es el suelo del puesto y el asiento le queda 0,42 por encima, el origen va a **0,56**. A lo largo, −1,8 deja el respaldo justo en el borde trasero del capó y la cabeza a 1,71, por debajo del techo.
+- **Va FUERA del grupo del modelo**, igual que en la grúa y por lo mismo: ahí dentro hay un `scale` de 1,35 y la figura saldría un 35 % más alta, o sea un conductor de 1,55 m sentado.
+- El rotativo baja de 4,35 m a **2,05**: estaba a la altura de la cabina de la grúa, que mide el doble.
+
+### Un aviso que salió al pasar y no se ha tocado
+
+`GROUND_Y` era «la altura del centro del lote apoyado en el suelo» y la usaba la grúa para saber de dónde recogerlo. Pero **las pilas de contenedores del patio también tiraban de ella** como altura de apoyo, y un contenedor no mide lo que un lote de palés: su media altura es `CONTAINER.height / 2`, no `PALLET_LOAD.height / 2`. O coinciden por casualidad, o las pilas llevan tiempo un pelo hundidas o flotando. Se ha renombrado a **`PILE_BASE_Y`** con el valor exacto que tenía y el aviso escrito: cambiarlo mueve el decorado del encuadre de apertura y merece su propia pasada con el arnés delante.
+
+### Lo que el arnés dijo del cambio
+
+Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restantes dan 0,00 %**: el camión en ruta, el azul noche y la carretera entera, intactos. Es exactamente lo que tenía que pasar, y es el arnés haciendo su trabajo.
+
 ## Movimiento del 3D
 - Todos los disparadores de la intro van a **`scrub: 1`, no `true`**. Con `true` la escena va clavada a la rueda y un acelerón la teletransporta. Si tocas uno, tócalos todos: van juntos para no desincronizarse.
 - `Scene.tsx` usa **muelles amortiguados**, no solo interpolación directa: la pluma llega un pelo tarde respecto a la máquina, y la carga colgada se balancea empujada por su propia velocidad (se queda atrás al acelerar, se adelanta al frenar, y se para sola). Es lo que separa "animación" de "maquinaria".
@@ -479,7 +543,7 @@ Decisiones cerradas:
   | fundido de entrada | 340 px | **605 px** |
   | recorrido | 2.041 px | 2.160 px |
   | posarse en la nave | 529 px | 691 px |
-  | fundido de cierre | 265 px | **389 px** |
+  | fundido de cierre | 265 px | **518 px** (ver abajo) |
 
 - **Con 480svh y final en `bottom bottom` el tramo mide 4.320 px, que es justo
   el recorrido que antes se veía.** De los 5.220 originales, los últimos 900
@@ -490,6 +554,79 @@ Decisiones cerradas:
   lee como una cámara llegando y no como una cámara que ya estaba puesta.
 - Resultado medido de lo que sí se recortó: **146 px (0,16 pantallas) de azul
   sin nada**, de los 785 originales.
+
+#### La escena tiene que irse moviéndose, no apagándose
+
+- **El fallo de fondo no era la duración, era que no se movía nada.** La
+  entrada gira la cámara entera de perfil a cenital (`topView`, 0,19 → 0,42):
+  cambian la posición, el *arriba* de la cámara, el punto al que mira y el
+  ancho del encuadre. El telón solo tapa la costura. La salida, en cambio,
+  dejaba la cámara posada sobre la nave desde 0,86 y lo único que ocurría
+  después era el fundido. Se leía, con razón, como «se apaga la luz».
+- Ahora hay **`roadLeaving` (0,86 → 1)**: el encuadre se abre al **190 %**, así
+  que la nave, el camión y la carretera se van haciendo pequeños mientras el
+  telón se cierra encima. Arranca en 0,86, justo cuando la cámara acaba de
+  posarse, y por tanto **antes** de que el telón empiece en 0,88 — igual que a
+  la entrada, donde la cámara se mueve antes de que el telón se abra. El
+  movimiento abre y cierra la escena; el telón solo tapa la costura.
+- **Se hace abriendo el encuadre, no subiendo la cámara.** Con cámara
+  ortográfica alejarse no encoge nada, y subirla mirando al mismo punto lo que
+  hace es **enderezar la vista a plomo**, que es otro efecto y le quita al
+  camión el poco volumen que tiene. Lo único que aleja de verdad aquí es el
+  ancho de mundo.
+- **Cuidado con el nombre.** La primera versión se llamaba `leaving`, y dentro
+  del bloque de cámara **ya hay un `leaving`**: el del camión saliendo de plano
+  en `InRoute`. Una variable declarada más adentro tapa a la de fuera sin dar
+  ningún error, así que el encuadre se abría en el momento equivocado. Por eso
+  se llama `roadLeaving`.
+- Medido, comparando el área de escena en pantalla contra lo que predice la
+  fórmula (el ancho va a `1 + 0,9 · leaving` y el área con el cuadrado):
+
+  | fracción | área medida | esperada |
+  | --- | --- | --- |
+  | 0,84 | 100 % | 100 % |
+  | 0,86 | 98 % | 100 % |
+  | 0,88 | **89 %** | 91 % |
+  | 0,90 | **72 %** | 72 % |
+
+  Clava la predicción, y confirma que empieza en 0,86 y no antes. El arnés lo
+  respalda por el otro lado: `carretera-llegada` sigue a 0,00 %, o sea que el
+  alejamiento no se come la llegada.
+
+##### Y además tiene que durar lo que la entrada
+
+- **Es el mismo telón para las dos cosas.** `veilRef` es un solo plano en azul
+  noche pegado a la cámara, y la opacidad sale de `Math.max(closing, cover)`:
+  no hay dos efectos, hay uno. Así que lo único que separa «fundido» de
+  «parpadeo» es **cuánto dura**.
+- Y no duraban lo mismo. La entrada abre el telón en 0,26 → 0,40 (0,14 de la
+  sección, **605 px**); el cierre iba en 0,90 → 0,99 (0,09, **389 px**). La
+  escena entraba con un fundido y se iba con un parpadeo.
+- **La ironía es que la entrada estuvo en esas mismas nueve centésimas** y se
+  cambió por este mismo motivo —«un fundido de medio segundo de scroll no es
+  un fundido, es un parpadeo lento»—. El cierre se quedó con el valor que la
+  entrada ya había descartado. Cuando se afina un tramo, conviene mirar su
+  simétrico.
+- Ahora el cierre va en **0,88 → 1**, o sea 518 px. Igualar los 605 pedía
+  arrancar en 0,86 y eso se come la llegada, que está afinada aparte: el
+  camión aparca en 0,84 y entre eso y el fundido tiene que quedar un respiro.
+  Si hiciera falta más fundido, lo que toca es **adelantar el final del
+  recorrido (`ROAD_RUN.to`)**, no robarle a la pausa.
+
+##### Cómo se mide un fundido, y cómo no
+
+- Medido con el **brillo medio del cuadro**, barriendo el scroll de 20 en 20
+  px y quedándose con el tramo entre el 5 % y el 95 % de la caída: entrada
+  **420 px**, salida **340 px**. La salida pasa de durar el 64 % de la entrada
+  a durar el **81 %**.
+- **El primer intento contaba píxeles «azul noche» y daba 80 px**, o sea «la
+  salida es un corte». Era falso: a mitad de fundido el telón es
+  semitransparente y lo que hay en pantalla es un gris azulado que no pasa el
+  filtro de «esto es azul noche». El contador se quedaba plano durante todo el
+  fundido y solo saltaba al final. **Mentía en la dirección más peligrosa:
+  confirmando lo que se esperaba encontrar.** Para medir una transición entre
+  dos colores, la magnitud tiene que ser continua —brillo, no pertenencia a
+  un color—.
 
 #### El parpadeo del blanco: la franja es finita y la cámara gira
 

@@ -42,3 +42,8 @@ next-env.d.ts
 
 # Regresión visual: las referencias se versionan, lo demás no.
 tests/visual/salida/
+
+# Rendimiento: el resumen se versiona, los informes en crudo no.
+# Son 1,8 MB que cambian en cada pasada y se regeneran con el comando que
+# documenta tests/perf/linea-base.md. Misma regla que tests/visual/salida.
+tests/perf/informes/

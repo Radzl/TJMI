@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tres direcciones visuales · Transportes José María Ibáñez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --crema:#f7f3ec; --tinta:#11151c; --azul:#34548a; --rojo:#d03b40;
+    --rojo-ink:#b83035; --noche:#0f1a2e; --sand:#efe9dd; --line:#e8e2d6; --muted:#67625a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--crema);color:var(--tinta);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;
+    -webkit-font-smoothing:antialiased}
+  .d{font-family:Archivo,system-ui,sans-serif;font-variation-settings:'wdth' 82;
+    text-transform:uppercase;text-wrap:balance;line-height:.96;font-weight:600}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+  header{padding:80px 0 48px}
+  h1{font-size:clamp(40px,7vw,76px);margin:0 0 20px}
+  .lede{max-width:62ch;font-size:18px;line-height:1.65;color:var(--muted);margin:0}
+  .rule{width:56px;height:3px;background:var(--rojo);margin:0 0 24px}
+  .grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));padding-bottom:80px}
+  a.card{display:flex;flex-direction:column;text-decoration:none;color:inherit;
+    border:1px solid var(--line);background:#fff;overflow:hidden;transition:border-color .2s,transform .2s}
+  a.card:hover{border-color:var(--azul);transform:translateY(-3px)}
+  .thumb{height:170px;display:flex;align-items:flex-end;padding:16px;position:relative}
+  .t1{background:var(--sand)}
+  .t2{background:var(--noche)}
+  .t3{background:var(--rojo)}
+  .thumb span{font-family:Archivo,sans-serif;font-variation-settings:'wdth' 72;
+    text-transform:uppercase;font-size:34px;line-height:.9;font-weight:700}
+  .t1 span{color:var(--tinta)} .t2 span{color:#fff} .t3 span{color:#fff}
+  .body{padding:20px}
+  .kick{font-family:Archivo,sans-serif;text-transform:uppercase;letter-spacing:.14em;
+    font-size:11px;color:var(--muted);margin:0 0 8px}
+  h2{font-size:22px;margin:0 0 10px;font-family:Archivo,sans-serif;font-variation-settings:'wdth' 88;
+    text-transform:uppercase;font-weight:600;letter-spacing:-.01em}
+  .body p{margin:0;font-size:15px;line-height:1.6;color:var(--muted)}
+  .meta{margin:14px 0 0;font-size:12px;color:var(--rojo-ink);font-family:Archivo,sans-serif;
+    text-transform:uppercase;letter-spacing:.1em}
+  footer{border-top:1px solid var(--line);padding:28px 0 60px;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="rule"></div>
+    <h1 class="d">Tres direcciones para la portada</h1>
+    <p class="lede">Las tres llevan el mismo contenido real: la ruta, los 420 km, las más de 150 fábricas, los 4.000 m² y los seis servicios. Lo que cambia es la dirección visual y el momento de scroll que cada una propone. Ábrelas, bájalas enteras y elige con el dedo.</p>
+  </header>
+
+  <div class="grid">
+    <a class="card" href="a-papel.html">
+      <div class="thumb t1"><span>Papel</span></div>
+      <div class="body">
+        <p class="kick">Dirección A</p>
+        <h2>Papel, llevado al límite</h2>
+        <p>La que tienes, pero empujada: tipografía a tamaño cartel, los dos tonos de arena nuevos y el mapa de la ruta dibujándose con el scroll. Respeta el brief del cliente al pie de la letra.</p>
+        <p class="meta">Momento: el mapa se traza</p>
+      </div>
+    </a>
+
+    <a class="card" href="b-torre.html">
+      <div class="thumb t2"><span>Torre de control</span></div>
+      <div class="body">
+        <p class="kick">Dirección B</p>
+        <h2>Torre de control</h2>
+        <p>Oscura de arriba abajo. Paneles de datos, filetes luminosos, etiquetas técnicas y el rojo como único color caliente. Es lo que se entiende por futurista, aplicado a una empresa de transporte.</p>
+        <p class="meta">Momento: los pasos se apilan</p>
+      </div>
+    </a>
+
+    <a class="card" href="c-industrial.html">
+      <div class="thumb t3"><span>Industrial</span></div>
+      <div class="body">
+        <p class="kick">Dirección C</p>
+        <h2>Industrial</h2>
+        <p>Alto contraste y sin una esquina redondeada. El rojo deja de ser un acento y pasa a ser estructura. Titulares que se salen de la pantalla y fotos a sangre en bloques duros.</p>
+        <p class="meta">Momento: el titular se descubre</p>
+      </div>
+    </a>
+  </div>
+
+  <footer>
+    Bosquejos de dirección, no la web. Sirven para decidir el aspecto: no llevan el 3D, ni traducción, ni formulario. Rama <strong>modernizacion</strong>.
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dirección A · Papel · Transportes José María Ibáñez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @property --km { syntax:'<integer>'; initial-value:0; inherits:false }
+  :root{
+    --crema:#f7f3ec; --tinta:#11151c; --azul:#34548a; --azul-osc:#27416b; --rojo:#d03b40;
+    --rojo-ink:#b83035; --noche:#0f1a2e; --sand:#efe9dd; --sand-deep:#ded5c2;
+    --line:#e8e2d6; --muted:#67625a;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--crema);color:var(--tinta);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;
+    -webkit-font-smoothing:antialiased}
+  .d{font-family:Archivo,system-ui,sans-serif;font-variation-settings:'wdth' 80;
+    text-transform:uppercase;text-wrap:balance;font-weight:600;line-height:.95}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+  .kick{font-family:Archivo,sans-serif;text-transform:uppercase;letter-spacing:.16em;
+    font-size:11px;color:var(--muted);margin:0}
+
+  nav{position:sticky;top:0;z-index:40;background:rgba(247,243,236,.92);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-family:Archivo,sans-serif;font-variation-settings:'wdth' 74;text-transform:uppercase;
+    font-weight:700;font-size:15px;letter-spacing:.02em}
+  .logo i{font-style:normal;color:var(--rojo)}
+  .btn{display:inline-block;background:var(--azul);color:#fff;text-decoration:none;
+    font-family:Archivo,sans-serif;text-transform:uppercase;letter-spacing:.1em;font-size:12px;
+    padding:11px 20px;transition:background .2s}
+  .btn:hover{background:var(--azul-osc)}
+  .volver{position:fixed;left:16px;bottom:16px;z-index:60;background:var(--tinta);color:#fff;
+    text-decoration:none;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    font-family:Archivo,sans-serif;padding:9px 14px}
+
+  /* Hero: el titular manda y la foto entra por la derecha a sangre. */
+  .hero{display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:0;
+    min-height:88vh;border-bottom:1px solid var(--line)}
+  .hero-txt{padding:72px 28px 72px max(28px,calc((100vw - 1180px)/2 + 28px))}
+  .rule{width:64px;height:3px;background:var(--rojo);margin-bottom:28px}
+  h1{font-size:clamp(44px,6.4vw,104px);margin:0 0 26px;letter-spacing:-.012em}
+  .sub{font-size:clamp(17px,1.5vw,21px);line-height:1.6;color:var(--muted);max-width:46ch;margin:0 0 34px}
+  .hero-foto{position:relative;align-self:stretch;min-height:52vh;overflow:hidden}
+  .hero-foto img{width:100%;height:100%;object-fit:cover;object-position:center}
+
+  /* Cifras a sangre, con los filetes dibujados por el hueco. */
+  .cifras{background:var(--sand);border-bottom:1px solid var(--line)}
+  .cifras ul{list-style:none;margin:0;padding:0;display:grid;
+    grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line)}
+  .cifras li{background:var(--sand);padding:40px 28px}
+  .cifras b{display:block;font-family:Archivo,sans-serif;font-variation-settings:'wdth' 84;
+    font-size:clamp(34px,4.4vw,60px);font-weight:600;line-height:1;letter-spacing:-.02em}
+  .cifras span{display:block;margin-top:10px;font-size:13px;color:var(--muted);line-height:1.45}
+
+  /* El momento: el mapa se traza con el scroll. */
+  .mapa{position:relative;height:320vh;view-timeline-name:--mapa;view-timeline-axis:block}
+  .mapa-fijo{position:sticky;top:0;height:100vh;display:grid;
+    grid-template-columns:.9fr 1.1fr;align-items:center;gap:40px;
+    max-width:1180px;margin:0 auto;padding:0 28px}
+  .mapa h2{font-size:clamp(32px,4vw,58px);margin:18px 0 18px}
+  .mapa p{color:var(--muted);line-height:1.65;max-width:40ch;margin:0 0 30px}
+  .odo{font-family:Archivo,sans-serif;font-variation-settings:'wdth' 86;font-weight:600;
+    font-size:clamp(46px,6vw,88px);line-height:1;letter-spacing:-.02em;counter-reset:km var(--km)}
+  .odo::after{content:counter(km) ' km'}
+  .odo-pie{font-size:13px;color:var(--muted);margin-top:8px}
+  .mapa svg{width:100%;height:auto;display:block}
+  #ruta{stroke:var(--azul);stroke-width:4;fill:none;stroke-linecap:round}
+  .pueblo{fill:var(--rojo);opacity:0}
+  #nave-mad{fill:var(--sand-deep)}
+  .tierra{fill:#fff;stroke:var(--line);stroke-width:1}
+
+  /* Servicios: filas con filete, el nombre se enciende. */
+  .serv{border-top:1px solid var(--line)}
+  .serv h2{font-size:clamp(30px,3.6vw,50px);margin:0 0 6px}
+  .serv .intro{color:var(--muted);margin:0 0 34px;max-width:52ch;line-height:1.6}
+  .serv ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+  .serv li{border-bottom:1px solid var(--line)}
+  .serv a{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:18px;
+    padding:26px 4px;text-decoration:none;color:inherit;transition:background .2s,padding .2s}
+  .serv a:hover{background:#fff;padding-left:14px;padding-right:14px}
+  .serv .num{font-family:Archivo,sans-serif;font-size:12px;letter-spacing:.1em;color:var(--rojo-ink)}
+  .serv .nom{font-family:Archivo,sans-serif;font-variation-settings:'wdth' 86;
+    text-transform:uppercase;font-size:clamp(20px,2.4vw,32px);font-weight:600;
+    color:var(--muted);transition:color .25s}
+  .serv a:hover .nom{color:var(--tinta)}
+  .serv .dato{font-size:13px;color:var(--muted);text-align:right}
+
+  /* Cierre */
+  .cta{background:var(--noche);color:#fff;margin-top:96px}
+  .cta .wrap{padding:96px 28px}
+  .cta h2{font-size:clamp(36px,5vw,76px);margin:0 0 24px;max-width:22ch}
+  .cta p{color:rgba(255,255,255,.72);max-width:46ch;line-height:1.65;margin:0 0 34px}
+  .cta .btn{background:var(--rojo)}
+  .cta .btn:hover{background:#b83035}
+  .tel{color:#fff;margin-left:22px;font-size:14px}
+  section{padding:96px 0}
+  .badge{position:fixed;right:16px;bottom:16px;z-index:60;background:var(--sand-deep);
+    color:var(--tinta);font-family:Archivo,sans-serif;text-transform:uppercase;
+    letter-spacing:.12em;font-size:11px;padding:9px 14px}
+
+  .rev{opacity:1;transform:none}
+  @supports (animation-timeline: view()){
+    .rev{animation:subir linear both;animation-timeline:view();animation-range:entry 8% entry 58%}
+    @keyframes subir{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+    #ruta{stroke-dasharray:var(--L,620);stroke-dashoffset:var(--L,620);
+      animation:trazar linear both;animation-timeline:--mapa;animation-range:entry 100% exit 0%}
+    @keyframes trazar{to{stroke-dashoffset:0}}
+    .odo{animation:contar linear both;animation-timeline:--mapa;animation-range:entry 100% exit 0%}
+    @keyframes contar{to{--km:420}}
+    .pueblo{animation:brotar linear both;animation-timeline:--mapa}
+    @keyframes brotar{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+    #nave-mad{animation:llegar steps(2,end) both;animation-timeline:--mapa;animation-range:entry 100% exit 0%}
+    @keyframes llegar{to{fill:var(--azul)}}
+  }
+  @media (prefers-reduced-motion: reduce){
+    #ruta{stroke-dasharray:none!important;stroke-dashoffset:0!important;animation:none!important}
+    .rev,.pueblo,.odo{animation:none!important;opacity:1!important;transform:none!important}
+  }
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr;min-height:auto}
+    .hero-txt{padding:56px 28px 40px}
+    .hero-foto{min-height:46vh}
+    .cifras ul{grid-template-columns:repeat(2,1fr)}
+    .mapa{height:240vh}
+    .mapa-fijo{grid-template-columns:1fr;gap:16px;align-content:center}
+    .mapa svg{max-height:38vh}
+    .serv a{grid-template-columns:36px 1fr;gap:12px}
+    .serv .dato{display:none}
+  }
+</style>
+</head>
+<body>
+<a class="volver" href="index.html">← Las tres</a>
+<span class="badge">Dirección A · Papel</span>
+
+<nav><div class="wrap">
+  <span class="logo">José María <i>Ibáñez</i></span>
+  <a class="btn" href="#cierre">Pide presupuesto</a>
+</div></nav>
+
+<header class="hero">
+  <div class="hero-txt">
+    <div class="rule"></div>
+    <h1 class="d">De Castellón a Madrid en 24&nbsp;horas</h1>
+    <p class="sub">Recogemos en más de 150 fábricas de la provincia y entregamos puerta a puerta. Dos naves nuestras en los extremos y nadie en medio.</p>
+    <a class="btn" href="#cierre">Pide presupuesto</a>
+  </div>
+  <div class="hero-foto"><img src="/media/camion-01.jpg" alt="Camión de Transportes José María Ibáñez"></div>
+</header>
+
+<div class="cifras"><ul>
+  <li class="rev"><b>40</b><span>Años en la misma ruta</span></li>
+  <li class="rev"><b>+150</b><span>Localidades de recogida</span></li>
+  <li class="rev"><b>+4.000 m²</b><span>De almacén propio</span></li>
+  <li class="rev"><b>24 h</b><span>Entrega en destino</span></li>
+</ul></div>
+
+<div class="mapa">
+  <div class="mapa-fijo">
+    <div>
+      <p class="kick">La ruta, cada día laborable</p>
+      <h2 class="d">Fiabilidad en cada kilómetro</h2>
+      <p>Salimos de Almazora cargados la tarde anterior, recogemos por la provincia y entregamos en Madrid al día siguiente. Sin transbordos.</p>
+      <div class="odo"></div>
+      <div class="odo-pie">Por trayecto, cada día laborable</div>
+    </div>
+    <svg viewBox="0 0 520 330" role="img" aria-label="Mapa de la ruta entre Almazora y Fuenlabrada">
+      <path class="tierra" d="M92 96 L152 72 L222 66 L292 52 L362 60 L424 80 L472 110 L494 154 L484 202 L456 238 L394 262 L318 272 L244 266 L176 244 L122 204 L94 154 Z"/>
+      <g>
+        <circle class="pueblo" cx="430" cy="150" r="4" style="animation-range:entry 110% exit 4%"/>
+        <circle class="pueblo" cx="446" cy="168" r="4" style="animation-range:entry 112% exit 6%"/>
+        <circle class="pueblo" cx="438" cy="192" r="4" style="animation-range:entry 114% exit 8%"/>
+        <circle class="pueblo" cx="414" cy="204" r="4" style="animation-range:entry 116% exit 10%"/>
+        <circle class="pueblo" cx="398" cy="144" r="4" style="animation-range:entry 118% exit 12%"/>
+        <circle class="pueblo" cx="458" cy="140" r="4" style="animation-range:entry 120% exit 14%"/>
+        <circle class="pueblo" cx="408" cy="172" r="4" style="animation-range:entry 122% exit 16%"/>
+        <circle class="pueblo" cx="424" cy="128" r="4" style="animation-range:entry 124% exit 18%"/>
+      </g>
+      <path id="ruta" d="M424 164 C 386 196 344 208 302 196 C 258 184 232 158 214 142"/>
+      <rect x="416" y="156" width="17" height="17" rx="2" fill="#34548a"/>
+      <rect id="nave-mad" x="206" y="134" width="17" height="17" rx="2"/>
+      <text x="440" y="196" font-family="Archivo, sans-serif" font-size="13" fill="#67625a" letter-spacing="1">ALMAZORA</text>
+      <text x="200" y="126" text-anchor="end" font-family="Archivo, sans-serif" font-size="13" fill="#67625a" letter-spacing="1">FUENLABRADA</text>
+    </svg>
+  </div>
+</div>
+
+<section class="serv"><div class="wrap">
+  <h2 class="d rev">Seis formas de mover tu mercancía</h2>
+  <p class="intro rev">Grupaje o camión completo, nacional o internacional, y el almacén cuando lo que hace falta es que la mercancía espere cerca del cliente.</p>
+  <ol>
+    <li><a href="#cierre"><span class="num">01</span><span class="nom">Grupaje de palés</span><span class="dato">+150 localidades de recogida</span></a></li>
+    <li><a href="#cierre"><span class="num">02</span><span class="nom">Camión completo</span><span class="dato">13,6 m y 33 palés</span></a></li>
+    <li><a href="#cierre"><span class="num">03</span><span class="nom">Nacional e internacional</span><span class="dato">Salidas desde Almazora</span></a></li>
+    <li><a href="#cierre"><span class="num">04</span><span class="nom">Almacenaje</span><span class="dato">+4.000 m² propios</span></a></li>
+    <li><a href="#cierre"><span class="num">05</span><span class="nom">Picking y preparación</span><span class="dato">Pedidos por referencia</span></a></li>
+    <li><a href="#cierre"><span class="num">06</span><span class="nom">Carga y descarga</span><span class="dato">Carretilla propia</span></a></li>
+  </ol>
+</div></section>
+
+<div class="cta" id="cierre"><div class="wrap">
+  <h2 class="d">Cuéntanos qué necesitas mover</h2>
+  <p>Dinos de dónde a dónde, cuántos palés y cuándo. Te contestamos con un precio, no con un formulario.</p>
+  <a class="btn" href="#">Pide presupuesto</a>
+  <a class="tel" href="#">964 53 24 00</a>
+</div></div>
+
+<script>
+  var r = document.getElementById('ruta');
+  if (r && r.getTotalLength) r.style.setProperty('--L', Math.ceil(r.getTotalLength()));
+</script>
+</body>
+</html>
