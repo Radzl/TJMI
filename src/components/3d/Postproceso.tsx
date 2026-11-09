@@ -2,9 +2,12 @@
 
 import { EffectComposer, Vignette } from '@react-three/postprocessing';
 import { useThree } from '@react-three/fiber';
+import { ANCHO_MOVIL } from '@/lib/pantalla';
 
-/** Por debajo de este ancho se considera móvil y el postprocesado se apaga. */
-const ANCHO_MOVIL = 768;
+/* El umbral vive en `lib/pantalla.ts` y no aquí, y no es manía de orden:
+   `Experience` lo necesita para decidir si **llega a cargar este módulo**, y
+   si se lo pidiera a este archivo lo traería entero —que es justo lo que el
+   aplazamiento evita—. */
 
 /**
  * El postprocesado de la escena: desenfoque de maqueta y viñeta.

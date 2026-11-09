@@ -1228,14 +1228,58 @@ Se descartó antes de escribirlo.
 | Speed Index | 3,9 s (83) | 2,6 s (97) |
 | **nota** | **50** | **86** |
 
+### El postprocesado ya no viaja al móvil
+
+- La viñeta llevaba tiempo apagada por debajo de 768 px, porque medido cuesta
+  **la mitad de los fotogramas** en un teléfono (30 fps contra 88 en el
+  patio). Lo que no se había mirado es que **el módulo viajaba igual**:
+  `postprocessing` y `@react-three/postprocessing` entraban en el trozo de
+  1,1 MB del 3D y se descargaban y se evaluaban en un teléfono para no pintar
+  nada.
+- Ahora va con `lazy`, y **la decisión se toma una sola vez, al montar**. Esto
+  no contradice la nota de `Postproceso` —«va con `enabled`, no desmontando el
+  componente»—: son dos cosas distintas. `Experience` decide si el módulo
+  **llega a cargarse**, que es de una vez; el componente sigue decidiendo si
+  **se ejecuta**, que sí reacciona al tamaño. Girar el teléfono no monta ni
+  desmonta nada.
+- **El umbral se mudó a `lib/pantalla.ts`**, y no es manía de orden:
+  `Experience` lo necesita sin importar `Postproceso`, porque importarle una
+  constante lo traería entero y el aplazamiento no serviría de nada. Mismo
+  caso que `roadFrameWidth` en `lib/route.ts`.
+- **Va en su propio `Suspense`**, fuera del de la escena: compartiendo
+  boundary, la espera de este módulo volvería a suspender el de arriba y la
+  escena **ya montada** desaparecería un instante mientras llega la viñeta.
+- Medido sobre producción, sumando lo que el navegador pide de verdad
+  (`tests/perf/medidas/bytes.mjs`): móvil **1.854 → 1.778 KB**, o sea **76 KB
+  menos**, que es exactamente el trozo de la viñeta. Escritorio se queda en
+  2.000 KB.
+- **El trozo del 3D baja de 1.148 a 868 KB**, pero no todo ese recorte es
+  ahorro: Turbopack reparte lo demás en otro trozo que el escritorio sigue
+  pidiendo. El número honesto es el de arriba, el de bytes pedidos.
+
+#### Dos trampas al comprobarlo
+
+- **El arnés visual no sirve para esto.** Dio 0,00 % en las quince tomas con
+  la viñeta cargando y sin cargar, y es correcto: la viñeta oscurece las
+  esquinas un **1,5 %** y el umbral del arnés es del 1 %. Que una comprobación
+  pase no significa que el efecto esté.
+- **Y hay que reiniciar `next start` después de `next build`.** Sin eso el
+  servidor sigue sirviendo la compilación anterior, los trozos cambian de
+  nombre y lo que se ve son errores 500 y «Refused to execute script because
+  its MIME type is text/plain». Con el servidor viejo la medida decía que
+  **ni escritorio ni móvil** pedían la viñeta, o sea que el cambio estaba
+  roto; con el servidor bueno, escritorio sí y móvil no. Una medida contra un
+  servidor caducado miente en la dirección más peligrosa: hacia «lo has
+  roto».
+- La comprobación que sí vale es **si el trozo se pide**, no si se ve:
+  localizar el archivo con `grep -l VignetteEffect .next/static/chunks/*.js` y
+  mirar si el navegador lo solicita en cada ancho.
+
 ### Lo que queda, por orden de lo que devolvería
 
 1. **Partir `Scene.tsx`**, que son 1.665 líneas y entra entero en el paquete
    del 3D.
-2. **Que el postprocesado no viaje al móvil.** La viñeta está apagada por
-   debajo de 768 px desde hace tiempo, pero el módulo se descarga y se evalúa
-   igual.
-3. **GSAP**, que es la tarea más larga de la carga y hoy no se puede diferir
+2. **GSAP**, que es la tarea más larga de la carga y hoy no se puede diferir
    sin tocar catorce archivos.
 
 ## Accesibilidad: los dos fallos reales, arreglados
