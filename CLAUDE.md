@@ -54,7 +54,27 @@ Se contaron los píxeles de siete páginas para saber qué colores usa la web **
 
 #### Lo que queda pendiente del color
 
-- **El rojo sigue en el 0,13 % de la web**, y en `/faq` y `/contacto` no aparece. Eso no es un acento, es un rumor. No necesita más superficie —el brief lo prohíbe— sino **una aparición deliberada por página**, para que se lea como sistema y no como resto. Hoy los únicos bloques de rojo son la banda rotulada de Servicios y la muesca del vídeo de Nosotros.
+#### El rojo, vuelto a medir página por página
+
+- **La nota anterior decía que en `/faq` y `/contacto` no aparecía, y hoy eso ya no es verdad en `/faq`.** Vuelto a medir con `tests/perf/medidas/rojo.mjs`, que captura cada página entera y cuenta los píxeles cercanos a los tres rojos de la casa:
+
+  | | rojo | mancha mayor | qué es esa mancha |
+  | --- | --- | --- | --- |
+  | portada | 0,231 % | 57.120 px | la banda rotulada |
+  | nosotros | 0,253 % | 7.471 px | el botón del cierre |
+  | faq | 0,203 % | 7.499 px | el botón del cierre |
+  | grupaje | 0,197 % | 7.499 px | el botón del cierre |
+  | servicios | 0,123 % | 7.499 px | el botón del cierre |
+  | blog | 0,073 % | 314 px | solo los minutos de lectura |
+  | **contacto** | **0,033 %** | **371 px** | un filete de 1 px y dos numeritos |
+
+- **El margen de tolerancia es la trampa de esta medida.** Con 34 niveles por canal todas las páginas salían con mucho más rojo, pero no era rojo de marca: eran los tonos cálidos de las fotos de azulejo y el rojo de la lona del camión en el 3D. Con 10 se mide el color de la casa. Si vuelves a lanzarlo, usa el mismo margen o los números no se pueden comparar.
+- **Lo que salió de ahí: la página que existe para pedir presupuesto era la que menos color de marca tenía de toda la web.** `/contacto` iba la última, y a mucha distancia.
+- No se arregla metiendo rojo por meterlo —el brief lo prohíbe como fondo— sino **usando el que ya existe donde significa algo**:
+  - **La barra de avance del formulario va en rojo.** Tenía que ser algo que esté ahí desde el primer momento: el botón de enviar solo se ve en el último paso y el filete del encabezado mide 56 × 2. La barra se ve nada más abrir, tiene cuerpo y es un relleno, que es exactamente como el brief quiere el rojo. El «Paso 1 de 3» de al lado se queda en azul: si fueran los dos, el rojo pasaría a ser el color del bloque en vez del de la barra que avanza. Medido: **371 → 716 px** y 0,033 → 0,051 %.
+  - **El último paso del formulario va en rojo también**, y los intermedios no. `accent` (`bg-brand-red`) es el color que esta web le da a la acción que cierra, y aquí la que cierra es enviar; «Siguiente» no cierra nada. Si los tres pasos fueran rojos, el rojo dejaría de marcar el final. Blanco sobre `#d03b40` da **4,79:1**, por encima del 4,5 de la WCAG.
+  - **El listado del blog recupera el filete rojo que crece**, el mismo gesto que las tarjetas del índice de la portada. Va debajo del enlace de cada fila, no encima: lo que marca es la acción de entrar a leer. En reposo mide 0, así que no mueve la maquetación.
+- **`/blog` sigue sin una aparición de rojo en reposo, y se deja así.** Su rojo son los minutos de lectura, repetidos diez veces. Un bloque de color en una fila de un índice la haría competir con las otras nueve, que es justo lo que un índice no debe hacer. Si algún día el listado cierra con una llamada a la acción —como ya hacen los artículos, y hoy el índice no—, ese botón traerá el rojo solo.
 
 ## Criterio de diseño (plugin `frontend-design`)
 
@@ -242,7 +262,10 @@ Decisiones cerradas:
   - **Frenar la red es contraproducente.** Es lo primero que uno hace y es justo lo que impide verla: el trozo de JavaScript que la monta tarda entonces más que la ventana de captura y la pantalla **ni siquiera llega a existir**. Sondeando el DOM cada 50 ms durante nueve segundos con la red a 90 kB/s, no aparece nunca.
   - Lo que funciona es **congelarla**: poner `done` a `false` y el progreso a un valor fijo, capturar, y revertir.
   - Y con la red normal aparece sobre los **1,5 s** y dura un par de segundos, que es la ventana real.
-- **Pendiente conocido:** el navbar se ve **por encima** de la pantalla de carga, así que durante la espera el logo sale dos veces. El preloader va a `z-[100]` y el navbar a `z-50`, o sea que no es el valor: es que uno de los dos está en otro contexto de apilado. No se ha tocado porque mover el `z-index` del navbar puede arrastrar el menú de móvil, el botón de WhatsApp y el banner de cookies.
+- **El logo salía dos veces durante la carga, y ya no.** El navbar se pintaba por encima de la pantalla de carga. La sospecha que había escrita era la correcta —«no es el valor, es que uno de los dos está en otro contexto de apilado»— y era exactamente eso: este componente se renderiza desde `Experience`, que vive dentro de `<main class="relative z-10">`, y **un `z-index` solo compite con sus hermanos**. El `z-[100]` del preloader competía *dentro* de ese `main`, y el `main` entero (z-10) queda por debajo del navbar (z-50).
+- Por eso subirle el número al preloader no habría hecho nada, y bajarle el del navbar habría arrastrado el menú de móvil, el botón de WhatsApp y el banner de cookies. Lo que lo arregla es **sacarlo a `document.body` con un portal**, igual que `ServiceDialog`, y por el mismo motivo: una capa que tapa la página no puede depender del apilado del bloque que la contiene.
+- **Comprobado antes y después con la misma prueba** (`tests/perf/medidas/preloader.mjs`), que no mira el código sino que le pregunta al navegador qué elemento hay en el punto donde está el logo del navbar: antes el padre era `main` y encima salía el navbar; ahora el padre es `body` y encima sale la pantalla de carga.
+- **Y esa prueba tiene una trampa que ya se pisó una vez:** hay que mirar **solo mientras el preloader tapa de verdad**. En cuanto termina se queda con `pointer-events-none` para dejar pasar los clics, y entonces `elementFromPoint` lo salta y devuelve lo de debajo. Midiendo sin esa condición salía «el navbar gana» incluso con el arreglo puesto — y la captura de pantalla enseñaba justo lo contrario.
 
 ## Las fotos de las sedes y el mapa (`Sites.tsx`, `MapEmbed.tsx`)
 
@@ -1474,6 +1497,28 @@ Esto se auditó midiendo el HTML que de verdad se sirve en las 32 páginas (16 r
 4. **Las portadas de los artículos**, que además son las que se ven al compartirlos.
 5. **Rendimiento de la portada**, que es factor de posicionamiento: la intro 3D es lo más caro de la web y está medida en «Rendimiento del 3D».
 
+## El icono y el manifiesto
+
+- **El único icono que había era el logo tal cual, 420 × 286.** Un favicon no es rectangular: el navegador lo mete en una caja cuadrada de 16 px, así que el escudo salía aplastado a 16 × 11 con dos franjas vacías a los lados. Y no había `apple-icon`, de modo que guardar la web en la pantalla de inicio de un iPhone daba **una captura de la página** en vez del logo.
+- Tampoco había manifiesto, así que «añadir a la pantalla de inicio» —que en un móvil es lo que hace un cliente que va a volver— guardaba un acceso con el título de la pestaña recortado. Para un negocio al que se le escribe por WhatsApp desde el teléfono, ese acceso directo es un contacto guardado.
+- Ahora son cuatro tamaños generados **del mismo logo**: 512 y 192 para el manifiesto, 180 para Apple y 48 para el favicon, que es el que de verdad se ve pequeño.
+
+### Generados, no dibujados a mano
+
+- Los hace `node scripts/gen-iconos.mjs` a partir de `public/logo.png`. **Si cambia el logo, se vuelve a lanzar**: son archivos derivados, no originales.
+- **Con el navegador y no con una librería de imagen.** Este proyecto evita dependencias nativas a propósito —`check-media.mjs` lee las cabeceras de los JPEG a mano justo por eso, y `sharp` no está instalado como dependencia propia—, y aquí ya hay un Chrome y `playwright-core` para el arnés visual. Componer la imagen en una página y capturarla no añade **nada** al proyecto y sale igual en cada pasada.
+- **Fondo crema, no transparente.** Un icono de Apple no admite transparencia —iOS la rellena de negro— y en un favicon sobre pestaña oscura el azul del escudo se pierde. El crema es el papel de esta web, así que el icono se lee como parte de ella.
+- **El logo ocupa el 76 % del ancho.** A sangre, iOS le recorta las esquinas redondeadas y se come las puntas del escudo.
+
+### El manifiesto (`src/app/manifest.ts`)
+
+- **`start_url` es `/`, no `/es`.** La raíz redirige al idioma que toque, así que el acceso directo respeta el idioma de quien lo guarda. Con `/es`, los clientes europeos abrirían siempre en español.
+- **Va en español y no traducido**, porque Next genera **un** manifiesto para todo el sitio, no uno por idioma. El nombre de la empresa no se traduce y la descripción corta va en el idioma del mercado principal.
+- `theme_color` en el azul de marca y `background_color` en el crema: el primero tiñe la barra del sistema y el segundo es lo que se ve mientras arranca, así que el arranque no da un flash blanco.
+- El `theme-color` se declara **además** en el `viewport` del layout, porque el manifiesto solo cuenta si la web está instalada y esa etiqueta vale en cualquier visita.
+- Y ahí va también **`colorScheme: 'light'`**, que no es un detalle: esta web es clara y no tiene modo oscuro. Sin declararlo, un navegador en modo oscuro repinta por su cuenta los controles de formulario —los del presupuesto— y los campos salen con fondo gris oscuro sobre una tarjeta blanca.
+- El proxy de idiomas no toca esta ruta porque su filtro deja fuera todo lo que lleva un punto en el nombre, igual que `sitemap.xml` y `robots.txt`.
+
 ## Preguntas frecuentes
 
 - Vive en `src/app/[locale]/faq/page.tsx` y los textos en `messages`, bajo `faq`. Las preguntas y las respuestas son literalmente las que dio el cliente: se pasaron a caja baja (venían en mayúsculas), se corrigieron un par de erratas y se ajustó el tuteo. El contenido no se toca sin preguntar.

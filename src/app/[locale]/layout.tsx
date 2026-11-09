@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Archivo, IBM_Plex_Sans } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider, useTranslations } from 'next-intl';
@@ -50,6 +50,23 @@ type LocaleParams = { params: Promise<{ locale: string }> };
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
+
+/**
+ * Color de la barra del sistema y esquema de color.
+ *
+ * `themeColor` es lo que tiñe la barra de estado en Chrome de Android, y se
+ * declara aquí además de en el manifiesto porque el manifiesto **solo cuenta
+ * si la web está instalada**; esto vale en cualquier visita.
+ *
+ * `colorScheme: 'light'` no es un detalle: esta web es clara y no tiene modo
+ * oscuro. Sin declararlo, un navegador en modo oscuro se toma la libertad de
+ * repintar por su cuenta los controles de formulario —los del presupuesto— y
+ * entonces los campos salen con fondo gris oscuro sobre una tarjeta blanca.
+ */
+export const viewport: Viewport = {
+  themeColor: '#34548a',
+  colorScheme: 'light',
+};
 
 export async function generateMetadata({
   params,

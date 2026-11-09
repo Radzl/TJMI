@@ -154,9 +154,26 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
           </span>
           <span className="text-xs text-muted">{steps[step].hint}</span>
         </div>
+        {/* **La barra va en rojo, y es la aparición de marca de esta página.**
+
+            Medido contando los píxeles de los tres rojos de la casa en las
+            siete páginas: `/contacto` daba **0,033 %**, la última de todas, y
+            su mancha más grande eran 371 px. El resto llevan el botón rojo
+            del cierre, que son casi nueve mil. O sea que la página que existe
+            para pedir presupuesto era la que menos color de marca tenía.
+
+            Tenía que ser algo que **esté ahí desde el primer momento**: el
+            botón de enviar solo se pone rojo en el último paso y el filete
+            del encabezado mide 56 × 2. Esta barra se ve nada más abrir, tiene
+            cuerpo, y es un relleno —que es exactamente como el brief quiere
+            el rojo—.
+
+            El «Paso 1 de 3» de al lado **se queda en azul** a propósito: si
+            los dos fueran rojos, el rojo pasaría a ser el color del bloque en
+            vez del de la barra que avanza. */}
         <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-line">
           <div
-            className="h-full rounded-full bg-brand-blue transition-[width] duration-500 ease-out"
+            className="h-full rounded-full bg-brand-red transition-[width] duration-500 ease-out"
             style={{ width: `${((step + 1) / STEP_FIELDS.length) * 100}%` }}
           />
         </div>
@@ -291,7 +308,30 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
 
         <button
           type="submit"
-          className="inline-flex items-center justify-center rounded-full bg-brand-blue px-7 py-3 font-display text-sm uppercase tracking-widest text-white transition-colors hover:bg-brand-blue-dark"
+          /* **El último paso va en rojo, y los intermedios no.**
+
+             Medido sobre las siete páginas contando los píxeles de los tres
+             rojos de la casa: `/contacto` tenía **0,033 %** y su mancha roja
+             más grande eran 371 px —un filete de 1 px y dos numeritos—,
+             mientras el resto de páginas llevan el botón del cierre, que son
+             casi nueve mil. O sea que la página que existe **para** pedir
+             presupuesto era la que menos color de marca tenía de toda la web.
+
+             No se arregla metiendo rojo por meterlo: se arregla usando el que
+             ya existe donde significa algo. `accent` (`bg-brand-red`) es el
+             color que esta web le da a la acción que cierra, y aquí la acción
+             que cierra es enviar. «Siguiente» no cierra nada, así que sigue
+             en azul: si los tres pasos fueran rojos, el rojo dejaría de
+             marcar el final y volvería a ser decoración.
+
+             Blanco sobre `#d03b40` da **4,79:1**, por encima del 4,5 que pide
+             la WCAG para texto pequeño. Es el mismo par que ya usa `Button`
+             con `variant="accent"`. */
+          className={`inline-flex items-center justify-center rounded-full px-7 py-3 font-display text-sm uppercase tracking-widest text-white transition-colors ${
+            isLast
+              ? 'bg-brand-red hover:bg-brand-blue'
+              : 'bg-brand-blue hover:bg-brand-blue-dark'
+          }`}
         >
           {isLast ? t('submit') : t('next')}
         </button>

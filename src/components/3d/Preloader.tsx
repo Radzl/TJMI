@@ -4,6 +4,7 @@ import { useProgress } from '@react-three/drei';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 /** Tope de seguridad: si algún archivo se atasca, la web no se queda colgada. */
 const MAX_WAIT = 4000;
@@ -68,7 +69,25 @@ export default function Preloader() {
 
   if (gone) return null;
 
-  return (
+  // **El portal arregla el logo duplicado, y no era el `z-index`.**
+  //
+  // Durante la espera el logo salía **dos veces**: el de la pantalla de carga
+  // y el del navbar por encima. Estaba apuntado como pendiente y con la
+  // sospecha correcta —«no es el valor, es que uno de los dos está en otro
+  // contexto de apilado»—, solo que sin resolver.
+  //
+  // Lo era: este componente se renderiza desde `Experience`, que vive dentro
+  // de `<main className="relative z-10">`. Un `z-index` solo compite con sus
+  // hermanos, así que el `z-[100]` de aquí competía **dentro** de ese `main`,
+  // y el `main` entero (z-10) queda por debajo del navbar (z-50). Subirle el
+  // número a este `div` no habría hecho nada, y bajarle el del navbar habría
+  // arrastrado el menú de móvil, el botón de WhatsApp y el banner de cookies.
+  //
+  // Sacándolo a `document.body` el `z-[100]` pasa a competir de verdad con el
+  // 50 del navbar. Es el mismo patrón que usa `ServiceDialog`, y por el mismo
+  // motivo: una capa que tapa la página no puede depender del apilado del
+  // bloque que la contiene.
+  return createPortal(
     <div
       aria-hidden="true"
       data-preloader=""
@@ -112,6 +131,7 @@ export default function Preloader() {
       <span className="mt-5 font-display text-sm uppercase tracking-[0.25em] text-brand-blue tabular-nums">
         {km} {t('odometer.unit')}
       </span>
-    </div>
+    </div>,
+    document.body,
   );
 }

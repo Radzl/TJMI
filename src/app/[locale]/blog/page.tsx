@@ -109,8 +109,25 @@ export default async function BlogPage({ params }: Props) {
                       <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
                         {content.excerpt}
                       </p>
-                      <span className="mt-5 inline-flex items-center gap-2 font-display text-xs uppercase tracking-widest text-brand-blue">
+                      {/* **El filete rojo que crece, otra vez.**
+
+                          Es el mismo gesto que las tarjetas del índice de la
+                          portada, y está aquí por lo mismo: medido, el
+                          listado del blog tenía rojo —los minutos de
+                          lectura— pero **ni una aparición deliberada**, y un
+                          color que solo sale en texto de pie de foto se lee
+                          como un resto, no como un sistema.
+
+                          Va debajo del enlace y no encima de la fila: lo que
+                          marca es la acción, que es entrar a leer. En reposo
+                          mide 0 y no ocupa sitio, así que la maquetación no
+                          se mueve. */}
+                      <span className="mt-5 inline-flex flex-col items-start gap-1.5 font-display text-xs uppercase tracking-widest text-brand-blue">
                         {tBlog('readMore')}
+                        <span
+                          aria-hidden="true"
+                          className="h-0.5 w-0 bg-brand-red transition-all duration-300 group-hover:w-full"
+                        />
                       </span>
                     </div>
                   </Link>
