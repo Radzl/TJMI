@@ -376,7 +376,27 @@ body {
    más; una raya se ve desde lejos y además dice en qué dirección va la fila.
    Y es el mismo gesto que el filete rojo que crece en las tarjetas del índice
    de la portada. */
+/* **El punto que se ve mide 8 px; el que se toca, 24.**
+   Son dos cosas distintas y antes eran la misma: el botón medía 8 × 8 y
+   Lighthouse lo marcaba —el mínimo táctil de la WCAG son 24 × 24—. Con un
+   dedo eso es fallar el tiro tres de cada cuatro veces.
+
+   El punto pasa a ser un `::after` y el botón se queda de contenedor
+   transparente con el tamaño que pide la norma. No cambia ni un píxel de lo
+   que se ve. */
 .reviews-dot {
+  display: grid;
+  place-items: center;
+  height: 1.5rem;
+  width: 1.5rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.reviews-dot::after {
+  content: '';
   display: block;
   height: 0.5rem;
   width: 0.5rem;
@@ -387,11 +407,11 @@ body {
     background-color 0.35s ease;
 }
 
-.reviews-dot:hover {
+.reviews-dot:hover::after {
   background: color-mix(in oklab, var(--color-brand-blue) 45%, var(--color-line));
 }
 
-.reviews-dot[data-active='true'] {
+.reviews-dot[data-active='true']::after {
   width: 1.75rem;
   background: var(--color-brand-red);
 }

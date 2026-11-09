@@ -1012,6 +1012,40 @@ Lo que sí hay que abrir, con el motivo:
 - **`check:fotos` informa pero no bloquea** (`continue-on-error`), y también es decisión: hoy ya falla, porque tres de las ocho fotos son verticales en huecos apaisados, y eso lo arregla el cliente mandando archivos. Una comprobación que nace en rojo y seguirá en rojo durante semanas enseña a ignorar el aviso. **Cuando lleguen las fotos buenas, se quita esa línea y pasa a bloquear.**
 - El build de la CI va **sin `--webpack`** y en Linux, así que comprueba de paso la compilación que hará el servidor de producción.
 
+## Accesibilidad: los dos fallos reales, arreglados
+
+Medido con Lighthouse, que es quien los encontró: **93 → 97**. Lo único que
+queda marcado es el `color-contrast` de seis textos de la portada, y **son
+falsos positivos demostrados**: el auditor no ve el `<canvas>` y los mide
+contra el crema de la página cuando viven sobre el suelo azul noche del 3D.
+Medidos con píxeles dan 16,7:1 y 5,04:1.
+
+### El nombre del enlace del logo (WCAG 2.5.3)
+
+- Llevaba `aria-label="Inicio"` y el enlace **enseña** «Transportes José María
+  Ibáñez». Para quien navega por voz, decir lo que ve en pantalla **no
+  activaba el enlace**. Salía en todas las páginas, porque el navbar va en
+  todas.
+- **No se arregla escribiendo la cadena a mano en el `aria-label`.** Se probó
+  —«Transportes José María Ibáñez, Inicio»— y **seguía fallando**: el texto
+  visible son dos `span` apilados y en versales, así que lo que lee el auditor
+  no es la cadena que uno escribe. Acertar con el espaciado y el salto de
+  línea exactos es un juego que se pierde al primer retoque de maquetación.
+- Lo que no falla: **quitar el `aria-label`**. Entonces el nombre accesible
+  **es** el texto del enlace, y el destino se añade en un `sr-only` dentro,
+  que cuenta para el nombre pero no es texto visible. Correcto por
+  construcción, no por coincidencia.
+
+### Los puntos del carrusel de reseñas medían 8 px
+
+- El mínimo táctil de la WCAG son **24 × 24**, y el botón entero medía 8 × 8:
+  con un dedo eso es fallar el tiro la mayoría de las veces.
+- **El punto que se ve y el que se toca son dos cosas distintas**, y antes
+  eran la misma. El punto pasa a ser un `::after` y el botón se queda de
+  contenedor transparente de 24 px. **No cambia ni un píxel de lo que se ve.**
+- Los dos estados —el `:hover` y el `data-active` que lo estira a raya— van
+  ahora en el pseudoelemento. Si tocas uno, mira el otro.
+
 ## Cookies y consentimiento (obligatorio)
 - **Nada de terceros se carga antes del consentimiento.** Si añades un servicio externo (analítica, píxel, vídeo incrustado, fuentes de terceros), va detrás del gate, no suelto.
 - El estado vive en `src/lib/consent.ts`: cookie propia `tjmi_consent` (12 meses) con la fecha y la versión. Se lee con `useConsent()` (usa `useSyncExternalStore`, no `useState` en efectos).

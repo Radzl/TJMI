@@ -54,8 +54,28 @@ export default function Navbar() {
       } ${hidden && !open ? '-translate-y-full' : 'translate-y-0'}`}
     >
       <Container className="flex h-20 items-center justify-between">
-        <Link href="/" aria-label={t('home')} onClick={() => setOpen(false)}>
+        {/* **El nombre accesible tiene que contener el texto que se ve.**
+            Llevaba `aria-label={t('home')}`, o sea «Inicio», y el enlace
+            enseña «Transportes José María Ibáñez»: para quien navega por voz,
+            decir lo que ve en pantalla **no activaba el enlace**. Es la norma
+            WCAG 2.5.3 (*Label in Name*) y era el único fallo de accesibilidad
+            real de toda la web, en todas las páginas, porque el navbar va en
+            todas.
+
+            **Y no se arregla escribiendo la cadena a mano en el `aria-label`.**
+            Se intentó —`«Transportes José María Ibáñez, Inicio»`— y seguía
+            fallando: el texto visible son dos `span` apilados y en versales,
+            así que lo que lee el auditor no es la cadena que uno escribe.
+            Acertar con el espaciado y el salto de línea exactos es un juego
+            que se pierde al primer retoque de maquetación.
+
+            Lo que no falla es quitar el `aria-label`: entonces el nombre
+            accesible **es** el texto del enlace, y el destino se añade en un
+            `sr-only` dentro, que cuenta para el nombre pero no es texto
+            visible. Correcto por construcción, no por coincidencia. */}
+        <Link href="/" onClick={() => setOpen(false)}>
           <Wordmark />
+          <span className="sr-only">{t('home')}</span>
         </Link>
 
         <nav className="hidden items-center gap-8 lg:flex">
