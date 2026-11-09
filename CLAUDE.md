@@ -74,7 +74,8 @@ Se contaron los píxeles de siete páginas para saber qué colores usa la web **
   - **La barra de avance del formulario va en rojo.** Tenía que ser algo que esté ahí desde el primer momento: el botón de enviar solo se ve en el último paso y el filete del encabezado mide 56 × 2. La barra se ve nada más abrir, tiene cuerpo y es un relleno, que es exactamente como el brief quiere el rojo. El «Paso 1 de 3» de al lado se queda en azul: si fueran los dos, el rojo pasaría a ser el color del bloque en vez del de la barra que avanza. Medido: **371 → 716 px** y 0,033 → 0,051 %.
   - **El último paso del formulario va en rojo también**, y los intermedios no. `accent` (`bg-brand-red`) es el color que esta web le da a la acción que cierra, y aquí la que cierra es enviar; «Siguiente» no cierra nada. Si los tres pasos fueran rojos, el rojo dejaría de marcar el final. Blanco sobre `#d03b40` da **4,79:1**, por encima del 4,5 de la WCAG.
   - **El listado del blog recupera el filete rojo que crece**, el mismo gesto que las tarjetas del índice de la portada. Va debajo del enlace de cada fila, no encima: lo que marca es la acción de entrar a leer. En reposo mide 0, así que no mueve la maquetación.
-- **`/blog` sigue sin una aparición de rojo en reposo, y se deja así.** Su rojo son los minutos de lectura, repetidos diez veces. Un bloque de color en una fila de un índice la haría competir con las otras nueve, que es justo lo que un índice no debe hacer. Si algún día el listado cierra con una llamada a la acción —como ya hacen los artículos, y hoy el índice no—, ese botón traerá el rojo solo.
+- **Y `/blog` se resolvió por donde decía esta nota: cerrando con llamada.** El rojo de una fila del índice se descartó —un bloque de color en una fila la haría competir con las otras nueve, que es lo que un índice no debe hacer—, así que lo que faltaba no era color, era **salida**: cada artículo cierra con su llamada y el listado no cerraba con nada. Puesta la misma sección de cierre que el resto de páginas, el rojo viene solo. Medido: **314 → 7.499 px** y 0,073 → 0,170 %.
+- Resultado final de la pasada: **las siete páginas tienen ya una aparición de rojo con cuerpo**, de 716 px la más pequeña, y la web entera pasa de 0,183 % a 0,192 %. Que es lo que se buscaba: el mismo acento, sin una pizca más de superficie de la que el brief permite.
 
 ## Criterio de diseño (plugin `frontend-design`)
 
@@ -1604,6 +1605,13 @@ Esto se auditó midiendo el HTML que de verdad se sirve en las 32 páginas (16 r
 
 ## Páginas de error
 - El 404 propio vive en `src/app/[locale]/not-found.tsx` y **necesita la ruta comodín** `src/app/[locale]/[...rest]/page.tsx`, que solo llama a `notFound()`. Sin ella, cualquier URL inventada cae en la pantalla de error por defecto de Next, sin navbar, sin pie y sin idioma. No borres esa carpeta.
+
+## Los prototipos de dirección (`prototipos/`)
+
+- Son tres maquetas sueltas de portada que se hicieron para enseñar caminos posibles. **No son parte de la web**: no las enlaza nada, no entran en el sitemap y no pasan por Next.
+- **Estuvieron en `public/`, y eso es un problema de verdad, no de orden.** `public/` se publica entero, así que cualquiera podía abrir `transportesjosemariaibanez.es/direcciones/b-torre.html` y encontrarse una maqueta a medio hacer con el logo de la empresa: una web paralela sin navegación, sin aviso legal, sin consentimiento de cookies y sin `noindex`. Y Google indexa lo que alcanza, enlazado o no, en cuanto alguien comparte la dirección. Comprobado antes y después: daban 200 y ahora dan 404.
+- Siguen en el repositorio, que es donde se querían —para poder volver a mirarlas—, pero fuera de lo que viaja al servidor. Se abren a doble clic; su `LEEME.md` explica cada una.
+- **La decisión que salió de enseñarlas fue no rehacer la portada, sino mejorar la que hay.** Si alguien las retoma, que sea sabiendo eso.
 
 ## Estructura
 ```

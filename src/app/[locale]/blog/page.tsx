@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import Cta from '@/components/sections/Cta';
 import Container from '@/components/ui/Container';
 import CoverPlaceholder from '@/components/ui/CoverPlaceholder';
 import PageHeader, { type PageFact } from '@/components/ui/PageHeader';
@@ -137,6 +138,18 @@ export default async function BlogPage({ params }: Props) {
           </ul>
         </Container>
       </section>
+
+      {/* **El índice del blog cerraba sin ninguna salida, y cada artículo sí
+          la tiene.** O sea que quien se leía un artículo entero encontraba
+          adónde ir, y quien ojeaba el listado —que es el que todavía no se ha
+          decidido por nada— se quedaba al final de diez titulares y un borde
+          de filete.
+
+          Es la misma sección de cierre de todas las demás páginas, no una
+          versión reducida: si el listado merece una llamada, merece la
+          misma. Y de paso trae a esta página el único rojo con cuerpo que le
+          faltaba, que era lo que quedaba pendiente de la medida del color. */}
+      <Cta />
     </>
   );
 }
