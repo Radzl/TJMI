@@ -64,6 +64,27 @@ jobs:
       - name: Compilar
         run: npx next build
 
+      # **Esta sí entra en la CI, y las otras dos no.** `check:3d` compara
+      # píxeles y `formulario.mjs` necesita un Chrome: en una máquina distinta
+      # a la de las referencias darían falsos fallos, y un arnés que salta
+      # solo se deja de mirar a la tercera.
+      #
+      # `presupuesto.mjs` es otra cosa: son cinco peticiones `fetch` contra la
+      # ruta y las respuestas son las que son en cualquier máquina. Lo que
+      # vigila es el contrato de `/api/presupuesto`, y en particular **que sin
+      # claves de correo configuradas conteste `sin-configurar` con un 200**
+      # —que es de lo que depende que el formulario caiga a WhatsApp en vez de
+      # tragarse la solicitud—. La CI corre sin esas claves, así que comprueba
+      # exactamente ese camino.
+      - name: El formulario sigue aceptando solicitudes
+        run: |
+          npx next start -p 3100 &
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://localhost:3100/es && break
+            sleep 2
+          done
+          node tests/perf/medidas/presupuesto.mjs http://localhost:3100
+
       # Va al final y no corta la compilación: una vulnerabilidad nueva
       # aparece sin que nadie toque el código, y lo que hace falta es
       # enterarse, no quedarse sin poder subir nada.

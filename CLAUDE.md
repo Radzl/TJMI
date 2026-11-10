@@ -1360,6 +1360,48 @@ Se descartó antes de escribirlo.
   localizar el archivo con `grep -l VignetteEffect .next/static/chunks/*.js` y
   mirar si el navegador lo solicita en cada ancho.
 
+### El hilo bloqueado es ruidoso entre sesiones, y eso cambia cómo se lee
+
+- **Dato incómodo y hay que tenerlo delante:** el mismo código, en la misma
+  máquina y con el mismo comando, dio **1.540 ms** de hilo bloqueado por la
+  mañana y **2.430 ms** por la tarde. No es que se rompiera nada entre
+  medias.
+- Se comprobó en vez de suponerlo, con un A/B dentro de **la misma sesión**:
+  la banda rotulada añade un callback por fotograma, que era el sospechoso.
+  Con el callback puesto, 2.430 y 2.480 ms; quitado, 2.210 y 2.490. **La
+  misma nota, 48, en los cuatro casos.** O sea que no era la banda.
+- Con frenado real pasa igual: cuatro pasadas seguidas dieron **70, 73, 73 y
+  75**, así que una sola pasada no dice nada.
+- Parar el servidor de desarrollo que corría al lado **no mejoró nada** —si
+  acaso salió peor—, así que tampoco era eso.
+
+**La regla que sale de aquí:**
+
+1. **Solo valen las comparaciones hechas una detrás de otra, en la misma
+   sesión y con la misma máquina en el mismo estado.** Un número de hace
+   dos horas no es una referencia.
+2. **Siempre tres pasadas, y se mira el rango**, no la primera. La primera
+   de las cuatro de arriba fue la peor de todas.
+3. Lo que sí es estable y comparable entre sesiones son **las llamadas de
+   dibujo** del 3D y **los bytes que pide el navegador**
+   (`tests/perf/medidas/bytes.mjs`), porque no dependen de lo ocupada que
+   esté la máquina. Para medir una optimización, mejor esos.
+
+#### Dónde quedó la portada al cerrar esta tanda
+
+| | simulado | frenado real |
+| --- | --- | --- |
+| FCP | 0,9 s | 2,2 s |
+| LCP | 5,8 s | **2,1 s** |
+| CLS | **0** | **0** |
+| hilo bloqueado | 2,4 s | 0,76 s |
+| **nota** | **48** | **73–75** |
+
+Y los bytes, que es la medida que sí se puede comparar con la de antes:
+**1.781 KB en móvil** y 2.005 en escritorio, prácticamente lo mismo que
+antes de todo este trabajo (1.778 / 2.000). O sea que nada de lo añadido
+—el envío del formulario, los avisos, la banda— ha engordado la portada.
+
 ### Las medidas de la escena viven aparte (`escena/medidas.ts`)
 
 - `Scene.tsx` eran **1.678 líneas**, y de ellas casi quinientas eran

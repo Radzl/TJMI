@@ -254,3 +254,51 @@ Insights.
 | alto de página al asentarse | 20.677 → 14.059 px | **sin cambio** | `medidas/cls.mjs` |
 | primer contexto WebGL | — | **1.277 ms** | `medidas/sonda-webgl.mjs` |
 | arnés visual | — | **0,00 % en 15 tomas** | `npm run check:3d` |
+
+---
+
+## 10 de noviembre de 2026: cierre de la tanda, y una advertencia
+
+### Lo que hay que saber antes de comparar nada con lo de arriba
+
+**El hilo bloqueado que mide Lighthouse es ruidoso entre sesiones.** El
+mismo código, en la misma máquina y con el mismo comando, dio **1.540 ms**
+por la mañana y **2.430 ms** por la tarde.
+
+Se comprobó en vez de suponerlo, con un A/B dentro de la misma sesión: el
+sospechoso era el callback por fotograma que añade la banda rotulada.
+
+| | pasada 1 | pasada 2 | nota |
+| --- | --- | --- | --- |
+| con el callback | 2.430 ms | 2.480 ms | 48 |
+| sin el callback | 2.210 ms | 2.490 ms | 48 |
+
+No era la banda. Con frenado real pasa lo mismo: cuatro pasadas seguidas
+dieron **70, 73, 73 y 75**.
+
+**Así que:** solo valen las comparaciones hechas una detrás de otra, en la
+misma sesión; siempre tres pasadas mirando el rango; y para medir una
+optimización de verdad, mejor las **llamadas de dibujo** y los **bytes
+pedidos**, que no dependen de lo ocupada que esté la máquina.
+
+### Dónde quedó la portada
+
+| | simulado | frenado real |
+| --- | --- | --- |
+| FCP | 0,9 s | 2,2 s |
+| LCP | 5,8 s | **2,1 s** |
+| CLS | **0** | **0** |
+| hilo bloqueado | 2,4 s | 0,76 s |
+| Speed Index | 4,5 s | 5,0 s |
+| **nota** | **48** | **73–75** |
+
+### Y la medida que sí se puede comparar
+
+| | antes de esta tanda | al cerrarla |
+| --- | --- | --- |
+| JavaScript pedido, móvil | 1.778 KB | **1.781 KB** |
+| JavaScript pedido, escritorio | 2.000 KB | **2.005 KB** |
+
+Tres kilobytes. Nada de lo añadido —el envío real del formulario, la red de
+avisos, la banda que responde al scroll, la página de cobertura— ha
+engordado la portada.
