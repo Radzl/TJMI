@@ -1525,6 +1525,16 @@ Poniendo `ROAD_LEAD = 0` (deshacer el adelanto de la cámara cenital) el script 
 - Va a **390 px en español y 1.280 en inglés**, para que cada pasada cubra los dos anchos y los dos idiomas sin tardar el doble.
 - **Perdona tres avisos de consola a propósito**, y conviene saber cuáles para no volver a perseguirlos: el de `THREE.Clock` (una API que la librería ha retirado), los `X4122` del compilador de sombreadores de Windows quejándose de precisión, y el `willReadFrequently` del lienzo. Ninguno depende de este código.
 
+### Y una pasada con movimiento reducido
+
+- Esta web se puso una regla a sí misma —«nunca escondas algo en el marcado y lo enseñes solo por animación»— y **hasta ahora nada comprobaba que siguiera siendo verdad**. Un componente nuevo que se olvide del respaldo deja su texto en  para siempre, y quien tiene esa preferencia activada se encuentra una página con huecos **y sin un solo error en consola**.
+- La pasada carga las dieciséis páginas con  y busca titulares, párrafos y listas con más de veinte caracteres que acaben invisibles. **La opacidad se acumula por los padres**, así que se sube por el árbol multiplicando: un bloque entero a cero esconde a sus hijos aunque ellos digan 1.
+- No cuenta lo que está escondido a propósito: , lo marcado con  o , y lo que no ocupa sitio.
+
+#### Comprobado que sabe fallar
+
+Igual que con , se saboteó a propósito: un  temporal. **Lo cazó en las dieciséis páginas**, con 35 textos en la portada. Una comprobación que nunca ha fallado no demuestra nada.
+
 ### La trampa que hace perder media hora
 
 **Hay que reiniciar `next start` después de `next build`.** Sin eso el servidor sigue sirviendo la compilación anterior, los trozos cambian de nombre y lo que se ve son 404 y «Refused to execute script because its MIME type is text/plain» **en las 32 páginas**. Parece que la web está rota y lo que está caducado es el servidor. Ya está escrito en la sección de rendimiento y aun así se volvió a pisar aquí.
