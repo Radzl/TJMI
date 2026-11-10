@@ -362,7 +362,11 @@ Decisiones cerradas:
 
 - Cada paso dibuja **su tramo de vía con un nodo a la izquierda**, y el tramo se llena de izquierda a derecha cuando le toca. No es adorno: cuatro bloques de texto sobre azul noche no se leen como un recorrido, y esto es un recorrido —el mismo que el camión acaba de hacer por encima—.
 - El tramo **cruza el hueco entre columnas** (`--rail-gap`, que tiene que valer lo mismo que el `gap-x` de la rejilla) para que los cuatro se lean como una línea y no como cuatro subrayados sueltos.
-- **El sobrante se recorta solo de lado, con `clip-path` y no con `overflow`.** Con `overflow: hidden` el recorte es por los cuatro lados y **los nodos de la primera fila salían partidos por la mitad**, porque suben 4 px por encima de la vía. Se cazó midiendo la mancha roja en la captura: salía de 9 px de ancho y menos de 9 de alto. Ahora mide 9 × 9.
+- **El sobrante se recorta solo de lado**, y hacen falta **dos** cosas, no una:
+  - `overflow: hidden` no vale: el recorte es por los cuatro lados y **los nodos de la primera fila salían partidos por la mitad**, porque suben 4 px por encima de la vía. Se cazó midiendo la mancha roja en la captura: salía de 9 px de ancho y menos de 9 de alto. Ahora mide 9 × 9.
+  - Por eso había un `clip-path`. **Pero el `clip-path` recorta lo que se pinta y no quita la caja del área desplazable**, así que la portada **se podía arrastrar 16 px de lado en el móvil**. Son los 40 px que sobresale la vía (`--rail-gap`) menos los 24 del margen del contenedor, y la cuenta cuadra exacta.
+  - Lo que resuelve las dos cosas a la vez es **`overflow-x: clip` con `overflow-y: visible`**: `clip` es el único valor que admite que el otro eje siga en `visible`, y además **no crea un contenedor de scroll**, al revés que `hidden`. El `clip-path` se queda, para que en un navegador que no entienda `overflow: clip` el recorte siga siendo el de siempre.
+- **Ese desborde no daba error, no salía en ningún arnés y en escritorio no se veía.** Es exactamente el tipo de fallo que solo nota quien abre la web en un teléfono y la ve moverse de lado. Lo cazó `npm run check:repaso`.
 - **El nodo va sin aro del color del fondo**, aunque sea el truco habitual para que parezca posado encima. El fondo aquí lo pinta el suelo del 3D, así que un aro tendría que acertar con ese azul exacto y cualquier desvío se vería como un halo —es el mismo problema que los cuatro bordes del degradado del azul noche—. La vía pasando por detrás del punto es además lo que hace una parada.
 - El llenado va con **`transform: scaleX()` escrito a mano y no con la clase `scale-x-*`** de Tailwind, que escribe la propiedad `scale`: son dos propiedades distintas y se pisan en silencio. Ya pasó con la barra del desfile.
 - **No es una entrada orquestada más.** Son transiciones de CSS, como el filete de las tarjetas del índice: esta página gasta su único momento orquestado en la intro 3D.
@@ -1513,6 +1517,17 @@ Medidos con píxeles dan 16,7:1 y 5,04:1.
 ### Comprobado que funciona
 
 Poniendo `ROAD_LEAD = 0` (deshacer el adelanto de la cámara cenital) el script señala **las 5 tomas de carretera**, entre 7,5 % y 23,3 % de diferencia, y deja las otras 7 en 0,00–0,03 %. Los kilómetros no se mueven, así que lo que mide es el cambio visual y no otro momento del viaje.
+
+## El repaso de las 32 páginas (`npm run check:repaso`)
+
+- **Qué mira que no mire nadie más.** `check:3d` mira el 3D y `check:seo` las cabeceras; esto recorre las 32 páginas —las 16 rutas en los dos idiomas— y comprueba tres cosas: que **no reviente nada en la consola**, que **no haya desbordes horizontales** y que cada página tenga **un solo `h1`**.
+- **El desborde horizontal es el que más fácil se cuela:** no da error, no sale en ningún otro arnés y en escritorio no se ve. Se nota solo en un teléfono, con la página moviéndose de lado. Encontró uno a la primera —la vía de `RouteSteps`, 16 px—, y ese llevaba ahí desde que se escribió.
+- Va a **390 px en español y 1.280 en inglés**, para que cada pasada cubra los dos anchos y los dos idiomas sin tardar el doble.
+- **Perdona tres avisos de consola a propósito**, y conviene saber cuáles para no volver a perseguirlos: el de `THREE.Clock` (una API que la librería ha retirado), los `X4122` del compilador de sombreadores de Windows quejándose de precisión, y el `willReadFrequently` del lienzo. Ninguno depende de este código.
+
+### La trampa que hace perder media hora
+
+**Hay que reiniciar `next start` después de `next build`.** Sin eso el servidor sigue sirviendo la compilación anterior, los trozos cambian de nombre y lo que se ve son 404 y «Refused to execute script because its MIME type is text/plain» **en las 32 páginas**. Parece que la web está rota y lo que está caducado es el servidor. Ya está escrito en la sección de rendimiento y aun así se volvió a pisar aquí.
 
 ## Cuando algo se cae (red de seguridad)
 

@@ -11,7 +11,8 @@
     "check:3d": "node scripts/check-3d.mjs",
     "check:seo": "node scripts/audit-seo.mjs",
     "check:formulario": "node tests/perf/medidas/presupuesto.mjs && node tests/perf/medidas/formulario.mjs",
-    "check:avisos": "node tests/perf/medidas/avisos.mjs"
+    "check:avisos": "node tests/perf/medidas/avisos.mjs",
+    "check:repaso": "node tests/perf/medidas/repaso.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

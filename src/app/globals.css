@@ -266,8 +266,36 @@ body {
    primera fila, que suben 4 px por encima de la vía, salían partidos por la
    mitad. Los valores negativos de arriba y abajo son justo eso: dejar que el
    nodo asome. */
+/* **El sobrante de la vía se recorta de lado, pero no basta con `clip-path`.**
+
+   Cada tramo se alarga `--rail-gap` por la derecha para cruzar el hueco entre
+   columnas, así que el último de cada fila se sale del contenedor. El
+   `clip-path` recorta **lo que se pinta** y por eso no se veía nada raro…
+   pero **no quita la caja del área desplazable**: medido a 390 px de ancho,
+   la portada se podía arrastrar **16 px de lado** en el móvil. Son los 40 px
+   que sobresale la vía menos los 24 de margen del contenedor, y cuadra
+   exactamente.
+
+   No da error, no sale en ningún arnés y en escritorio no se ve. Se cazó con
+   `tests/perf/medidas/repaso.mjs`, que compara el ancho del documento con el
+   de la ventana en las 32 páginas.
+
+   **`overflow-x: clip` con `overflow-y: visible` es la combinación que vale**,
+   y es la única que resuelve las dos cosas a la vez:
+
+   - `overflow: hidden` recorta **por los cuatro lados**, y entonces los nodos
+     de la primera fila salen partidos por la mitad, porque suben 4 px por
+     encima de la vía. Eso ya estaba apuntado y es el motivo de que aquí
+     hubiera un `clip-path` en vez de un `overflow`.
+   - `clip` es el único valor que admite que el otro eje siga en `visible`, y
+     además **no crea un contenedor de scroll**, al revés que `hidden`.
+
+   El `clip-path` se queda: en un navegador que no entienda `overflow: clip`
+   el recorte sigue siendo el de siempre. */
 .route-steps {
   clip-path: inset(-1rem 0 -1rem 0);
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .route-steps li {
