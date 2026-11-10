@@ -54,27 +54,27 @@ Se contaron los píxeles de siete páginas para saber qué colores usa la web **
 
 #### Lo que queda pendiente del color
 
-#### El rojo, vuelto a medir página por página
-
-- **La nota anterior decía que en `/faq` y `/contacto` no aparecía, y hoy eso ya no es verdad en `/faq`.** Vuelto a medir con `tests/perf/medidas/rojo.mjs`, que captura cada página entera y cuenta los píxeles cercanos a los tres rojos de la casa:
-
-  | | rojo | mancha mayor | qué es esa mancha |
-  | --- | --- | --- | --- |
-  | portada | 0,231 % | 57.120 px | la banda rotulada |
-  | nosotros | 0,253 % | 7.471 px | el botón del cierre |
-  | faq | 0,203 % | 7.499 px | el botón del cierre |
-  | grupaje | 0,197 % | 7.499 px | el botón del cierre |
-  | servicios | 0,123 % | 7.499 px | el botón del cierre |
-  | blog | 0,073 % | 314 px | solo los minutos de lectura |
-  | **contacto** | **0,033 %** | **371 px** | un filete de 1 px y dos numeritos |
-
-- **El margen de tolerancia es la trampa de esta medida.** Con 34 niveles por canal todas las páginas salían con mucho más rojo, pero no era rojo de marca: eran los tonos cálidos de las fotos de azulejo y el rojo de la lona del camión en el 3D. Con 10 se mide el color de la casa. Si vuelves a lanzarlo, usa el mismo margen o los números no se pueden comparar.
-- **Lo que salió de ahí: la página que existe para pedir presupuesto era la que menos color de marca tenía de toda la web.** `/contacto` iba la última, y a mucha distancia.
-- No se arregla metiendo rojo por meterlo —el brief lo prohíbe como fondo— sino **usando el que ya existe donde significa algo**:
-  - **La barra de avance del formulario va en rojo.** Tenía que ser algo que esté ahí desde el primer momento: el botón de enviar solo se ve en el último paso y el filete del encabezado mide 56 × 2. La barra se ve nada más abrir, tiene cuerpo y es un relleno, que es exactamente como el brief quiere el rojo. El «Paso 1 de 3» de al lado se queda en azul: si fueran los dos, el rojo pasaría a ser el color del bloque en vez del de la barra que avanza. Medido: **371 → 716 px** y 0,033 → 0,051 %.
-  - **El último paso del formulario va en rojo también**, y los intermedios no. `accent` (`bg-brand-red`) es el color que esta web le da a la acción que cierra, y aquí la que cierra es enviar; «Siguiente» no cierra nada. Si los tres pasos fueran rojos, el rojo dejaría de marcar el final. Blanco sobre `#d03b40` da **4,79:1**, por encima del 4,5 de la WCAG.
-  - **El listado del blog recupera el filete rojo que crece**, el mismo gesto que las tarjetas del índice de la portada. Va debajo del enlace de cada fila, no encima: lo que marca es la acción de entrar a leer. En reposo mide 0, así que no mueve la maquetación.
-- **Y `/blog` se resolvió por donde decía esta nota: cerrando con llamada.** El rojo de una fila del índice se descartó —un bloque de color en una fila la haría competir con las otras nueve, que es lo que un índice no debe hacer—, así que lo que faltaba no era color, era **salida**: cada artículo cierra con su llamada y el listado no cerraba con nada. Puesta la misma sección de cierre que el resto de páginas, el rojo viene solo. Medido: **314 → 7.499 px** y 0,073 → 0,170 %.
+#### El rojo, vuelto a medir página por página
+
+- **La nota anterior decía que en `/faq` y `/contacto` no aparecía, y hoy eso ya no es verdad en `/faq`.** Vuelto a medir con `tests/perf/medidas/rojo.mjs`, que captura cada página entera y cuenta los píxeles cercanos a los tres rojos de la casa:
+
+  | | rojo | mancha mayor | qué es esa mancha |
+  | --- | --- | --- | --- |
+  | portada | 0,231 % | 57.120 px | la banda rotulada |
+  | nosotros | 0,253 % | 7.471 px | el botón del cierre |
+  | faq | 0,203 % | 7.499 px | el botón del cierre |
+  | grupaje | 0,197 % | 7.499 px | el botón del cierre |
+  | servicios | 0,123 % | 7.499 px | el botón del cierre |
+  | blog | 0,073 % | 314 px | solo los minutos de lectura |
+  | **contacto** | **0,033 %** | **371 px** | un filete de 1 px y dos numeritos |
+
+- **El margen de tolerancia es la trampa de esta medida.** Con 34 niveles por canal todas las páginas salían con mucho más rojo, pero no era rojo de marca: eran los tonos cálidos de las fotos de azulejo y el rojo de la lona del camión en el 3D. Con 10 se mide el color de la casa. Si vuelves a lanzarlo, usa el mismo margen o los números no se pueden comparar.
+- **Lo que salió de ahí: la página que existe para pedir presupuesto era la que menos color de marca tenía de toda la web.** `/contacto` iba la última, y a mucha distancia.
+- No se arregla metiendo rojo por meterlo —el brief lo prohíbe como fondo— sino **usando el que ya existe donde significa algo**:
+  - **La barra de avance del formulario va en rojo.** Tenía que ser algo que esté ahí desde el primer momento: el botón de enviar solo se ve en el último paso y el filete del encabezado mide 56 × 2. La barra se ve nada más abrir, tiene cuerpo y es un relleno, que es exactamente como el brief quiere el rojo. El «Paso 1 de 3» de al lado se queda en azul: si fueran los dos, el rojo pasaría a ser el color del bloque en vez del de la barra que avanza. Medido: **371 → 716 px** y 0,033 → 0,051 %.
+  - **El último paso del formulario va en rojo también**, y los intermedios no. `accent` (`bg-brand-red`) es el color que esta web le da a la acción que cierra, y aquí la que cierra es enviar; «Siguiente» no cierra nada. Si los tres pasos fueran rojos, el rojo dejaría de marcar el final. Blanco sobre `#d03b40` da **4,79:1**, por encima del 4,5 de la WCAG.
+  - **El listado del blog recupera el filete rojo que crece**, el mismo gesto que las tarjetas del índice de la portada. Va debajo del enlace de cada fila, no encima: lo que marca es la acción de entrar a leer. En reposo mide 0, así que no mueve la maquetación.
+- **Y `/blog` se resolvió por donde decía esta nota: cerrando con llamada.** El rojo de una fila del índice se descartó —un bloque de color en una fila la haría competir con las otras nueve, que es lo que un índice no debe hacer—, así que lo que faltaba no era color, era **salida**: cada artículo cierra con su llamada y el listado no cerraba con nada. Puesta la misma sección de cierre que el resto de páginas, el rojo viene solo. Medido: **314 → 7.499 px** y 0,073 → 0,170 %.
 - Resultado final de la pasada: **las siete páginas tienen ya una aparición de rojo con cuerpo**, de 716 px la más pequeña, y la web entera pasa de 0,183 % a 0,192 %. Que es lo que se buscaba: el mismo acento, sin una pizca más de superficie de la que el brief permite.
 
 ## Criterio de diseño (plugin `frontend-design`)
@@ -263,9 +263,9 @@ Decisiones cerradas:
   - **Frenar la red es contraproducente.** Es lo primero que uno hace y es justo lo que impide verla: el trozo de JavaScript que la monta tarda entonces más que la ventana de captura y la pantalla **ni siquiera llega a existir**. Sondeando el DOM cada 50 ms durante nueve segundos con la red a 90 kB/s, no aparece nunca.
   - Lo que funciona es **congelarla**: poner `done` a `false` y el progreso a un valor fijo, capturar, y revertir.
   - Y con la red normal aparece sobre los **1,5 s** y dura un par de segundos, que es la ventana real.
-- **El logo salía dos veces durante la carga, y ya no.** El navbar se pintaba por encima de la pantalla de carga. La sospecha que había escrita era la correcta —«no es el valor, es que uno de los dos está en otro contexto de apilado»— y era exactamente eso: este componente se renderiza desde `Experience`, que vive dentro de `<main class="relative z-10">`, y **un `z-index` solo compite con sus hermanos**. El `z-[100]` del preloader competía *dentro* de ese `main`, y el `main` entero (z-10) queda por debajo del navbar (z-50).
-- Por eso subirle el número al preloader no habría hecho nada, y bajarle el del navbar habría arrastrado el menú de móvil, el botón de WhatsApp y el banner de cookies. Lo que lo arregla es **sacarlo a `document.body` con un portal**, igual que `ServiceDialog`, y por el mismo motivo: una capa que tapa la página no puede depender del apilado del bloque que la contiene.
-- **Comprobado antes y después con la misma prueba** (`tests/perf/medidas/preloader.mjs`), que no mira el código sino que le pregunta al navegador qué elemento hay en el punto donde está el logo del navbar: antes el padre era `main` y encima salía el navbar; ahora el padre es `body` y encima sale la pantalla de carga.
+- **El logo salía dos veces durante la carga, y ya no.** El navbar se pintaba por encima de la pantalla de carga. La sospecha que había escrita era la correcta —«no es el valor, es que uno de los dos está en otro contexto de apilado»— y era exactamente eso: este componente se renderiza desde `Experience`, que vive dentro de `<main class="relative z-10">`, y **un `z-index` solo compite con sus hermanos**. El `z-[100]` del preloader competía *dentro* de ese `main`, y el `main` entero (z-10) queda por debajo del navbar (z-50).
+- Por eso subirle el número al preloader no habría hecho nada, y bajarle el del navbar habría arrastrado el menú de móvil, el botón de WhatsApp y el banner de cookies. Lo que lo arregla es **sacarlo a `document.body` con un portal**, igual que `ServiceDialog`, y por el mismo motivo: una capa que tapa la página no puede depender del apilado del bloque que la contiene.
+- **Comprobado antes y después con la misma prueba** (`tests/perf/medidas/preloader.mjs`), que no mira el código sino que le pregunta al navegador qué elemento hay en el punto donde está el logo del navbar: antes el padre era `main` y encima salía el navbar; ahora el padre es `body` y encima sale la pantalla de carga.
 - **Y esa prueba tiene una trampa que ya se pisó una vez:** hay que mirar **solo mientras el preloader tapa de verdad**. En cuanto termina se queda con `pointer-events-none` para dejar pasar los clics, y entonces `elementFromPoint` lo salta y devuelve lo de debajo. Midiendo sin esa condición salía «el navbar gana» incluso con el arreglo puesto — y la captura de pantalla enseñaba justo lo contrario.
 
 ## Las fotos de las sedes y el mapa (`Sites.tsx`, `MapEmbed.tsx`)
@@ -911,7 +911,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - **El azul noche no va plano** (`.bg-night-depth` en `globals.css`). Un fondo oscuro de un solo color se lee como «pintado»: no tiene ni un punto de luz, así que no parece un sitio, parece un rectángulo. Lleva una mancha de luz muy suave en el centro.
 - **Los cuatro bordes de ese degradado acaban en `--color-night` exacto, y eso no es acabado, es lo que lo hace posible.** El fondo de la página lo pinta `Backdrop` con ese mismo azul y la sección de arriba trae el suelo del 3D: si el degradado no cerrara justo en ese color, se vería la costura por los dos lados. Y va a `alpha 0` del mismo color, no a `transparent`: varios navegadores interpolan `transparent` pasando por el negro y dejan un halo sucio en el borde.
 - **Las tarjetas del desfile son más claras que la sección.** Fueron azul sobre azul con un filete, y costaba separarlas porque el filete hacía el trabajo que tenía que hacer el fondo; después fueron blanco al 5,5 % sobre azul noche, y hoy son **blancas sobre crema con un filete**. La regla que sobrevive a los tres cambios es la misma: **lo que separa la tarjeta del fondo es el fondo, no el borde**.
-- **Se quitó la retícula de filetes verticales** que había detrás del desfile. Estaba para dar al oscuro una estructura contra la que leer el movimiento, pero a ese contraste no llegaba a leerse como retícula: se leía como rayas sueltas en el fondo. Lo que sostiene el desfile son la barra de avance y el contador.
+- **Se quitó la retícula de filetes verticales** que había detrás del desfile. Estaba para dar al oscuro una estructura contra la que leer el movimiento, pero a ese contraste no llegaba a leerse como retícula: se leía como rayas sueltas en el fondo. Lo que sostiene el desfile son la barra de avance y el contador.
 
 ### Servicios iba en azul noche, y ahora va en crema
 
@@ -975,36 +975,36 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - Van separados por filete y **no por viñetas**: una viñeta a la derecha, en las filas en espejo, cuelga del lado que no es. El filete funciona en los dos sentidos.
 - **Si añades un servicio son tres sitios**: el texto en `messages.services.items` —con sus tres `highlights`—, la foto en `content/media.ts` y la entrada en `content/services.ts`. El sitemap lo recoge solo, porque `lib/seo.ts` lee esa lista.
 
-## La página de cobertura (`/cobertura`)
-
-- **«Rutas y cobertura» vivía solo como sección de la portada**, o sea cuatro frases de una línea a once pantallas de scroll de la cabecera. Dicho de otra forma: la web no competía por **ninguna** búsqueda de cobertura, que es justo lo que teclea un cliente —«transporte Castellón Madrid», «recogida de palés en Onda», «envío a Madrid desde Castellón»—. Es el mismo razonamiento que partió `/servicios` en seis páginas: **una página con seis cosas compite por una búsqueda; seis páginas compiten por seis.**
-- Y no es una página de relleno: el corredor diario **es** el producto de esta empresa. Hasta ahora lo contaba el 3D, que no lee Google, y cuatro renglones al final de la portada.
-
-### De dónde sale el contenido, que es la parte delicada
-
-- **De cosas ya publicadas, no de afirmaciones nuevas.** Los cuatro niveles salen de `route.coverage`; los tres puntos de cada uno, de los `includes` de los servicios; las paradas del mapa, de `route.mapStops`. Ni una afirmación nueva sobre la empresa.
-- **Y no repite lo que ya dice otra página.** Dos páginas con el mismo contenido compiten entre ellas, que es lo que se corrigió al acortar el listado de servicios. Aquí no se cuenta qué es el grupaje: se cuenta **hasta dónde llega**.
-- **La excepción, y hay que confirmarla con el cliente: la lista de localidades.** La web ya publica «+150 localidades de recogida en la provincia de Castellón», y la provincia tiene 135 municipios, así que ese número solo cuadra si se cuenta prácticamente toda la provincia y sus pedanías. Sobre esa base se nombran doce del clúster azulejero —Almazora, Castellón, Onda, Vila-real, l’Alcora, Nules, Betxí, Borriol, Burriana, la Vall d’Uixó, Alquerías, Sant Joan de Moró— con un «entre ellas» por delante y un «¿no ves la tuya? pregúntanos» por detrás. **Es el texto de esta web que más fácil puede estar mal, y es el primero que hay que enseñarle al cliente.**
-
-### Las decisiones de maquetación
-
-- **El mapa de la ruta es el mismo componente de la portada** (`RouteMap`). Repetir el componente no es repetir contenido: lo que posiciona es el texto de alrededor, que aquí es otro, y esa pieza explica el corredor sin una palabra de más.
-- **Los cuatro ámbitos van en rejilla pegada con filete**, como la banda de cifras y las sedes, y no en tarjetas con marco: cuatro tarjetas convertirían cuatro ámbitos en cuatro productos, y no lo son —son el mismo servicio llegando más o menos lejos—.
-- **Las localidades van como etiquetas**, el mismo recurso que las del bloque destacado de Servicios. Son nombres sueltos, no frases: en columna darían una lista de doce renglones de dos palabras.
-- **Aquí no va `Sites`**, aunque haya un bloque de sedes. Aquel componente monta el hueco del mapa, que arrastra el consentimiento de cookies y un bloque alto por sede. En esta página las naves son un dato de cobertura —de dónde sale y dónde llega—, no una invitación a visitarlas: para eso está `/contacto`.
-
-### Cómo se llega, y por qué no desde el menú
-
-- **Desde el pie**, que va en todas las páginas, y **desde la propia sección de cobertura de la portada**, con un enlace al lado de la línea de las dos sedes. Un resumen sin salida se lee como todo lo que hay.
-- **No desde el menú.** Son ya cinco entradas, y una sexta en condensada y versales empieza a apretar en portátiles. El pie es enlazado de sitio completo igualmente, que es lo que importa.
-- **Si añades otra página, son tres sitios**: `SITE_PATHS` en `lib/seo.ts` (o no entra en el sitemap), la lista `RUTAS` de `scripts/audit-seo.mjs` (o el arnés no la mira — ya pasó: auditaba 30 páginas con 32 publicadas) y el pie.
-
-### El aviso «1 Issue» que salió al mirarla
-
-- La página salió bien a la primera, pero la captura enseñó el aviso de las herramientas de Next. Era un **descuadre de hidratación**, y no era de esta página: medido, salía en **todas** y **solo cuando ya había cookie de consentimiento**.
-- La causa es el script de la cabecera: pone `data-cookies="hecho"` en el `<html>` **antes** de que React hidrate, así que React se encuentra un atributo que él no había renderizado. Se arregla con `suppressHydrationWarning` en el `<html>`, que es el apaño que usa `next-themes` y por el mismo motivo —un script que decide algo antes de pintar tiene que tocar el `<html>`, y el `<html>` lo renderiza React—.
-- Silencia **ese elemento y su texto directo, nada más**: cualquier descuadre de verdad más adentro sigue avisando.
-
+## La página de cobertura (`/cobertura`)
+
+- **«Rutas y cobertura» vivía solo como sección de la portada**, o sea cuatro frases de una línea a once pantallas de scroll de la cabecera. Dicho de otra forma: la web no competía por **ninguna** búsqueda de cobertura, que es justo lo que teclea un cliente —«transporte Castellón Madrid», «recogida de palés en Onda», «envío a Madrid desde Castellón»—. Es el mismo razonamiento que partió `/servicios` en seis páginas: **una página con seis cosas compite por una búsqueda; seis páginas compiten por seis.**
+- Y no es una página de relleno: el corredor diario **es** el producto de esta empresa. Hasta ahora lo contaba el 3D, que no lee Google, y cuatro renglones al final de la portada.
+
+### De dónde sale el contenido, que es la parte delicada
+
+- **De cosas ya publicadas, no de afirmaciones nuevas.** Los cuatro niveles salen de `route.coverage`; los tres puntos de cada uno, de los `includes` de los servicios; las paradas del mapa, de `route.mapStops`. Ni una afirmación nueva sobre la empresa.
+- **Y no repite lo que ya dice otra página.** Dos páginas con el mismo contenido compiten entre ellas, que es lo que se corrigió al acortar el listado de servicios. Aquí no se cuenta qué es el grupaje: se cuenta **hasta dónde llega**.
+- **La excepción, y hay que confirmarla con el cliente: la lista de localidades.** La web ya publica «+150 localidades de recogida en la provincia de Castellón», y la provincia tiene 135 municipios, así que ese número solo cuadra si se cuenta prácticamente toda la provincia y sus pedanías. Sobre esa base se nombran doce del clúster azulejero —Almazora, Castellón, Onda, Vila-real, l’Alcora, Nules, Betxí, Borriol, Burriana, la Vall d’Uixó, Alquerías, Sant Joan de Moró— con un «entre ellas» por delante y un «¿no ves la tuya? pregúntanos» por detrás. **Es el texto de esta web que más fácil puede estar mal, y es el primero que hay que enseñarle al cliente.**
+
+### Las decisiones de maquetación
+
+- **El mapa de la ruta es el mismo componente de la portada** (`RouteMap`). Repetir el componente no es repetir contenido: lo que posiciona es el texto de alrededor, que aquí es otro, y esa pieza explica el corredor sin una palabra de más.
+- **Los cuatro ámbitos van en rejilla pegada con filete**, como la banda de cifras y las sedes, y no en tarjetas con marco: cuatro tarjetas convertirían cuatro ámbitos en cuatro productos, y no lo son —son el mismo servicio llegando más o menos lejos—.
+- **Las localidades van como etiquetas**, el mismo recurso que las del bloque destacado de Servicios. Son nombres sueltos, no frases: en columna darían una lista de doce renglones de dos palabras.
+- **Aquí no va `Sites`**, aunque haya un bloque de sedes. Aquel componente monta el hueco del mapa, que arrastra el consentimiento de cookies y un bloque alto por sede. En esta página las naves son un dato de cobertura —de dónde sale y dónde llega—, no una invitación a visitarlas: para eso está `/contacto`.
+
+### Cómo se llega, y por qué no desde el menú
+
+- **Desde el pie**, que va en todas las páginas, y **desde la propia sección de cobertura de la portada**, con un enlace al lado de la línea de las dos sedes. Un resumen sin salida se lee como todo lo que hay.
+- **No desde el menú.** Son ya cinco entradas, y una sexta en condensada y versales empieza a apretar en portátiles. El pie es enlazado de sitio completo igualmente, que es lo que importa.
+- **Si añades otra página, son tres sitios**: `SITE_PATHS` en `lib/seo.ts` (o no entra en el sitemap), la lista `RUTAS` de `scripts/audit-seo.mjs` (o el arnés no la mira — ya pasó: auditaba 30 páginas con 32 publicadas) y el pie.
+
+### El aviso «1 Issue» que salió al mirarla
+
+- La página salió bien a la primera, pero la captura enseñó el aviso de las herramientas de Next. Era un **descuadre de hidratación**, y no era de esta página: medido, salía en **todas** y **solo cuando ya había cookie de consentimiento**.
+- La causa es el script de la cabecera: pone `data-cookies="hecho"` en el `<html>` **antes** de que React hidrate, así que React se encuentra un atributo que él no había renderizado. Se arregla con `suppressHydrationWarning` en el `<html>`, que es el apaño que usa `next-themes` y por el mismo motivo —un script que decide algo antes de pintar tiene que tocar el `<html>`, y el `<html>` lo renderiza React—.
+- Silencia **ese elemento y su texto directo, nada más**: cualquier descuadre de verdad más adentro sigue avisando.
+
 ## La calculadora de palés: quitada
 
 - **Estuvo en `/blog/calculadora-palets` y la quitó el cliente.** Contestaba
@@ -1527,13 +1527,15 @@ Poniendo `ROAD_LEAD = 0` (deshacer el adelanto de la cámara cenital) el script 
 
 ### Y una pasada con movimiento reducido
 
-- Esta web se puso una regla a sí misma —«nunca escondas algo en el marcado y lo enseñes solo por animación»— y **hasta ahora nada comprobaba que siguiera siendo verdad**. Un componente nuevo que se olvide del respaldo deja su texto en  para siempre, y quien tiene esa preferencia activada se encuentra una página con huecos **y sin un solo error en consola**.
-- La pasada carga las dieciséis páginas con  y busca titulares, párrafos y listas con más de veinte caracteres que acaben invisibles. **La opacidad se acumula por los padres**, así que se sube por el árbol multiplicando: un bloque entero a cero esconde a sus hijos aunque ellos digan 1.
-- No cuenta lo que está escondido a propósito: , lo marcado con  o , y lo que no ocupa sitio.
+- Esta web se puso una regla a sí misma —«nunca escondas algo en el marcado y lo enseñes solo por animación»— y **hasta ahora nada comprobaba que siguiera siendo verdad**. Un componente nuevo que se olvide del respaldo deja su texto en `opacity: 0` para siempre, y quien tiene esa preferencia activada se encuentra una página con huecos **y sin un solo error en consola**.
+- La pasada carga las dieciséis páginas con `prefers-reduced-motion: reduce` y busca titulares, párrafos y listas con más de veinte caracteres que acaben invisibles. **La opacidad se acumula por los padres**, así que se sube por el árbol multiplicando: un bloque entero a cero esconde a sus hijos aunque ellos digan 1.
+- No cuenta lo que está escondido a propósito: `sr-only`, lo marcado con `aria-hidden` o `hidden`, y lo que no ocupa sitio.
 
 #### Comprobado que sabe fallar
 
-Igual que con , se saboteó a propósito: un  temporal. **Lo cazó en las dieciséis páginas**, con 35 textos en la portada. Una comprobación que nunca ha fallado no demuestra nada.
+Igual que con `check:3d`, se saboteó a propósito: un `@media (prefers-reduced-motion: reduce) { main p { opacity: 0.04 } }` temporal. **Lo cazó en las dieciséis páginas**, con 35 textos en la portada. Una comprobación que nunca ha fallado no demuestra nada.
+
+**Y esto, de paso, es un aviso sobre cómo editar este archivo:** ese párrafo se escribió la primera vez desde un `node -e` dentro de bash, y **el shell se comió todo lo que iba entre comillas invertidas** —se lo tomó por sustitución de comandos— dejando huecos en mitad de las frases. Para tocar `CLAUDE.md`, guion en un archivo o edición directa; nunca código entre comillas invertidas pasando por el shell.
 
 ### La trampa que hace perder media hora
 
@@ -1782,28 +1784,28 @@ Esto se auditó midiendo el HTML que de verdad se sirve en las 32 páginas (16 r
 4. **Las portadas de los artículos**, que además son las que se ven al compartirlos.
 5. **Rendimiento de la portada**, que es factor de posicionamiento: la intro 3D es lo más caro de la web y está medida en «Rendimiento del 3D».
 
-## El icono y el manifiesto
-
-- **El único icono que había era el logo tal cual, 420 × 286.** Un favicon no es rectangular: el navegador lo mete en una caja cuadrada de 16 px, así que el escudo salía aplastado a 16 × 11 con dos franjas vacías a los lados. Y no había `apple-icon`, de modo que guardar la web en la pantalla de inicio de un iPhone daba **una captura de la página** en vez del logo.
-- Tampoco había manifiesto, así que «añadir a la pantalla de inicio» —que en un móvil es lo que hace un cliente que va a volver— guardaba un acceso con el título de la pestaña recortado. Para un negocio al que se le escribe por WhatsApp desde el teléfono, ese acceso directo es un contacto guardado.
-- Ahora son cuatro tamaños generados **del mismo logo**: 512 y 192 para el manifiesto, 180 para Apple y 48 para el favicon, que es el que de verdad se ve pequeño.
-
-### Generados, no dibujados a mano
-
-- Los hace `node scripts/gen-iconos.mjs` a partir de `public/logo.png`. **Si cambia el logo, se vuelve a lanzar**: son archivos derivados, no originales.
-- **Con el navegador y no con una librería de imagen.** Este proyecto evita dependencias nativas a propósito —`check-media.mjs` lee las cabeceras de los JPEG a mano justo por eso, y `sharp` no está instalado como dependencia propia—, y aquí ya hay un Chrome y `playwright-core` para el arnés visual. Componer la imagen en una página y capturarla no añade **nada** al proyecto y sale igual en cada pasada.
-- **Fondo crema, no transparente.** Un icono de Apple no admite transparencia —iOS la rellena de negro— y en un favicon sobre pestaña oscura el azul del escudo se pierde. El crema es el papel de esta web, así que el icono se lee como parte de ella.
-- **El logo ocupa el 76 % del ancho.** A sangre, iOS le recorta las esquinas redondeadas y se come las puntas del escudo.
-
-### El manifiesto (`src/app/manifest.ts`)
-
-- **`start_url` es `/`, no `/es`.** La raíz redirige al idioma que toque, así que el acceso directo respeta el idioma de quien lo guarda. Con `/es`, los clientes europeos abrirían siempre en español.
-- **Va en español y no traducido**, porque Next genera **un** manifiesto para todo el sitio, no uno por idioma. El nombre de la empresa no se traduce y la descripción corta va en el idioma del mercado principal.
-- `theme_color` en el azul de marca y `background_color` en el crema: el primero tiñe la barra del sistema y el segundo es lo que se ve mientras arranca, así que el arranque no da un flash blanco.
-- El `theme-color` se declara **además** en el `viewport` del layout, porque el manifiesto solo cuenta si la web está instalada y esa etiqueta vale en cualquier visita.
-- Y ahí va también **`colorScheme: 'light'`**, que no es un detalle: esta web es clara y no tiene modo oscuro. Sin declararlo, un navegador en modo oscuro repinta por su cuenta los controles de formulario —los del presupuesto— y los campos salen con fondo gris oscuro sobre una tarjeta blanca.
-- El proxy de idiomas no toca esta ruta porque su filtro deja fuera todo lo que lleva un punto en el nombre, igual que `sitemap.xml` y `robots.txt`.
-
+## El icono y el manifiesto
+
+- **El único icono que había era el logo tal cual, 420 × 286.** Un favicon no es rectangular: el navegador lo mete en una caja cuadrada de 16 px, así que el escudo salía aplastado a 16 × 11 con dos franjas vacías a los lados. Y no había `apple-icon`, de modo que guardar la web en la pantalla de inicio de un iPhone daba **una captura de la página** en vez del logo.
+- Tampoco había manifiesto, así que «añadir a la pantalla de inicio» —que en un móvil es lo que hace un cliente que va a volver— guardaba un acceso con el título de la pestaña recortado. Para un negocio al que se le escribe por WhatsApp desde el teléfono, ese acceso directo es un contacto guardado.
+- Ahora son cuatro tamaños generados **del mismo logo**: 512 y 192 para el manifiesto, 180 para Apple y 48 para el favicon, que es el que de verdad se ve pequeño.
+
+### Generados, no dibujados a mano
+
+- Los hace `node scripts/gen-iconos.mjs` a partir de `public/logo.png`. **Si cambia el logo, se vuelve a lanzar**: son archivos derivados, no originales.
+- **Con el navegador y no con una librería de imagen.** Este proyecto evita dependencias nativas a propósito —`check-media.mjs` lee las cabeceras de los JPEG a mano justo por eso, y `sharp` no está instalado como dependencia propia—, y aquí ya hay un Chrome y `playwright-core` para el arnés visual. Componer la imagen en una página y capturarla no añade **nada** al proyecto y sale igual en cada pasada.
+- **Fondo crema, no transparente.** Un icono de Apple no admite transparencia —iOS la rellena de negro— y en un favicon sobre pestaña oscura el azul del escudo se pierde. El crema es el papel de esta web, así que el icono se lee como parte de ella.
+- **El logo ocupa el 76 % del ancho.** A sangre, iOS le recorta las esquinas redondeadas y se come las puntas del escudo.
+
+### El manifiesto (`src/app/manifest.ts`)
+
+- **`start_url` es `/`, no `/es`.** La raíz redirige al idioma que toque, así que el acceso directo respeta el idioma de quien lo guarda. Con `/es`, los clientes europeos abrirían siempre en español.
+- **Va en español y no traducido**, porque Next genera **un** manifiesto para todo el sitio, no uno por idioma. El nombre de la empresa no se traduce y la descripción corta va en el idioma del mercado principal.
+- `theme_color` en el azul de marca y `background_color` en el crema: el primero tiñe la barra del sistema y el segundo es lo que se ve mientras arranca, así que el arranque no da un flash blanco.
+- El `theme-color` se declara **además** en el `viewport` del layout, porque el manifiesto solo cuenta si la web está instalada y esa etiqueta vale en cualquier visita.
+- Y ahí va también **`colorScheme: 'light'`**, que no es un detalle: esta web es clara y no tiene modo oscuro. Sin declararlo, un navegador en modo oscuro repinta por su cuenta los controles de formulario —los del presupuesto— y los campos salen con fondo gris oscuro sobre una tarjeta blanca.
+- El proxy de idiomas no toca esta ruta porque su filtro deja fuera todo lo que lleva un punto en el nombre, igual que `sitemap.xml` y `robots.txt`.
+
 ## Preguntas frecuentes
 
 - Vive en `src/app/[locale]/faq/page.tsx` y los textos en `messages`, bajo `faq`. Las preguntas y las respuestas son literalmente las que dio el cliente: se pasaron a caja baja (venían en mayúsculas), se corrigieron un par de erratas y se ajustó el tuteo. El contenido no se toca sin preguntar.
