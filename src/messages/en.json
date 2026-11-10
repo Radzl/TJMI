@@ -424,7 +424,7 @@
     "back": "Back",
     "stepOf": "Step {current} of {total}",
     "submit": "Send request",
-    "submitWhatsapp": "I’d rather send it on WhatsApp",
+    "submitWhatsapp": "I would rather send it on WhatsApp",
     "submitEmail": "I would rather send it by email",
     "sending": "Sending…",
     "note": "We reply during business hours. Your data is only used to handle your request.",
@@ -500,7 +500,7 @@
       "intro": "A daily corridor between Castellón and Madrid, and from it, coverage across the rest of Spain and the European Union.",
       "crumb": "Coverage",
       "seoTitle": "Coverage: Castellón ⇄ Madrid and the rest of Spain",
-      "seoDescription": "We collect in more than 150 towns across the province of Castellón and deliver in Madrid and the surrounding area within 24 hours. From there, the rest of Spain and the EU.",
+      "seoDescription": "We collect in more than 150 towns across Castellón province and deliver in Madrid within 24 hours. From there, the rest of Spain and the EU.",
       "facts": [
         {
           "value": "+150",
@@ -556,7 +556,7 @@
         }
       ],
       "townsTitle": "The whole province of Castellón",
-      "townsIntro": "Collection reaches more than 150 towns across the province, which is practically all of it. These are the ones in the tile cluster, where we pass through every day:",
+      "townsIntro": "Collection reaches more than 150 towns across the province, which is practically all of it. These are the ones in the ceramic tile cluster, where we pass through every day:",
       "towns": [
         "Almazora",
         "Castellón de la Plana",
