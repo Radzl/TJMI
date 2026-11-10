@@ -1862,11 +1862,59 @@ public/models/          *.glb
 - `npm run build` y `npm run lint` deben pasar antes de dar una fase por cerrada.
 
 ## Fases
-- [ ] F0 Setup: proyecto, dependencias, Git, Vercel conectado.
-- [ ] F1 Esqueleto: layout, i18n ES/EN, navbar, footer, secciones HTML con textos reales, sin 3D.
-- [ ] F2 Coreografía con placeholders: Canvas fijo, store, timeline maestra, las 6 escenas con cajas.
-- [ ] F3 Modelos reales: GLB optimizados, gltfjsx, materiales, luces, sombras.
-- [ ] F4 Tipografía animada y servicios horizontales (ScrambleText, pin, Motion en UI).
-- [ ] F5 Escena ruta cenital Castellón → Madrid con hitos.
-- [ ] F6 Conversión: formulario de presupuesto, email, WhatsApp flotante, blog (MDX), SEO.
-- [ ] F7 Pulido: móvil, reduced-motion, rendimiento, Lighthouse, deploy a producción.
+
+**Las casillas estuvieron todas sin marcar mucho después de que el trabajo
+estuviera hecho**, que es la forma más tonta de que una lista deje de servir.
+Esto es el estado real:
+
+- [x] **F0 Setup**: proyecto, dependencias, Git, Vercel conectado.
+- [x] **F1 Esqueleto**: layout, i18n ES/EN, navbar, pie, secciones con textos reales.
+- [x] **F2 Coreografía**: Canvas fijo, store, timeline maestra, las escenas.
+- [x] **F3 Modelos reales**: GLB optimizados, materiales, luces y sombras.
+- [x] **F4 Tipografía animada y servicios horizontales**. Con una diferencia respecto al plan: **Motion no se usa** y se quitó del proyecto, por el motivo que está escrito en `## Stack`.
+- [x] **F5 Escena de la carretera** en cenital, con hitos, quitamiedos y cartel.
+- [x] **F6 Conversión**: formulario de presupuesto **que envía de verdad**, WhatsApp, correo, blog y SEO. El blog no va en MDX sino en bloques tipados (`content/blog.ts`), que es lo que permite que entre solo en el sitemap y en el marcado.
+- [ ] **F7 Pulido**: móvil, movimiento reducido, rendimiento y Lighthouse **hechos y medidos**; falta **el despliegue a producción**, que es lo único de esta fase que no depende del código.
+
+## Lo que no puede avanzar sin el cliente
+
+Esto está aquí y no solo en una conversación a propósito: es lo primero que
+hay que mirar al retomar el proyecto.
+
+### Archivos que faltan
+
+| | qué pasa hoy |
+| --- | --- |
+| **Tres fotos de servicio** (`ftl`, `intl`, `grupaje`) | son verticales metidas en huecos apaisados: se ven ampliadas al doble. Lo canta `npm run check:fotos` |
+| **Foto de las dos sedes** | el hueco está hecho y vacío; quien no acepta cookies ve el mapa en blanco |
+| **Fotos de `/faq` y `/contacto`** | huecos declarados, pintando un bloque de color |
+| **Portadas de los diez artículos** | es lo que se ve al compartirlos por WhatsApp |
+| **Fotos apaisadas 1200 × 630** | para las tarjetas sociales de las seis fichas de servicio |
+| **El vídeo de Nosotros en 1080p** | la copia que hay tiene 848 px de ancho |
+| **Datos societarios** | las páginas legales tienen huecos `[PENDIENTE: ...]` reales |
+
+**Cuando lleguen las fotos buenas**, hay que quitar el `continue-on-error`
+de `check:fotos` en la CI para que pase a bloquear.
+
+### Decisiones que no son código
+
+1. **Dar de alta la ficha de Google Business.** Para un negocio local es lo que más mueve de todo, y es de donde vendrían las reseñas. Una vez exista, se enlaza desde `sameAs` y se rellena `GOOGLE_PROFILE`.
+2. **Coordenadas (`geo`) y `priceRange`** en `business.ts`, cuando se puedan dar sin inventarlos.
+3. **Las reseñas.** `content/reviews.ts` está vacío a propósito y en producción la sección no existe. Una reseña inventada es una reseña falsa.
+4. **Analítica.** Hoy no hay ninguna, así que no se sabe cuánta gente entra ni cuántos llegan al formulario. Las dos opciones razonables, con su pega:
+   - **Analítica sin cookies del propio proveedor de alojamiento** (tipo Vercel Web Analytics): se sirve desde nuestro dominio y no pone cookies, así que es la que menos fricción tiene con el consentimiento. Pero es **una decisión con implicaciones legales y de coste**, y por eso no se ha instalado sin preguntar.
+   - **Cualquier analítica clásica** va detrás del consentimiento, como los mapas, y entonces **la mayoría no se cuenta** — que es justo lo contrario de para lo que sirve.
+
+### Tres frases que hay que confirmar antes de publicar
+
+Las tres están en la web y **solo el cliente sabe si son ciertas**:
+
+1. Que **no paran en agosto** (`Overview`). Es la que más fácil se cae: media provincia cierra.
+2. Que la ruta sale **con media caja igual que llena** (`Overview`). Dicha en un solo sitio a propósito, para que el día que haya que tocarla sea un sitio y no dos.
+3. **La lista de doce localidades de `/cobertura`.** Es consistente con el «+150 localidades» que la web ya publica —son más que los 135 municipios de la provincia— pero es el texto de esta web que más fácil puede estar mal.
+
+### Lo que queda de código, y por qué no se ha hecho
+
+- **Diferir GSAP.** Son 132 KB y la tarea más larga de la carga (2.050 ms). Lo importan **catorce** módulos repartidos por toda la página, así que no es un cambio: es un refactor de catorce archivos **sin cobertura automática en trece de ellos**. Este proyecto pide cambios pequeños y verificables, y ese no lo es.
+- **`RoadIntro` ocupa 4,8 pantallas.** Bajarlo a ~3,6 devolvería más de una pantalla entera y no obliga a tocar nada más. No se ha hecho porque cambia el ritmo de la escena, que está afinado y es el único momento que esta web se permite.
+- **Sombras en la carretera.** Intentado, medido y no conseguido; está escrito dónde seguir mirando.
