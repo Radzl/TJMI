@@ -1048,9 +1048,50 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - **Cuidado al comprobar la reproducción desde un panel de navegador oculto:** el observador informa de área cero y pausa el vídeo, que es exactamente lo que debe hacer. Parece una regresión y no lo es. Para verificarlo de verdad hay que abrirlo en una ventana visible (o con `playwright-core`, como hace `check:3d`). Ya me ha engañado una vez.
 - El vídeo se **reanuda solo** al volver a la pestaña: el navegador lo suspende al perder visibilidad y no lo recupera por su cuenta. Y se pausa al salir de pantalla, pero **solo si la ventana tiene tamaño**: con la ventana minimizada o tapada el navegador informa de área cero, así que "nada intersecta", y sin esa comprobación el vídeo se quedaba congelado para siempre. Ya pasó.
 - `RevealText` usa **IntersectionObserver y no ScrollTrigger** a propósito: encima hay un vídeo que cambia la altura de la página al cargar, y un disparador calculado antes de eso deja el texto invisible para siempre. Ya pasó, y sigue valiendo aunque el vídeo ya no ocupe la pantalla entera.
-- **Formulario de presupuesto en tres pasos** (`QuoteForm.tsx`): qué mueves → de dónde a dónde → cómo te llamamos, con barra de avance. Los campos que no están en pantalla siguen registrados, así que al volver atrás no se pierde nada. El submit está interceptado para que Intro en un paso intermedio avance en vez de enviar. **Sigue sin enviar de verdad**: abre WhatsApp o el correo.
+- **Formulario de presupuesto en tres pasos** (`QuoteForm.tsx`): qué mueves → de dónde a dónde → cómo te llamamos, con barra de avance. Los campos que no están en pantalla siguen registrados, así que al volver atrás no se pierde nada. El submit está interceptado para que Intro en un paso intermedio avance en vez de enviar. **Ya envía de verdad**: ver «El formulario de presupuesto envía de verdad».
 - **Mapa de la ruta** (`RouteMap.tsx`): la silueta de la península es un trazado **simplificado a mano**, proyectando longitud y latitud de los puntos de costa reconocibles sobre el lienzo. No es cartografía y no hace falta que lo sea: pesa unos cientos de bytes en vez de los cientos de kB de un SVG real.
 - **Los hitos de esa ruta van sin hora, y no se pueden volver a poner.** Llevaban una cada uno (06:00, 09:00, 14:00, «24 h») y ninguna era real: estaban para que la lista pareciera un horario. Una hora concreta en una web de transporte es un compromiso, y publicar uno que no se cumple es peor que no publicar ninguno. Lo cierto —el orden de los pasos y que se entrega al día siguiente— ya lo cuentan el propio orden de la lista y el texto de entrada. Se quitaron también de `messages`, no solo de la vista, justo para que no vuelvan solas.
+
+## El formulario de presupuesto envía de verdad
+
+### Qué pasaba antes, y por qué era el agujero más caro de la web
+
+- Los tres pasos validaban, la barra avanzaba, el botón decía «Enviar por WhatsApp»… y lo que hacía era **abrir WhatsApp** con el texto preparado. Nada salía de la web.
+- O sea que quien rellenaba el formulario **desde un ordenador sin WhatsApp de escritorio**, o desde un móvil con la sesión caída, o con el navegador bloqueando ventanas emergentes, **se quedaba sin enviarlo y la empresa sin enterarse de que alguien lo había intentado**. En una web cuyo trabajo es captar presupuestos, eso es lo más caro que podía estar roto.
+
+### Cómo está montado
+
+- **`POST /api/presupuesto`** recibe la solicitud, la vuelve a validar y la manda al correo de la empresa.
+- **Se valida dos veces, y no es desconfianza del propio código:** cualquiera puede mandar un POST a esa ruta sin pasar por el formulario, y si el servidor se fía, lo que llega al correo es lo que mande quien quiera.
+- **El proxy de idiomas no toca la ruta.** Su `matcher` excluye `api` explícitamente, así que `/api/presupuesto` no se convierte en `/es/api/presupuesto`. **Comprobado antes de escribirla**, porque el filtro que deja fuera el sitemap y el manifiesto es el del punto en el nombre, y aquí no hay punto.
+- El correo sale por **HTTP contra la API de Resend, sin dependencia ninguna** (`lib/correo.ts`). Dos motivos: `nodemailer` arrastra una conexión SMTP viva y en un servidor que se apaga entre peticiones eso es justo lo que peor funciona; y este proyecto evita añadir dependencias por sistema —el comprobador de fotos lee las cabeceras de los JPEG a mano antes que instalar `sharp`—.
+- **Toda la parte que sabe quién manda el correo vive en una función.** Si se cambia de proveedor se cambia ahí y ni la ruta ni el formulario se enteran.
+
+### Sin configurar no se rompe: se va por WhatsApp
+
+- Sin `RESEND_API_KEY`, `PRESUPUESTO_TO` y `PRESUPUESTO_FROM` (ver `.env.example`), la ruta contesta **`sin-configurar` con un 200** y el formulario abre WhatsApp, que es lo que hacía antes.
+- **Eso es deliberado y es la decisión que más importa de todo esto:** el día que se despliegue sin haber puesto las claves, la web sigue captando clientes por el camino de siempre en vez de **tragarse las solicitudes en silencio**, que es el fallo que no se detecta hasta que alguien se queja de que no le contestaron.
+- Los tres finales son distintos a propósito: `ok` → recibido; `limite` → ha mandado varias seguidas y **no** se reintenta ni se abre WhatsApp, porque lo más probable es que las anteriores sí llegaran; cualquier otra cosa, incluido quedarse sin red → WhatsApp.
+- **Las dos vías manuales siguen ahí** (WhatsApp y correo), y no son un resto: media provincia pide presupuesto por WhatsApp y quiere ver el mensaje salir de su propio teléfono.
+
+### El señuelo, y por qué no un captcha
+
+- Hay un campo escondido (`empresaWeb`) que **una persona no puede rellenar** —1 × 1 px recortado, `aria-hidden`, fuera del tabulador— y que un robot de formularios sí rellena, porque rellena todo lo que encuentra. Si llega con algo escrito, el servidor lo rechaza **como un dato inválido más**: a un robot no se le dice «te he pillado», porque eso es justo lo que le sirve para aprender a no caer.
+- Va con `sr-only` y **no** con `display: none` ni `hidden`: muchos robots saltan lo que está oculto de esas dos formas precisamente porque saben que suele ser una trampa, y lo que se busca es que caigan.
+- **No hay captcha, y es decisión.** Le pide trabajo al cliente justo en el último paso, y sobre todo **es un tercero al que se le manda la IP del visitante**: caería dentro del consentimiento de cookies y la mayoría no llegaría a verlo. El señuelo no le pide nada a nadie ni habla con nadie.
+- Hay además un **límite de cinco envíos por IP cada diez minutos**, en memoria. Y hay que saber lo que eso significa: en un servidor que se apaga entre peticiones, cada instancia lleva su cuenta y el contador se borra al reciclarse, así que **no es un muro contra un ataque**: es lo que impide que un dedo nervioso mande ocho veces lo mismo. Un límite de verdad pide un almacén compartido, o sea meter una base de datos en una web que no tiene ninguna. Si algún día llega spam de verdad, **ese** es el momento, no antes.
+
+### Qué cambió de los textos
+
+- `submit` pasa de «Enviar por WhatsApp» a **«Enviar solicitud»**, y `sent` de «se ha abierto WhatsApp» a **«Recibido»**. Lo que decían no se pierde: se mudó a `submitWhatsapp` y `sentWhatsapp`, que es la vía alternativa y la red de seguridad.
+- Nuevos: `sending` y `tooMany`.
+
+### Comprobado, y con dos trampas de medición apuntadas
+
+- `npm run check:formulario` lanza las dos comprobaciones: los cinco casos de la ruta (válido, señuelo, sin consentimiento, JSON roto y límite) y el recorrido entero en el navegador.
+- **El caso que más importa no es el obvio:** sin claves configuradas la ruta tiene que contestar `sin-configurar` **con un 200**, no reventar. De eso depende que el formulario caiga a WhatsApp.
+- **Trampa 1: `wa.me` redirige a `api.whatsapp.com`.** Comprobar que la URL abierta contiene `wa.me` daba un falso fallo con todo funcionando.
+- **Trampa 2: la caja del señuelo no es la que recorta.** Medida sobre el propio campo sale **174 × 24 px** y parece que no está escondido; quien recorta es su contenedor, que mide 1 × 1 con `overflow: hidden`. Y `isVisible()` de Playwright tampoco sirve: para él un campo de 1 px recortado sigue siendo visible.
 
 ## Las vías de contacto (`/contacto`)
 

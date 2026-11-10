@@ -396,10 +396,6 @@
     "detailsPlaceholder": "Medidas especiales, horario de descarga, si hace falta cita previa…",
     "detailsOptional": "Detalles del envío (opcional)",
     "consent": "He leído y acepto que uséis mis datos para responder a esta solicitud.",
-    "submit": "Enviar por WhatsApp",
-    "submitEmail": "Prefiero enviarlo por email",
-    "note": "Respondemos en horario comercial. Tus datos solo se usan para gestionar tu solicitud.",
-    "sent": "Listo. Se ha abierto WhatsApp con tu solicitud preparada: solo tienes que darle a enviar.",
     "messageIntro": "Hola, quiero pedir presupuesto:",
     "errors": {
       "origin": "Dinos desde dónde sale la mercancía",
@@ -426,7 +422,15 @@
     ],
     "next": "Siguiente",
     "back": "Atrás",
-    "stepOf": "Paso {current} de {total}"
+    "stepOf": "Paso {current} de {total}",
+    "submit": "Enviar solicitud",
+    "submitWhatsapp": "Prefiero enviarlo por WhatsApp",
+    "submitEmail": "Prefiero enviarlo por email",
+    "sending": "Enviando…",
+    "note": "Respondemos en horario comercial. Tus datos solo se usan para gestionar tu solicitud.",
+    "sent": "Recibido. Te respondemos en horario comercial, normalmente el mismo día.",
+    "sentWhatsapp": "Se ha abierto WhatsApp con tu solicitud preparada: solo tienes que darle a enviar.",
+    "tooMany": "Has enviado varias solicitudes seguidas, así que esta no se ha vuelto a mandar. Si era distinta, espera unos minutos o llámanos al 964 53 24 00."
   },
   "blog": {
     "readTime": "{minutes} min de lectura",

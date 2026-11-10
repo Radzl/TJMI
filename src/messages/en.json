@@ -396,10 +396,6 @@
     "detailsPlaceholder": "Special dimensions, unloading hours, whether an appointment is needed…",
     "detailsOptional": "Shipment details (optional)",
     "consent": "I agree to my details being used to answer this request.",
-    "submit": "Send on WhatsApp",
-    "submitEmail": "I would rather send it by email",
-    "note": "We reply during business hours. Your data is only used to handle your request.",
-    "sent": "Done. WhatsApp has opened with your request ready: just hit send.",
     "messageIntro": "Hello, I would like a quote:",
     "errors": {
       "origin": "Tell us where the goods ship from",
@@ -426,7 +422,15 @@
     ],
     "next": "Next",
     "back": "Back",
-    "stepOf": "Step {current} of {total}"
+    "stepOf": "Step {current} of {total}",
+    "submit": "Send request",
+    "submitWhatsapp": "I’d rather send it on WhatsApp",
+    "submitEmail": "I would rather send it by email",
+    "sending": "Sending…",
+    "note": "We reply during business hours. Your data is only used to handle your request.",
+    "sent": "Got it. We’ll get back to you during business hours, usually the same day.",
+    "sentWhatsapp": "WhatsApp has opened with your request ready to go: just hit send.",
+    "tooMany": "You’ve sent several requests in a row, so this one wasn’t sent again. If it was a different one, wait a few minutes or call us on +34 964 53 24 00."
   },
   "blog": {
     "readTime": "{minutes} min read",

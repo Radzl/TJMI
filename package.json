@@ -9,7 +9,8 @@
     "lint": "eslint",
     "check:fotos": "node scripts/check-media.mjs",
     "check:3d": "node scripts/check-3d.mjs",
-    "check:seo": "node scripts/audit-seo.mjs"
+    "check:seo": "node scripts/audit-seo.mjs",
+    "check:formulario": "node tests/perf/medidas/presupuesto.mjs && node tests/perf/medidas/formulario.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { useForm, type Path } from 'react-hook-form';
 import { z } from 'zod';
@@ -38,10 +38,37 @@ function Field({
   );
 }
 
+/**
+ * En qué punto está el envío.
+ *
+ * `whatsapp` no es un error: es el final bueno de la vía alternativa, y
+ * también el de la red de seguridad cuando el servidor no puede. Por eso son
+ * estados y no un booleano `sent`: lo que hay que contarle a quien está
+ * delante es distinto en cada caso.
+ */
+type Estado = 'quieto' | 'enviando' | 'enviado' | 'whatsapp' | 'limite';
+
 export default function QuoteForm({ whatsappUrl, email }: Props) {
   const t = useTranslations('quote');
-  const [sent, setSent] = useState(false);
+  const locale = useLocale();
+  const [estado, setEstado] = useState<Estado>('quieto');
   const [step, setStep] = useState(0);
+
+  /**
+   * El señuelo contra robots.
+   *
+   * Es un campo que **no se ve y que una persona no puede rellenar**, así que
+   * si llega con algo escrito, quien lo mandó no es una persona. El servidor
+   * lo rechaza como un dato inválido más —sin decirle que lo ha pillado, que
+   * es justo lo que le serviría para aprender—.
+   *
+   * Se eligió esto y no un captcha por dos motivos, y el segundo es el que
+   * manda en este proyecto: un captcha le pide trabajo al cliente justo en el
+   * último paso, y **es un tercero al que se le manda la IP del visitante**,
+   * o sea que caería dentro del consentimiento de cookies y la mayoría no
+   * llegaría a verlo. Esto no le pide nada a nadie ni habla con nadie.
+   */
+  const [senuelo, setSenuelo] = useState('');
   const goodsOptions = t.raw('goodsOptions') as string[];
   const steps = t.raw('steps') as Step[];
 
@@ -102,12 +129,68 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
       .filter(Boolean)
       .join('\n');
 
-  // TODO: F6 — cuando haya servicio de correo, enviar desde el servidor en
-  // lugar de abrir WhatsApp. El formulario y la validación ya sirven igual.
-  const onSubmit = (values: Values) => {
+  /**
+   * Abre WhatsApp con la solicitud preparada.
+   *
+   * Es a la vez **una vía que el cliente puede elegir** y **la red de
+   * seguridad** si el envío por servidor no sale. Lo segundo es lo que hace
+   * que este formulario no pueda tragarse una solicitud en silencio.
+   */
+  const abrirWhatsapp = (values: Values) => {
     const text = encodeURIComponent(buildMessage(values));
     window.open(`${whatsappUrl}?text=${text}`, '_blank', 'noopener');
-    setSent(true);
+  };
+
+  /**
+   * **Enviar de verdad, y caer a WhatsApp solo si no se puede.**
+   *
+   * Antes esto abría WhatsApp y ya está. El problema no era de comodidad: era
+   * que quien rellenaba el formulario desde un ordenador sin WhatsApp de
+   * escritorio, o desde un móvil con la sesión caída, **se quedaba sin
+   * enviarlo y la empresa sin enterarse de que alguien lo había intentado**.
+   * En una web cuyo trabajo es captar presupuestos, ese era el agujero más
+   * caro que había.
+   *
+   * El orden importa: se intenta el servidor, y **solo si no sale** se abre
+   * WhatsApp. Así la solicitud llega de las dos maneras posibles antes de
+   * darse por perdida. Los tres finales son distintos a propósito:
+   *
+   * - `ok` → recibido, y se lo decimos.
+   * - `limite` → ha mandado varias seguidas; no se reintenta ni se abre
+   *   WhatsApp, porque lo más probable es que las anteriores sí llegaran.
+   * - cualquier otra cosa, incluido que no haya red → WhatsApp, que es lo que
+   *   hacía antes.
+   */
+  const onSubmit = async (values: Values) => {
+    setEstado('enviando');
+
+    try {
+      const respuesta = await fetch('/api/presupuesto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...values, locale, empresaWeb: senuelo }),
+      });
+      const datos = (await respuesta.json().catch(() => null)) as {
+        ok?: boolean;
+        motivo?: string;
+      } | null;
+
+      if (datos?.ok) {
+        setEstado('enviado');
+        return;
+      }
+
+      if (datos?.motivo === 'limite') {
+        setEstado('limite');
+        return;
+      }
+    } catch {
+      // Sin red, o la petición cortada. Se trata igual que un fallo del
+      // servidor: lo que no puede pasar es que se pierda lo escrito.
+    }
+
+    abrirWhatsapp(values);
+    setEstado('whatsapp');
   };
 
   const sendByEmail = (values: Values) => {
@@ -116,7 +199,13 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
     window.location.assign(`mailto:${email}?subject=${subject}&body=${body}`);
   };
 
+  const enviarPorWhatsapp = (values: Values) => {
+    abrirWhatsapp(values);
+    setEstado('whatsapp');
+  };
+
   const isLast = step === STEP_FIELDS.length - 1;
+  const enviando = estado === 'enviando';
 
   const goNext = async () => {
     const valid = await trigger(STEP_FIELDS[step]);
@@ -140,6 +229,29 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
       noValidate
       className="rounded-2xl border border-line bg-white p-8 lg:p-10"
     >
+      {/* **El señuelo.** No se ve, no llega por tabulador y los lectores de
+          pantalla lo ignoran, así que **una persona no puede rellenarlo**; un
+          robot de formularios sí, porque rellena todo lo que encuentra. Si
+          llega con algo escrito, el servidor lo rechaza.
+
+          Va con `sr-only` y no con `display: none` ni `hidden`: muchos robots
+          saltan lo que está oculto de esas dos formas justo porque saben que
+          suele ser una trampa, y lo que se busca es que caigan, no que lo
+          esquiven. `autoComplete="off"` es para que el navegador no se lo
+          rellene solo a alguien y le bloquee el envío sin motivo. */}
+      <div className="sr-only" aria-hidden="true">
+        <label htmlFor="empresa-web">No rellenar</label>
+        <input
+          id="empresa-web"
+          name="empresa-web"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={senuelo}
+          onChange={(event) => setSenuelo(event.target.value)}
+        />
+      </div>
+
       <h2 className="font-display text-2xl uppercase tracking-tight text-ink">
         {t('title')}
       </h2>
@@ -327,32 +439,57 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
              Blanco sobre `#d03b40` da **4,79:1**, por encima del 4,5 que pide
              la WCAG para texto pequeño. Es el mismo par que ya usa `Button`
              con `variant="accent"`. */
-          className={`inline-flex items-center justify-center rounded-full px-7 py-3 font-display text-sm uppercase tracking-widest text-white transition-colors ${
+          disabled={enviando}
+          className={`inline-flex items-center justify-center rounded-full px-7 py-3 font-display text-sm uppercase tracking-widest text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
             isLast
               ? 'bg-brand-red hover:bg-brand-blue'
               : 'bg-brand-blue hover:bg-brand-blue-dark'
           }`}
         >
-          {isLast ? t('submit') : t('next')}
+          {isLast ? (enviando ? t('sending') : t('submit')) : t('next')}
         </button>
 
-        {isLast && (
-          <button
-            type="button"
-            onClick={handleSubmit(sendByEmail)}
-            className="text-sm text-muted underline underline-offset-4 hover:text-brand-blue"
-          >
-            {t('submitEmail')}
-          </button>
+        {/* **Las dos vías manuales siguen aquí, y eso no es un resto.** El
+            botón rojo ya manda la solicitud al correo de la empresa, pero
+            media provincia pide presupuesto por WhatsApp y quiere ver el
+            mensaje salir de su propio teléfono. Quitarlas sería cambiar una
+            forma de contactar que funciona por una que funciona igual. */}
+        {isLast && !enviando && (
+          <>
+            <button
+              type="button"
+              onClick={handleSubmit(enviarPorWhatsapp)}
+              className="text-sm text-muted underline underline-offset-4 hover:text-brand-blue"
+            >
+              {t('submitWhatsapp')}
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit(sendByEmail)}
+              className="text-sm text-muted underline underline-offset-4 hover:text-brand-blue"
+            >
+              {t('submitEmail')}
+            </button>
+          </>
         )}
       </div>
 
-      {sent && (
+      {/* **Un solo sitio para el desenlace, y el texto cambia según cuál
+          sea.** `role="status"` hace que un lector de pantalla lo lea en
+          cuanto aparece sin robarle el foco a nadie, que es justo lo que se
+          quiere de un «recibido». */}
+      {estado !== 'quieto' && estado !== 'enviando' && (
         <p
           role="status"
-          className="mt-6 rounded-xl border border-brand-blue/30 bg-brand-blue/5 px-5 py-4 text-sm leading-relaxed text-ink"
+          className={`mt-6 rounded-xl border px-5 py-4 text-sm leading-relaxed ${
+            estado === 'limite'
+              ? 'border-brand-red/30 bg-brand-red/5 text-ink'
+              : 'border-brand-blue/30 bg-brand-blue/5 text-ink'
+          }`}
         >
-          {t('sent')}
+          {estado === 'enviado' && t('sent')}
+          {estado === 'whatsapp' && t('sentWhatsapp')}
+          {estado === 'limite' && t('tooMany')}
         </p>
       )}
 
