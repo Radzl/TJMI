@@ -1360,12 +1360,44 @@ Se descartó antes de escribirlo.
   localizar el archivo con `grep -l VignetteEffect .next/static/chunks/*.js` y
   mirar si el navegador lo solicita en cada ancho.
 
+### Las medidas de la escena viven aparte (`escena/medidas.ts`)
+
+- `Scene.tsx` eran **1.678 líneas**, y de ellas casi quinientas eran
+  constantes con su explicación medida al lado. Tener la coreografía y las
+  medidas en el mismo archivo hacía que para cambiar un número hubiera que
+  bajar por delante de todo el bucle de render, y al revés. Ahora son **1.251
+  y 503**.
+- **El corte es puro:** en `medidas.ts` no hay ni una línea de lógica. Son
+  números, cuentas entre números y una función sin estado. Nada depende de
+  React, de three en marcha ni del scroll.
+- **Lo que NO se movió:** los `Vector3` de scratch que `useFrame` reutiliza
+  cada fotograma. No son medidas, son memoria de trabajo del bucle de render,
+  y leerlos lejos de donde se usan haría más difícil ver que **no se puede
+  crear un objeto dentro de `useFrame`**, que es la regla que justifica que
+  existan.
+- **Cómo se comprobó que el corte era correcto:** con el arnés visual. Un
+  movimiento de constantes que cambie un píxel es un movimiento mal hecho, así
+  que esa era exactamente la comprobación que valía. Dio **0,00 % en doce
+  tomas y 0,01 % en tres**, que es el ruido de la carga respirando y las
+  ruedas girando.
+
+#### Dos cosas que el corte automático hizo mal antes de salir bien
+
+- **Confundir un spread con un acceso a propiedad.** El guion decidía qué
+  importar buscando cada nombre con un «que no lleve punto delante», para no
+  contar un `objeto.NOMBRE`. Pero `...PALLET_STACKS` **lleva tres puntos
+  delante**, así que esa constante salía como «no se usa» y el archivo nuevo
+  se quedaba sin su import. Vale el límite de palabra a secas.
+- **Importar de vuelta lo que ya no hace falta.** Diez de las cuarenta y
+  cuatro constantes solo las usa el propio bloque de medidas —una constante
+  que sirve para calcular otra—, y seis imports de `Scene.tsx` se quedaron sin
+  dueño al mudarse el bloque. Un corte que deja avisos de «declarado y sin
+  usar» es un corte a medias.
+
 ### Lo que queda, por orden de lo que devolvería
 
-1. **Partir `Scene.tsx`**, que son 1.665 líneas y entra entero en el paquete
-   del 3D.
-2. **GSAP**, que es la tarea más larga de la carga y hoy no se puede diferir
-   sin tocar catorce archivos.
+1. **GSAP**, que es la tarea más larga de la carga (2.050 ms) y hoy no se
+   puede diferir sin tocar catorce archivos.
 
 ## Accesibilidad: los dos fallos reales, arreglados
 
