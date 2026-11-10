@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { creaLimite, direccionDe } from '@/lib/peticion';
 
 /**
  * `POST /api/aviso` — recoge los fallos que ocurren en el navegador de un
@@ -45,48 +46,15 @@ const esquema = z.object({
  * El límite, y aquí es más estricto que en el formulario a propósito.
  *
  * **Un fallo en bucle puede lanzar el mismo error cientos de veces por
- * segundo.** El cliente ya se limita solo a tres por pestaña, pero el cliente
- * es justo lo que está roto cuando esto se usa, así que el servidor no puede
- * fiarse de él. Veinte por IP y hora es de sobra para enterarse de un
- * problema y poco para que el aviso se convierta en el problema.
+ * segundo.** El cliente ya se limita solo a tres por pestaña, pero el
+ * cliente es justo lo que está roto cuando esto se usa, así que el
+ * servidor no puede fiarse de él. Veinte por visitante y hora es de sobra
+ * para enterarse de un problema y poco para que el aviso se convierta en
+ * el problema.
  */
-const LIMITE = { avisos: 20, ventanaMs: 60 * 60 * 1000 };
-const recibidos = new Map<string, number[]>();
-
-function demasiados(ip: string): boolean {
-  const ahora = Date.now();
-  const previos = (recibidos.get(ip) ?? []).filter(
-    (t) => ahora - t < LIMITE.ventanaMs,
-  );
-
-  if (previos.length >= LIMITE.avisos) {
-    recibidos.set(ip, previos);
-    return true;
-  }
-
-  previos.push(ahora);
-  recibidos.set(ip, previos);
-
-  if (recibidos.size > 500) {
-    for (const [clave, marcas] of recibidos) {
-      if (marcas.every((t) => ahora - t >= LIMITE.ventanaMs))
-        recibidos.delete(clave);
-    }
-  }
-
-  return false;
-}
-
-function direccion(peticion: Request): string {
-  const cabecera =
-    peticion.headers.get('x-forwarded-for') ??
-    peticion.headers.get('x-real-ip') ??
-    '';
-  return cabecera.split(',')[0]?.trim() || 'local';
-}
-
+const demasiados = creaLimite({ cuantas: 20, ventanaMs: 60 * 60 * 1000 });
 export async function POST(peticion: Request) {
-  if (demasiados(direccion(peticion))) {
+  if (demasiados(direccionDe(peticion))) {
     // **204 y no 429.** A quien manda esto no le sirve de nada saber que se
     // ha pasado del límite: es una página rota avisando, no alguien
     // esperando una respuesta. Y un 429 en la consola encima del error

@@ -14,6 +14,21 @@
  */
 const BASE = process.argv[2] ?? 'http://localhost:3000';
 
+/**
+ * Una identidad distinta en cada pasada.
+ *
+ * **Sin esto el arnés no se puede relanzar:** la ruta limita a cinco envíos
+ * cada diez minutos, así que la segunda vez seguida se come el límite de la
+ * primera y canta cuatro fallos que no existen. Un arnés que no se puede
+ * repetir se deja de usar.
+ *
+ * En local esta cabecera es la única que hay, así que la ruta la usa. En
+ * producción nunca llega a usarse, porque la plataforma siempre pone
+ * `x-real-ip` y esa va primero — ver `lib/peticion.ts`, donde está escrito
+ * por qué ese orden es lo que impide falsear el límite.
+ */
+const QUIEN = `pruebas-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
 const VALIDO = {
   origin: 'Onda, Castellón',
   destination: 'Fuenlabrada, Madrid',
@@ -32,7 +47,7 @@ const VALIDO = {
 async function pedir(cuerpo) {
   const r = await fetch(`${BASE}/api/presupuesto`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-forwarded-for': QUIEN },
     body: typeof cuerpo === 'string' ? cuerpo : JSON.stringify(cuerpo),
   });
   const datos = await r.json().catch(() => null);

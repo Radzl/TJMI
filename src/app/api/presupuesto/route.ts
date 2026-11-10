@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { enviarCorreo } from '@/lib/correo';
+import { creaLimite, direccionDe } from '@/lib/peticion';
 import {
   asuntoDelCorreo,
   cuerpoDelCorreo,
@@ -35,67 +36,17 @@ import {
  * no reintenta.
  */
 
-/** Cuántos envíos se admiten por IP y en cuánto tiempo. */
-const LIMITE = { envios: 5, ventanaMs: 10 * 60 * 1000 };
-
 /**
- * El contador de envíos por IP.
+ * Cuántos envíos se admiten por visitante y en cuánto tiempo.
  *
- * **Está en memoria, y hay que saber lo que eso significa**: en un servidor
- * que se apaga entre peticiones, cada instancia lleva su propia cuenta y el
- * contador se borra al reciclarse. O sea que **esto no es un muro contra un
- * ataque**: es lo que impide que un dedo nervioso mande la misma solicitud
- * ocho veces y que un robot tonto llene el buzón en un minuto.
- *
- * Un límite de verdad pide un almacén compartido. No se ha montado porque
- * sería meter una base de datos en una web que no tiene ninguna, y para el
- * volumen de un formulario de presupuesto el señuelo más esto sobra. Si algún
- * día llega spam de verdad, **ese** es el momento de montarlo, no antes.
+ * Cinco cada diez minutos: de sobra para corregir un dato y volver a
+ * mandarlo, y poco para que un robot llene el buzón. El contador y la
+ * forma de identificar al visitante viven en `lib/peticion.ts`, que es
+ * donde está escrito por qué el orden de las cabeceras importa.
  */
-const envios = new Map<string, number[]>();
-
-function demasiados(ip: string): boolean {
-  const ahora = Date.now();
-  const previos = (envios.get(ip) ?? []).filter(
-    (t) => ahora - t < LIMITE.ventanaMs,
-  );
-
-  if (previos.length >= LIMITE.envios) {
-    envios.set(ip, previos);
-    return true;
-  }
-
-  previos.push(ahora);
-  envios.set(ip, previos);
-
-  // La tabla se limpia sola: sin esto, una instancia que viva mucho acumula
-  // una entrada por cada IP que haya pasado alguna vez.
-  if (envios.size > 500) {
-    for (const [clave, marcas] of envios) {
-      if (marcas.every((t) => ahora - t >= LIMITE.ventanaMs)) envios.delete(clave);
-    }
-  }
-
-  return false;
-}
-
-/**
- * De dónde viene la petición.
- *
- * `x-forwarded-for` lo pone el proxy de delante y puede traer varias IP
- * separadas por comas: la primera es la del cliente. Si no hay ninguna
- * —desarrollo local— se usa una etiqueta fija, que para el límite vale igual.
- */
-function direccion(peticion: Request): string {
-  const cabecera =
-    peticion.headers.get('x-forwarded-for') ??
-    peticion.headers.get('x-real-ip') ??
-    '';
-  return cabecera.split(',')[0]?.trim() || 'local';
-}
-
+const demasiados = creaLimite({ cuantas: 5, ventanaMs: 10 * 60 * 1000 });
 export async function POST(peticion: Request) {
-  const ip = direccion(peticion);
+  const ip = direccionDe(peticion);
 
   if (demasiados(ip)) {
     return NextResponse.json({ ok: false, motivo: 'limite' }, { status: 429 });

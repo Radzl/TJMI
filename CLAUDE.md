@@ -1085,6 +1085,39 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - **No hay captcha, y es decisión.** Le pide trabajo al cliente justo en el último paso, y sobre todo **es un tercero al que se le manda la IP del visitante**: caería dentro del consentimiento de cookies y la mayoría no llegaría a verlo. El señuelo no le pide nada a nadie ni habla con nadie.
 - Hay además un **límite de cinco envíos por IP cada diez minutos**, en memoria. Y hay que saber lo que eso significa: en un servidor que se apaga entre peticiones, cada instancia lleva su cuenta y el contador se borra al reciclarse, así que **no es un muro contra un ataque**: es lo que impide que un dedo nervioso mande ocho veces lo mismo. Un límite de verdad pide un almacén compartido, o sea meter una base de datos en una web que no tiene ninguna. Si algún día llega spam de verdad, **ese** es el momento, no antes.
 
+### El límite de envíos se podía falsear, y lo destapó repetir la prueba
+
+- **El fallo:** la primera versión identificaba al visitante mirando
+  `x-forwarded-for` **primero**, que es lo que todo el mundo escribe. Esa
+  cabecera **la puede poner el cliente**: el proxy de delante no la
+  sustituye, le **añade** la IP real detrás. O sea que una petición que
+  llegue con `x-forwarded-for: 1.2.3.4` acaba siendo `1.2.3.4, <ip real>`,
+  y leer el primer valor —que es lo correcto cuando la cabecera la pone
+  solo el proxy— devuelve justo el que ha elegido quien ataca. Cambiándolo
+  en cada petición, **el límite deja de existir**.
+- **Lo que sí pone la plataforma y el cliente no puede tocar** es
+  `x-vercel-forwarded-for` y `x-real-ip`. Ahora van primero, y
+  `x-forwarded-for` se queda de último recurso para que esto siga
+  funcionando en local, donde no hay plataforma delante.
+- Vive en **`lib/peticion.ts`**, junto con el contador, porque lo usan las
+  dos rutas —el formulario y los avisos— y tenerlo copiado era garantizar
+  que algún día una se arreglara y la otra no.
+
+#### Y antes de eso, el arnés no se podía relanzar
+
+- **Así se encontró.** Al pasar las comprobaciones dos veces seguidas, la
+  segunda cantaba **cuatro fallos que no existían**: se había comido el
+  límite de la primera. Un arnés que no se puede repetir se deja de usar, y
+  además esconde los fallos de verdad detrás de los suyos.
+- Ahora los guiones mandan **una identidad distinta en cada pasada**. En
+  local esa cabecera es la única que hay, así que la ruta la usa; en
+  producción nunca llega a usarse, porque `x-real-ip` siempre está y va
+  primero. Comprobado lanzando `check:formulario` y `check:avisos` dos
+  veces seguidas: verdes las dos.
+- La prueba del navegador manda **una sola** solicitud por pasada, así que
+  caben cinco seguidas antes de tocar el límite. Suficiente, y además es el
+  camino que de verdad hace un visitante.
+
 ### Qué cambió de los textos
 
 - `submit` pasa de «Enviar por WhatsApp» a **«Enviar solicitud»**, y `sent` de «se ha abierto WhatsApp» a **«Recibido»**. Lo que decían no se pierde: se mudó a `submitWhatsapp` y `sentWhatsapp`, que es la vía alternativa y la red de seguridad.
