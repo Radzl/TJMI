@@ -845,6 +845,34 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - **Cabeceras de sección** (`SectionHeading.tsx`): el titular, y nada más. Llevó número, filete rojo y antetítulo, y los tres se quitaron por el criterio de diseño (ver esa sección): el número afirmaba una secuencia que no existe, el antetítulo repetía el titular y el filete acompañaba a los dos. Lo que queda es el titular haciendo el trabajo con tamaño y condensación, que es para lo que se eligió una condensada robusta. **No le vuelvas a poner número**: si una lista sí va en orden, el número va en la lista, como en `RouteSteps`.
 - El antetítulo **no puede repetir el titular**. Ya pasó con "Dónde estamos / Dónde estamos" y con "Cobertura / Rutas y cobertura": se lee como un error, no como jerarquía.
 - **Banda de marca** (`Marquee.tsx`): tira rotulada en rojo y en movimiento continuo que cierra la sección de Servicios. Nació como bisagra entre el oscuro y el claro; ahora que Servicios va en crema es **el único bloque de color macizo de la portada**, que es justo como el brief quiere el rojo. Son **dos copias idénticas** de la lista y la animación desplaza la mitad del conjunto: así el bucle no tiene costura. La segunda copia va con `aria-hidden`, que si no los lectores de pantalla leen todo dos veces.
+
+### La banda responde a la velocidad del scroll
+
+- Iba a velocidad fija, y una tira que se mueve sola a su ritmo es un adorno. Ahora **acelera cuando bajas y se da la vuelta cuando subes**, así que deja de ser decoración y pasa a ser una pieza más de lo que esta web hace con el scroll.
+- **El movimiento lo sigue haciendo el CSS**, y eso no es pereza: así la banda se mueve sin JavaScript, con movimiento reducido se para sola y **no hay un tercer sistema de animación** en el proyecto, que es justo el motivo por el que se quitó Motion. Lo único que hace el componente es cambiarle la **velocidad de reproducción** a esa animación con `Animation.playbackRate`.
+- **Lo que no se puede hacer es tocar `animation-duration`**: el navegador recalcula el progreso con la duración nueva, así que la banda pega un salto de posición en cada fotograma. `playbackRate` conserva dónde está y solo cambia a qué ritmo sigue.
+- Va **amortiguado en dos escalones** —primero la velocidad medida, después la propia tasa— con `damp()`, que es independiente de los fps, igual que todo lo que se mueve por fotograma en el 3D. Sin eso tiembla: un dedo en un móvil da lecturas que saltan de 200 a 4.000 px/s y vuelven. **El retraso entre que empujas y que responde es lo que la hace pesada en vez de nerviosa.**
+- Sobre `gsap.ticker` y no sobre un `requestAnimationFrame` propio, para no abrir un segundo bucle: ese ticker ya está corriendo por Lenis y por la coreografía del 3D.
+
+#### Los topes están medidos
+
+- Un gesto de rueda normal mueve la página a **3.067 px/s** de mediana y 5.513 en el decil superior. Con `VELOCIDAD_REFERENCIA = 1200`, eso deja la banda a **3,6×** en el gesto corriente, que se nota sin pensarlo.
+- La banda recorre 1.920 px en 42 s, o sea **46 px/s** a velocidad propia. Los topes en píxeles por segundo:
+
+  | tasa | velocidad | cuándo |
+  | --- | --- | --- |
+  | 1× | 46 px/s | en reposo |
+  | 3,6× | 165 px/s | gesto normal |
+  | **5×** | **229 px/s** | tope, solo en un golpe fuerte |
+  | **−2×** | 91 px/s al revés | subiendo deprisa |
+
+- **Hacia atrás va con menos recorrido que hacia delante** a propósito: subir es un gesto de volver, no de avanzar, y una banda disparada al revés se lee como un error.
+- Medido con `tests/perf/medidas/banda.mjs`: **4,92× bajando, −1,97 subiendo, y vuelve a 1** cuando el scroll para.
+
+#### Dos trampas al medirlo, las dos pisadas
+
+- **Hay que mover la rueda de verdad, no llamar a `window.scrollBy`.** Lenis gobierna el scroll de esta web, así que un `scrollBy` desde dentro de la página no produce la velocidad que produciría una persona: el pico de la banda se quedaba en **1,09** y parecía que el efecto no existía. Con `page.mouse.wheel`, que es un evento de entrada real, sale lo de arriba.
+- **Hay que medir el pico, no el valor de después.** La tasa vuelve a 1 en cuanto el scroll para, y la amortiguación la devuelve en menos de un segundo: leerla al terminar el gesto da casi 1 aunque todo funcione.
 - Esa banda va **dentro** de la sección de Servicios, no entre secciones. `Backdrop` elige el color de fondo mirando qué `[data-bg]` cruza el centro de la pantalla: un bloque suelto entre dos secciones deja un hueco sin dueño y el fondo pega un parpadeo a crema.
 - **Las fotos salen de un solo sitio** (`src/content/media.ts`). La lista estaba copiada en dos archivos —la portada y la página de Servicios—, así que cambiar una foto era cambiarla en dos sitios y acordarse de los dos.
 - Ese manifiesto declara además, por hueco, **el ancho que necesita de verdad** y **qué debería verse**. El ancho lo comprueba `npm run check:fotos`, que mide cada archivo y canta las que no llegan. No es burocracia: una foto de 403 px en un hueco de 1.150 se ve «un poco blanda» y se le echa la culpa a la cámara, cuando lo que pasa es que está ampliada al triple. El comando lo dice con un número.
@@ -1612,7 +1640,10 @@ Esto se auditó midiendo el HTML que de verdad se sirve en las 32 páginas (16 r
 ## Preguntas frecuentes
 
 - Vive en `src/app/[locale]/faq/page.tsx` y los textos en `messages`, bajo `faq`. Las preguntas y las respuestas son literalmente las que dio el cliente: se pasaron a caja baja (venían en mayúsculas), se corrigieron un par de erratas y se ajustó el tuteo. El contenido no se toca sin preguntar.
-- Lleva marcado **`FAQPage`** para buscadores, y eso no es adorno de SEO: una página de preguntas con ese marcado puede salir en Google con las preguntas desplegables debajo del resultado y ocupar el triple de alto en la lista. Es de lo poco que da un resultado visible y rápido. Los datos salen de los mismos textos que se pintan, así que no pueden desincronizarse.
+- Lleva marcado **`FAQPage`**, y los datos salen de los mismos textos que se pintan, así que no pueden desincronizarse.
+- **Pero lo que decía esta nota de ese marcado ya no es verdad, y conviene saberlo antes de gastar trabajo en ello.** Decía que «puede salir en Google con las preguntas desplegables debajo del resultado y ocupar el triple de alto», y eso se acabó: desde **agosto de 2023** Google limita el resultado enriquecido de preguntas a **webs de administración pública y de salud**. Una empresa de transporte no entra, por bien que esté el marcado.
+- **Por eso las seis páginas de servicio no llevan `FAQPage`, y no es un olvido.** Se valoró añadírselo —era un punto del repaso de SEO— y se descartó al comprobar la política: habría sido escribir seis tandas de preguntas y respuestas para un resultado que Google no va a enseñar. Si algún día lo reabre, el contenido para hacerlo ya está en `includes` y `bestFor`.
+- El marcado de `/faq` **se queda igualmente**: sigue siendo válido, le dice a Google de qué va la página y no cuesta nada. Lo que se corrige es la expectativa, no el código.
 - **Las preguntas no llevan número, y antes sí.** Numerar afirma que hay una secuencia, y estas ocho se leen en cualquier orden: el `01` decoraba y mentía. Es la misma regla que vació las cabeceras de sección. (Los pasos de la ruta sí lo llevan, porque recoger va antes de entregar.)
 - Y quitarlo arregló **lo que de verdad se veía mal**: el número empujaba la pregunta 27 px hacia abajo con un `mt-3`, así que la pregunta y su respuesta **no arrancaban a la misma altura**. En las respuestas de una línea eso dejaba un escalón que parecía un hueco sin rellenar.
 - Las respuestas van **abiertas, no en acordeón**. Un acordeón tiene sentido con treinta preguntas; con ocho, lo único que consigue es obligar a ocho clics para leer una página que cabe entera. Y lo que está plegado no lo lee casi nadie.
