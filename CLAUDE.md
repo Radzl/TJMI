@@ -1537,6 +1537,11 @@ Igual que con `check:3d`, se saboteó a propósito: un `@media (prefers-reduced-
 
 **Y esto, de paso, es un aviso sobre cómo editar este archivo:** ese párrafo se escribió la primera vez desde un `node -e` dentro de bash, y **el shell se comió todo lo que iba entre comillas invertidas** —se lo tomó por sustitución de comandos— dejando huecos en mitad de las frases. Para tocar `CLAUDE.md`, guion en un archivo o edición directa; nunca código entre comillas invertidas pasando por el shell.
 
+### Y las rutas que no son páginas
+
+- El sitemap, el robots, el manifiesto y los iconos **no pasan por el proxy de idiomas**, porque su filtro deja fuera todo lo que lleva un punto en el nombre. Eso funciona hasta que alguien toca el `matcher`, y entonces **se rompen en silencio**: siguen devolviendo 200, pero con el HTML de la portada dentro. El repaso mira el estado **y** que el contenido sea el suyo.
+- Y comprueba que las direcciones inventadas dan **404 de verdad**, no un 200 vacío. Un 200 en una página que no existe es lo que hace que Google llene el índice de basura. Estaba comprobado a mano una vez; ahora se comprueba siempre.
+
 ### La trampa que hace perder media hora
 
 **Hay que reiniciar `next start` después de `next build`.** Sin eso el servidor sigue sirviendo la compilación anterior, los trozos cambian de nombre y lo que se ve son 404 y «Refused to execute script because its MIME type is text/plain» **en las 32 páginas**. Parece que la web está rota y lo que está caducado es el servidor. Ya está escrito en la sección de rendimiento y aun así se volvió a pisar aquí.

@@ -193,10 +193,45 @@ for (const [idioma, ancho, alto] of [
 
 await browser.close();
 
+// ── Las rutas que no son páginas ─────────────────────────────────────────
+//
+// El sitemap, el robots y el manifiesto **no pasan por el proxy de idiomas**
+// porque su filtro deja fuera todo lo que lleva un punto en el nombre. Eso
+// funciona hasta que alguien toca el `matcher`, y entonces se rompen en
+// silencio: siguen devolviendo 200, pero con el HTML de la portada.
+//
+// Y las direcciones inventadas tienen que dar **404 de verdad**, no un 200
+// vacío: un 200 en una página que no existe es lo que hace que Google llene
+// el índice de basura.
+console.log('\n### rutas especiales');
+
+const especiales = [
+  ['/sitemap.xml', 200, /<urlset/],
+  ['/robots.txt', 200, /Sitemap:/],
+  ['/manifest.webmanifest', 200, /"start_url"/],
+  ['/icon-192.png', 200, null],
+  ['/es/esta-pagina-no-existe', 404, null],
+  ['/es/servicios/no-existe', 404, null],
+  ['/es/blog/no-existe', 404, null],
+];
+
+for (const [ruta, esperado, patron] of especiales) {
+  const r = await fetch(BASE + ruta, { redirect: 'follow' });
+  const cuerpo = patron ? await r.text() : '';
+  const mal = [];
+  if (r.status !== esperado) mal.push(`estado ${r.status}, esperaba ${esperado}`);
+  if (patron && !patron.test(cuerpo)) mal.push('el contenido no es el suyo');
+
+  console.log(
+    `  ${mal.length ? 'MAL ' : 'OK  '} ${ruta.padEnd(36)} ${mal.join(', ')}`,
+  );
+  if (mal.length) problemas.push(`${ruta}: ${mal.join(', ')}`);
+}
+
 console.log('');
 console.log(
   problemas.length === 0
-    ? '  Las 32 páginas cargan limpias, sin desbordes, con un solo h1 y sin texto\n  invisible con movimiento reducido.'
-    : `  ${problemas.length} página(s) con algo que mirar:\n   · ${problemas.join('\n   · ')}`,
+    ? '  Las 32 páginas cargan limpias, sin desbordes, con un solo h1 y sin texto\n  invisible con movimiento reducido. Y las rutas especiales siguen en su sitio.'
+    : `  ${problemas.length} cosa(s) que mirar:\n   · ${problemas.join('\n   · ')}`,
 );
 process.exit(problemas.length === 0 ? 0 : 1);
