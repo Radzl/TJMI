@@ -30,6 +30,8 @@
  * `globals.css`).
  */
 
+import { avisar } from './avisar';
+
 /**
  * ¿Puede este navegador abrir un contexto WebGL?
  *
@@ -86,11 +88,25 @@ export function marcarSin3D(motivo: string, detalle?: unknown) {
 
   document.documentElement.setAttribute(ATRIBUTO_SIN_3D, 'true');
 
-  // Queda en la consola para quien depure. **Este es el sitio** donde
-  // engancharía un servicio de avisos el día que se añada: por aquí pasan los
-  // tres modos de fallo del 3D, y ahora mismo no hay forma de enterarse de
-  // que a alguien se le ha caído la escena.
+  // Queda en la consola para quien depure.
   console.warn(`[3D] la página sigue sin la escena (${motivo})`, detalle ?? '');
+
+  // **Y se avisa al servidor, que era lo que faltaba.** Por aquí pasan los
+  // tres modos de fallo del 3D, así que este es el sitio: antes, que a
+  // alguien se le cayera la escena no dejaba rastro en ninguna parte. Ver
+  // `lib/avisar.ts` — no carga nada de terceros y no manda datos personales.
+  //
+  // **El primero de los tres no es un fallo y no se avisa:** que un navegador
+  // no abra WebGL es un navegador viejo o una tarjeta en lista negra, o sea
+  // algo que pasa y para lo que existe el respaldo. Avisar de eso llenaría el
+  // registro de cosas que no hay que arreglar y taparía las dos que sí.
+  if (motivo !== 'este navegador no abre WebGL') {
+    avisar({
+      motivo: 'sin-3d',
+      mensaje: `${motivo}${detalle instanceof Error ? `: ${detalle.message}` : ''}`,
+      traza: detalle instanceof Error ? detalle.stack : undefined,
+    });
+  }
 }
 
 /** Deshace lo anterior. Solo lo usa el desmontaje del boundary. */

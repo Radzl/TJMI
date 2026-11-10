@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { avisar } from '@/lib/avisar';
 import { useTranslations } from 'next-intl';
 import Button from '@/components/ui/Button';
 import Container from '@/components/ui/Container';
@@ -46,6 +47,15 @@ export default function Error({ error, reset }: Props) {
 
   useEffect(() => {
     console.error('[error]', error.digest ?? '', error);
+    // **Y además se avisa al servidor.** Sin esto, el error se quedaba en la
+    // consola del navegador de quien lo sufre, que es como no enterarse. Ver
+    // `lib/avisar.ts`: no carga nada de terceros y no manda datos personales.
+    avisar({
+      motivo: 'pagina',
+      mensaje: error.message,
+      digest: error.digest,
+      traza: error.stack,
+    });
   }, [error]);
 
   return (

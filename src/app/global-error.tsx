@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { avisar } from '@/lib/avisar';
 
 type Props = {
   error: Error & { digest?: string };
@@ -32,6 +33,14 @@ type Props = {
 export default function GlobalError({ error, reset }: Props) {
   useEffect(() => {
     console.error('[global-error]', error.digest ?? '', error);
+    // Este es el fallo más grave que puede tener la web —se ha caído el
+    // layout entero—, así que es el que más falta hace que se cuente.
+    avisar({
+      motivo: 'documento',
+      mensaje: error.message,
+      digest: error.digest,
+      traza: error.stack,
+    });
   }, [error]);
 
   return (

@@ -1452,7 +1452,34 @@ Poniendo `ROAD_LEAD = 0` (deshacer el adelanto de la cámara cenital) el script 
   - `dataset.sin3d` escribe `data-sin3d`, **sin el guion antes del número**, y el selector del CSS busca `data-sin-3d`. Se ponía el atributo, avisaba la consola, y la maquetación seguía igual. Por eso se escribe con `setAttribute` y el nombre vive en una constante.
   - El estado de WebGL tiene **tres valores, no dos**: en el servidor no se puede saber si hay WebGL, así que el valor de partida es `null` («todavía no se sabe»). Puesto a `false`, el primer render del navegador marcaba como «sin 3D» **todas** las visitas y nadie lo volvía a quitar.
 - **`error.tsx` y `global-error.tsx` son dos cosas distintas.** El primero atiende lo que falla dentro de una página y mantiene navbar, pie e idioma, con tres salidas: reintentar (`reset()`, que recompone sin recargar ni perder el scroll), inicio y contacto. El segundo sustituye al documento entero cuando se cae el propio `layout`: trae su `<html>` y su `<body>`, no tiene traducciones ni garantía de estilos, y por eso va con colores a mano y en los dos idiomas. No es una página de la web: es la nota que queda cuando la web no está, y su único trabajo es dejar un teléfono a la vista.
-- **El error no se enseña, se registra.** El mensaje técnico no le dice nada a quien está delante y a veces filtra rutas internas. Va a la consola con su `digest`. **`marcarSin3D()` y `error.tsx` son los dos únicos puntos por los que pasa un fallo de esta web**: ahí es donde engancharía un servicio de avisos el día que se añada.
+- **El error no se enseña, se registra.** El mensaje técnico no le dice nada a quien está delante y a veces filtra rutas internas. Va a la consola con su `digest`.
+
+### Y ahora el servidor se entera (`lib/avisar.ts`, `/api/aviso`)
+
+- **Antes no había forma de enterarse de nada.** Si a alguien se le caía una página o la escena 3D, el error se escribía en la consola de **su** navegador y ahí moría. Y no es hipotético: en este proyecto un efecto de postprocesado dejó el Canvas en negro, y la cabecera de seguridad dejó el 3D muerto **en producción** durante un despliegue entero. Las dos veces se descubrieron porque alguien fue a mirar, no porque la web lo contara.
+- Los tres puntos por los que pasa un fallo avisan ahora a `/api/aviso`, que lo escribe en el registro del servidor y, si hay un `AVISOS_WEBHOOK` configurado (ver `.env.example`), lo reenvía a donde se quiera: un canal de Slack, un Discord, lo que acepte un POST con JSON.
+  - `error.tsx` → `motivo: pagina`
+  - `global-error.tsx` → `motivo: documento`
+  - `marcarSin3D()` → `motivo: sin-3d`
+
+#### Las decisiones, que son casi todas sobre lo que NO hace
+
+- **No carga nada de terceros.** Un servicio de errores de los normales mete un script en la página, y eso caería dentro del consentimiento de cookies: o sea que la mayoría no lo tendría activo **justo cuando más falta hace**. El reenvío va desde el servidor, donde el visitante no habla con nadie.
+- **No manda datos personales.** Van el mensaje, el principio de la traza, la **ruta** y el navegador. Ni cookies, ni identificadores, ni nada que escriba el visitante. Y no guarda nada: lo que recuerda —qué ya ha avisado— vive en memoria y se va al cerrar la pestaña.
+- **La ruta y no la URL entera.** Hoy esta web no tiene parámetros con nada dentro, pero el día que los tenga este aviso no se los lleva.
+- **`sendBeacon` primero**, y `fetch` con `keepalive` si no está: es el único envío que el navegador se compromete a terminar aunque la pestaña se esté cerrando, que es exactamente lo que pasa cuando una página se cae y alguien se va.
+- **Que no haya WebGL no se avisa.** Es uno de los tres modos de fallo del 3D, pero no es un fallo: es un navegador viejo o una tarjeta en lista negra, o sea algo que pasa y para lo que existe el respaldo. Avisar de eso llenaría el registro de cosas que no hay que arreglar y taparía las dos que sí.
+
+#### Esto corre cuando algo ya está roto, así que no puede empeorarlo
+
+- **Tope de tres avisos por pestaña** y **sin repetidos**: un bucle de render puede lanzar el mismo error cientos de veces por segundo, y sin tope el aviso sería el ataque.
+- En el servidor, **veinte por IP y hora**, que es más estricto que el del formulario a propósito: el cliente ya se limita solo, pero el cliente es justo lo que está roto cuando esto se usa, así que el servidor no puede fiarse de él.
+- La ruta devuelve **204 siempre**, incluso al pasarse del límite o con un cuerpo ilegible. A una página rota avisando no le sirve de nada una respuesta, y un 429 en la consola encima del error original solo añade ruido a quien esté depurando.
+
+#### Comprobado provocando un fallo de verdad
+
+- `npm run check:avisos` **no llama a la función a mano**: bloquea los modelos 3D —que es exactamente lo que pasó en producción con el wasm— y mira si el aviso sale por la red y llega al registro.
+- **Y una trampa de medición:** la primera comprobación miraba que el cuerpo del aviso no contuviera `http` en ninguna parte, y daba fallo con todo bien. El que lleva una URL es el **mensaje del error** —«Could not load http://…/models/truck.glb»—, que es nuestro propio modelo y es justo lo que hace falta para depurar. Lo que de verdad no puede viajar es la dirección que está mirando el visitante, y eso es lo que se comprueba ahora.
 
 ## Rendimiento del 3D (medido, no estimado)
 
