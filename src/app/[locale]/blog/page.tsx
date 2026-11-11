@@ -93,9 +93,12 @@ export default async function BlogPage({ params }: Props) {
                       </span>
                     </p>
 
-                    {/* La columna de portada. Mientras no haya fotos pinta un
-                        bloque de color que ocupa su sitio exacto, para poder
-                        juzgar la página que va a quedar y no la de ahora. */}
+                    {/* La columna de portada. Las diez de ahora son de
+                        banco y provisionales (ver `cover` en
+                        `content/blog.ts`). Si a un artículo le falta la suya,
+                        `CoverPlaceholder` pinta un bloque de color que ocupa
+                        su sitio exacto, así que se puede publicar sin tener
+                        la foto el mismo día. */}
                     <CoverPlaceholder
                       cover={post.cover}
                       seed={post.slug}

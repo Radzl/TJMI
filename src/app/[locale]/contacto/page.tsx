@@ -115,8 +115,9 @@ export default async function ContactPage({ params }: Props) {
                   así que la mitad de abajo de esta columna no tenía nada.
 
                   Cuadrada y no apaisada: es lo que cabe en una columna
-                  estrecha sin quedarse en una tira. Mientras no haya archivo
-                  el hueco lo pinta `CoverPlaceholder`. Ver `PAGE_PHOTOS`. */}
+                  estrecha sin quedarse en una tira. La de ahora es de banco
+                  y provisional; si se quita, el hueco lo pinta
+                  `CoverPlaceholder`. Ver `PAGE_PHOTOS`. */}
               <CoverPlaceholder
                 cover={PAGE_PHOTOS.contacto?.src}
                 seed="contacto"

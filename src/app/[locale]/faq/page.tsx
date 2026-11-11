@@ -130,8 +130,11 @@ export default async function FaqPage({ params }: Props) {
               acaban las respuestas, se ve a quien las da y entonces se pide
               presupuesto.
 
-              Mientras no haya archivo, el hueco lo pinta `CoverPlaceholder`
-              con la proporción exacta que tendrá. Ver `PAGE_PHOTOS`. */}
+              La de ahora es de banco y provisional, y va **ya recortada a
+              2,4:1 en el archivo**: no hay foto de banco que venga nativa tan
+              ancha, así que recortarla al descargarla es lo que evita que el
+              navegador se baje un tercio de alto para tirarlo. Ver
+              `PAGE_PHOTOS`. */}
           <CoverPlaceholder
             cover={PAGE_PHOTOS.faq?.src}
             seed="faq"

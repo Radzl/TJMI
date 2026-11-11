@@ -82,6 +82,24 @@ if (photos.length === 0) {
   process.exit(1);
 }
 
+// Las portadas del blog van aparte: las rutas están en `content/blog.ts`, una
+// por artículo, y el hueco —que es el mismo para las diez— en `BLOG_COVER`.
+// Escribir diez entradas a mano en el manifiesto sería garantizar que algún
+// día se publique un artículo y su portada no la mire nadie.
+const coverSpec = manifest.match(
+  /export const BLOG_COVER = \{\s*\n\s*needs:\s*(\d+),\s*\n\s*ratio:\s*([\d.]+),/,
+);
+if (coverSpec) {
+  const blog = fs.readFileSync(path.join(root, 'src/content/blog.ts'), 'utf8');
+  for (const m of blog.matchAll(/^\s*cover:\s*'([^']+)',$/gm)) {
+    photos.push({
+      src: m[1],
+      needs: Number(coverSpec[1]),
+      ratio: Number(coverSpec[2]),
+    });
+  }
+}
+
 let bad = 0;
 const rows = [];
 

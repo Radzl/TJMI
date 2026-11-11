@@ -122,43 +122,75 @@ export const SITE_PHOTO_BRIEF = {
 };
 
 /**
- * Las fotos de las páginas que hoy no tienen ninguna.
+ * Las fotos de `/faq` y `/contacto`.
  *
- * **Por qué hacían falta.** `/faq` y `/contacto` son tipografía sobre crema de
- * arriba abajo. La portada va cargadísima —intro 3D, mosaico, desfile, banda
- * de cifras— y las interiores van desnudas, y ese salto entre unas y otras se
+ * **Por qué hacían falta.** Las dos eran tipografía sobre crema de arriba
+ * abajo. La portada va cargadísima —intro 3D, mosaico, desfile, banda de
+ * cifras— y las interiores iban desnudas, y ese salto entre unas y otras se
  * nota: parecen dos sitios distintos.
  *
- * **Están declaradas y vacías a propósito**, igual que las de las sedes. Hasta
- * que lleguen los archivos el hueco lo pinta `CoverPlaceholder`, que es la
- * misma pieza que usa el blog: un bloque en los tonos de la casa, con la
- * proporción exacta que tendrá la foto. Así se puede juzgar la página que va a
- * quedar y no la de ahora, y no hay nada que quitar el día que lleguen: basta
- * con rellenar el `src`.
+ * **Las dos de ahora son de banco y son provisionales** (Pexels, licencia de
+ * uso comercial sin atribución obligatoria; el crédito va igualmente en el
+ * aviso legal). Se eligieron contra el `brief` de cada una y mirándolas **ya
+ * recortadas al hueco**, que es donde se cae una foto que en el banco se veía
+ * bien: la de `/faq` se recorta a 2,4:1 y la de `/contacto` a cuadrada.
  *
- * Lo que **no** se hace es rellenarlas con una foto de otro sitio. Las ocho que
- * hay ya están todas colocadas, y la misma imagen dos veces en la misma web se
- * lee como que no hay más.
+ * **Lo que una foto de banco puede hacer aquí y en las sedes no**: estas dos
+ * ilustran —«hay gente trabajando», «alguien coge el teléfono»— y aquello
+ * afirmaría —«esta es nuestra nave de Almazora»—. Por eso `SITE_PHOTOS` sigue
+ * vacía y estas no. Si alguna de estas dos pasa a llevar un pie que diga que
+ * es la casa, deja de valer.
+ *
+ * **El `brief` se queda aunque ya haya foto**: sigue siendo el encargo para
+ * cuando el cliente mande la suya, y ese día esto es cambiar el `src`. Hubo
+ * una constante aparte (`PAGE_PHOTO_BRIEF`) y se fundió aquí por dos motivos:
+ * no la importaba nadie, y con el encargo en un sitio y la foto en otro los
+ * `needs` y los `ratio` estaban duplicados y podían separarse sin que nadie se
+ * enterara. Además `npm run check:fotos` lee este archivo a mano buscando
+ * `src` + `needs` + `ratio` **en líneas seguidas**: repartido entre dos
+ * constantes no las veía, así que las dos nuevas no se comprobaban.
  */
 export const PAGE_PHOTOS: Record<'faq' | 'contacto', Photo | null> = {
-  faq: null,
-  contacto: null,
-};
-
-/** El encargo de cada una. Aquí es donde se mira al hacer las fotos. */
-export const PAGE_PHOTO_BRIEF: Record<'faq' | 'contacto', Omit<Photo, 'src'>> = {
   faq: {
+    src: '/media/faq.jpg',
     needs: 1150,
     ratio: 2.4,
     brief:
       'El puesto de tráfico: alguien al teléfono con los albaranes delante y las pantallas detrás. Apaisada y ancha. Es quien contesta estas preguntas, y que se le vea trabajando es lo que convierte una lista de respuestas en una conversación con alguien.',
   },
   contacto: {
+    src: '/media/contacto.jpg',
     needs: 700,
     ratio: 1,
     brief:
       'La oficina por dentro, de día y con gente. Cuadrada o casi: va en la columna estrecha, al lado del formulario. No un retrato de estudio ni la fachada —la fachada ya va en las sedes—: lo que tiene que decir es que al otro lado del teléfono hay una mesa y una persona.',
   },
+};
+
+/**
+ * La medida de las portadas del blog.
+ *
+ * No van en `PAGE_PHOTOS` ni en `ALL_PHOTOS` porque las rutas viven en
+ * `content/blog.ts`, una por artículo. Lo que vive aquí es **el hueco**, que
+ * es igual para las diez, y `npm run check:fotos` lo usa para comprobarlas
+ * todas sin que haya que escribir diez entradas.
+ *
+ * - `needs` sale del hueco más grande de los dos en los que se ve: el listado
+ *   la pone a 30vw y el artículo a `64rem`, o sea **1.024 px**. Es la misma
+ *   convención que el resto del manifiesto: píxeles de CSS del hueco mayor.
+ * - `ratio` es el del **listado** (3:2) y no el del artículo (21:9), y es
+ *   decisión. En el listado hay diez a la vez y es donde se ven primero; el
+ *   artículo recorta más, y que las diez aguantan ese recorte está
+ *   comprobado **mirándolas una a una ya recortadas**, no por umbral. Con
+ *   21:9 aquí el comprobador cantaría las diez, porque no hay foto de banco
+ *   que venga nativa a 2,33:1, y una comprobación que nace en rojo enseña a
+ *   ignorar el aviso.
+ */
+export const BLOG_COVER = {
+  needs: 1024,
+  ratio: 1.5,
+  brief:
+    'Lo que cuenta el artículo, en el patio o en la nave: palés, muelle, carretilla, papeles. Apaisada, nunca vertical. Se ve a 3:2 en el listado y a 21:9 en el artículo, así que el sujeto tiene que aguantar una franja central ancha.',
 };
 
 export const ALL_PHOTOS: Photo[] = [

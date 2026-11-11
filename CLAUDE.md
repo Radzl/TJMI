@@ -840,7 +840,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - **El crema es `#f7f3ec`, no `#f6f4f1`**, y va en **dos sitios**: el `body` y la tabla `COLORS` de `Backdrop.tsx`. Ahí se había quedado el valor anterior, así que el fondo que pinta el componente y el del `body` eran dos cremas distintos por dos puntos. No se ve de uno en uno; se ve en el borde donde uno tapa al otro. El anterior estaba a dos puntos del valor que el criterio de diseño señala como el más repetido en webs generadas. Este es un punto más cálido y un punto menos gris —sube el rojo y el verde, baja el azul—, que es lo que separa el papel de un gris claro con algo de color. El cambio es pequeño a propósito: la marca pide mucho blanco, no un fondo con carácter.
 - **Grano de papel** sobre toda la página (`body::after` en `globals.css`). El crema plano se lee como pantalla; con la textura se lee como papel. No captura clics y no se imprime.
 - El menú marca la **página activa** con `aria-current` y un subrayado rojo.
-- El blog **no lleva portadas ahora mismo** y es a propósito (ver la sección «Blog»). Cuando las haya, `cover` en `content/blog.ts` las enseña en el listado, en el artículo, en Open Graph y en el marcado para buscadores: es lo que hace que al compartir el enlace por WhatsApp o LinkedIn aparezca la foto.
+- El blog **ya lleva portadas**, de banco y provisionales (ver «Las fotos de banco»). `cover` en `content/blog.ts` las enseña en cuatro sitios a la vez: el listado, el artículo, Open Graph y el marcado para buscadores. Ese cuarto sitio es el que importa más de lo que parece: es lo que hace que al compartir el enlace por WhatsApp o LinkedIn aparezca **la foto del artículo** y no la de la portada.
 
 ## Sistema de diseño de la página (detalles que no son adorno)
 
@@ -1140,17 +1140,116 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 ## Los huecos de foto de las páginas interiores
 
 - **`/faq` y `/contacto` eran tipografía sobre crema de arriba abajo.** La portada va cargadísima —intro 3D, mosaico, desfile, banda de cifras— y las interiores van desnudas: ese salto entre unas y otras se nota, parecen dos sitios distintos.
-- Los dos huecos están **declarados y vacíos a propósito** (`PAGE_PHOTOS` en `content/media.ts`), con su `brief`, su ancho y su proporción al lado, igual que los de las sedes. Mientras no lleguen los archivos los pinta `CoverPlaceholder`, que es la misma pieza del blog: un bloque en los tonos de la casa con la proporción exacta que tendrá la foto. **No hay nada que quitar el día que lleguen**: basta con rellenar el `src`.
+- Los dos huecos se declararon **vacíos a propósito** (`PAGE_PHOTOS` en `content/media.ts`), con su `brief`, su ancho y su proporción al lado. **Hoy están llenos, con fotos de banco provisionales**: ver «Las fotos de banco». El `brief` sigue ahí, que es el encargo para las de verdad, y el día que lleguen esto es cambiar el `src`. Si se quita una, el hueco lo vuelve a pintar `CoverPlaceholder`.
 - **Dónde va cada una es parte de la decisión:**
   - En `/faq`, **detrás de las respuestas y no delante**. Quien entra aquí viene a leer; una imagen antes de la primera pregunta se interpone. Al final hace de bisagra hacia el cierre: se acaban las respuestas, se ve a quien las da, y entonces se pide presupuesto. Apaisada y ancha.
   - En `/contacto`, **debajo de las vías**, donde sobraban trescientos píxeles de columna vacía: el formulario de al lado es alto y la lista de vías es corta. Cuadrada, que es lo que cabe en una columna estrecha sin quedarse en una tira. Solo en escritorio: en móvil esa columna va debajo y no hay hueco que llenar.
 - **El blog ya lo tenía resuelto** y conviene no tocarlo: su listado pinta `CoverPlaceholder` en la columna de portada desde que existen los artículos sin foto.
 
+## Las fotos de banco (`scripts/fotos/`)
+
+Doce huecos llevaban meses vacíos —las diez portadas del blog, `/faq` y
+`/contacto`— esperando fotos del cliente que no han llegado. Hoy los ocupan
+fotos de banco **provisionales**. Esto es lo que hay que saber antes de
+tocarlas.
+
+### De dónde salen y por qué se pueden usar
+
+- **Pexels**, con la **Licencia Pexels**: uso comercial gratuito, sin
+  atribución obligatoria y sin pedir permiso. Aun así **van acreditadas en el
+  aviso legal**, en una sección propia al lado de la de los modelos 3D, igual
+  que aquellos. No cuesta nada y es lo que separa «se puede usar» de «se puede
+  demostrar que se puede usar».
+- **Unsplash se descartó por una razón técnica, no de licencia**: devuelve
+  **401 a `curl`** y **403** a un navegador sin sesión, así que no hay forma
+  limpia de leer sus resultados desde un guion.
+
+### Dónde está la raya: ilustrar sí, afirmar no
+
+- Una foto de banco en `/faq` **ilustra** —«hay gente trabajando aquí»—. Una
+  foto de banco en el hueco de las sedes **afirmaría** —«esta es nuestra nave
+  de Almazora»—, y eso es mentir aunque nadie lo escriba debajo.
+- Por eso **`SITE_PHOTOS` sigue vacía** y las otras doce no. Es la misma regla
+  que deja `content/reviews.ts` sin reseñas de ejemplo. Si alguna de estas doce
+  pasa algún día a llevar un pie que diga que es la casa, deja de valer.
+
+### Las tres herramientas, y los fallos que las hicieron falta
+
+Son tres guiones de desarrollo, no entran en lo que se despliega:
+
+- **`contactos.mjs`** monta una hoja de miniaturas numeradas en un PNG. Existe
+  porque **elegir por el título del resultado, sin ver las fotos, es como se
+  acaba publicando un avión en un artículo sobre palés**. Y lee Pexels con
+  `curl` y no con el `fetch` de Node: comprobado con las dos a la vez, `curl`
+  36 identificadores y `fetch` **ninguno**, con la misma dirección y el mismo
+  `User-Agent`.
+- **`medir.mjs`** dice la proporción de cada candidata bajándose 240 px.
+  Existe por un fallo concreto: **la hoja de contactos recorta las miniaturas
+  a 3:2, así que esconde si el original es vertical**. Tres de las doce
+  primeras elegidas eran verticales de 1800 × 2700 — exactamente el problema
+  que esta web ya tiene con tres fotos de servicio. **Mirar la hoja de
+  contactos no basta: hay que medir.**
+- **`traer.mjs`** las descarga y las enseña **ya recortadas al hueco**. Es la
+  comprobación que no se puede saltar: el blog recorta a **3:2 en el listado y
+  a 21:9 en el artículo**, `/faq` a **2,4:1** y `/contacto` a **cuadrado**, y
+  una foto que en el banco se ve perfecta puede perder el sujeto entero en el
+  recorte estrecho.
+  - **Trampa de dentro:** la hoja se escribe a disco y se abre con `goto`, no
+    con `setContent`. Una página montada con `setContent` **no tiene origen**,
+    así que el navegador le bloquea las direcciones `file://` y la hoja sale
+    con doce recuadros grises.
+
+### Dos decisiones que se tomaron mirando, no por umbral
+
+- **La de `/faq` va ya recortada a 2,4:1 en el archivo.** No hay foto de banco
+  que venga nativa a esa anchura, así que `check:fotos` cantaba —con razón—
+  que una de 3:2 pierde el 38 % del alto. Se pide a Pexels con `w=1600&h=667`
+  y llega recortada: pasa la comprobación **y** el navegador deja de bajarse
+  un tercio de imagen para tirarlo.
+- **Dos de las primeras elegidas se cambiaron por contenido, no por calidad.**
+  Una era un aserradero puesto en «cómo preparar un palé de azulejos», y de
+  las diez portadas **dos eran una mano firmando**: en un listado donde se ven
+  las diez seguidas, eso se lee como que no hay más fotos.
+- Y **las de `/faq` y `/contacto` se pusieron cruzadas respecto a la primera
+  elección**, porque el `brief` que ya estaba escrito pedía justo lo contrario:
+  el de `/faq` dice «alguien al teléfono con las pantallas detrás» y el de
+  `/contacto` «la oficina por dentro, con gente». El `brief` llevaba meses
+  escrito y acertaba; lo que había que hacer era leerlo.
+
+### Ahora el comprobador las mira
+
+- `npm run check:fotos` pasó de 10 fotos a **20**: antes no veía ni las dos de
+  página ni las diez del blog.
+  - Las de página no las veía porque **lee el manifiesto a mano** buscando
+    `src` + `needs` + `ratio` **en líneas seguidas**, y estaban repartidas
+    entre dos constantes. Se fundieron en una (`PAGE_PHOTO_BRIEF` desapareció,
+    no la importaba nadie) y volvieron a aparecer.
+  - Las del blog no las veía porque las rutas viven en `content/blog.ts`. Lo
+    que se hizo **no** fue escribir diez entradas en el manifiesto —eso es
+    garantizar que algún día se publique un artículo y su portada no la mire
+    nadie— sino declarar **el hueco** una sola vez en `BLOG_COVER` y que el
+    guion recorra los `cover:` del blog.
+  - El `ratio` de `BLOG_COVER` es el del **listado** (3:2) y no el del artículo
+    (21:9), a propósito: con 21:9 cantaría las diez, porque no hay foto de
+    banco nativa a 2,33:1, y **una comprobación que nace en rojo enseña a
+    ignorar el aviso**. Que las diez aguantan el recorte del artículo está
+    comprobado mirándolas una a una, que es mejor que un umbral.
+- Resultado: **20 fotos, 3 mal**, y las tres son las de servicio del cliente
+  que ya estaban mal antes. Ninguna de las nuevas añade un fallo.
+
+### Comprobado
+
+`lint`, `build`, `check:fotos`, `check:seo` (32 páginas, 0 sin `og:image`),
+`check:repaso` (32 páginas limpias) y `check:3d` (**las quince tomas a
+0,00–0,07 %**, o sea la intro intacta, que es lo que tenía que pasar al tocar
+solo contenido).
+
 ## Blog
 
 - Los artículos viven en `src/content/blog.ts`, en español e inglés, como bloques (`p`, `h`, `ul`) y no como HTML suelto. Entran solos en el sitemap y cada uno genera su página con su canonical y su hreflang.
 - **El hueco de portada lo ocupa `CoverPlaceholder`**: pinta la foto si existe y, si no, un bloque de color en los tonos de la casa con la proporción exacta que tendrá. Está para ver cómo va a quedar la página el día que lleguen las fotos, que es lo que no se podía juzgar con el hueco ausente. No lleva texto ni icono a propósito —un «foto pendiente» se lee como un error si esto se publica—, el tono sale del `slug` para que no cambie entre recargas, y **desaparece solo** en cuanto el artículo tenga `cover`.
-- **Ahora mismo no hay fotos de portada y es a propósito**: las añadirá el cliente más adelante. El campo `cover` sigue existiendo pero es **opcional**, y todo lo que lo usaba sabe apañarse sin él: el listado se queda sin columna de foto (el titular pasa de seis a nueve columnas), el artículo abre directamente con el texto, y Open Graph y el marcado `Article` **omiten la imagen** en vez de apuntar a un archivo que no existe. El día que lleguen las fotos basta con rellenar `cover`.
+- **Los diez tienen ya portada, y las diez son de banco y provisionales** (ver «Las fotos de banco»). Con eso cada artículo **se comparte con su propia imagen**: antes los treinta enlaces de la web salían con la misma foto del camión, y para una empresa a la que se le pasan cosas por WhatsApp eso es tirar el canal.
+- **El campo `cover` sigue siendo opcional y no hay que volverlo obligatorio.** Todo lo que lo usa sabe apañarse sin él: el listado se queda sin columna de foto (el titular pasa de seis a nueve columnas), el artículo abre directamente con el texto, y Open Graph y el marcado `Article` **omiten la imagen** en vez de apuntar a un archivo que no existe. Eso es lo que permite publicar un artículo nuevo sin tener la foto el mismo día.
 - Los temas se eligen por **búsqueda real, no por lucimiento**: medidas y peso de un palé, metros lineales, cuánto cuesta enviar un palé a Madrid, qué cubre el seguro de transporte y cuándo compensa un almacén regulador. Todos responden a algo que un cliente teclea de verdad y todos acaban donde acaba el negocio: la ruta Castellón ⇄ Madrid y el azulejo.
 - Las fechas van repartidas por el año y **nunca en el futuro**: un artículo fechado mañana se lee como un error y los buscadores lo tratan como tal.
 ## Seguridad de la cabecera (`next.config.ts`)
@@ -1819,7 +1918,7 @@ Esto se auditó midiendo el HTML que de verdad se sirve en las 32 páginas (16 r
 1. **Dar de alta la ficha de Google Business** y enlazarla desde `sameAs`. Para un negocio local es lo que más mueve, y no es código.
 2. **Coordenadas (`geo`) y `priceRange`** en `business.ts`, cuando se puedan dar sin inventarlos.
 3. **Fotos apaisadas a 1200 × 630** para las tarjetas sociales de las seis fichas de servicio.
-4. **Las portadas de los artículos**, que además son las que se ven al compartirlos.
+4. ~~Las portadas de los artículos.~~ **Hechas**, con fotos de banco provisionales: los diez se comparten ya con su propia imagen. Ver «Las fotos de banco».
 5. **Rendimiento de la portada**, que es factor de posicionamiento: la intro 3D es lo más caro de la web y está medida en «Rendimiento del 3D».
 
 ## El icono y el manifiesto
@@ -1918,13 +2017,21 @@ hay que mirar al retomar el proyecto.
 
 | | qué pasa hoy |
 | --- | --- |
-| **Tres fotos de servicio** (`ftl`, `intl`, `grupaje`) | son verticales metidas en huecos apaisados: se ven ampliadas al doble. Lo canta `npm run check:fotos` |
-| **Foto de las dos sedes** | el hueco está hecho y vacío; quien no acepta cookies ve el mapa en blanco |
-| **Fotos de `/faq` y `/contacto`** | huecos declarados, pintando un bloque de color |
-| **Portadas de los diez artículos** | es lo que se ve al compartirlos por WhatsApp |
-| **Fotos apaisadas 1200 × 630** | para las tarjetas sociales de las seis fichas de servicio |
+| **Tres fotos de servicio** (`ftl`, `intl`, `grupaje`) | son verticales metidas en huecos apaisados: se ven ampliadas al doble. Lo canta `npm run check:fotos`, y **son el único fallo que queda ahí** |
+| **Foto de las dos sedes** | el hueco está hecho y **sigue vacío a propósito**: es el único donde una foto de banco afirmaría que esa es nuestra nave. Quien no acepta cookies ve el mapa en blanco |
 | **El vídeo de Nosotros en 1080p** | la copia que hay tiene 848 px de ancho |
 | **Datos societarios** | las páginas legales tienen huecos `[PENDIENTE: ...]` reales |
+
+**Doce huecos que estaban en esta lista ya no lo están**, y conviene saber en
+qué sentido: las diez portadas del blog, `/faq` y `/contacto` llevan **fotos
+de banco provisionales** (ver «Las fotos de banco»). No es que el encargo esté
+hecho —el `brief` de cada una sigue escrito y esperando la foto de verdad—, es
+que mientras tanto la web no enseña bloques de color ni se comparte treinta
+veces con la misma imagen.
+
+Las **apaisadas 1200 × 630** para las tarjetas sociales de las seis fichas de
+servicio siguen pendientes, y eso es parte del mismo encargo: cuando lleguen
+las fotos de servicio buenas, esas valen para las dos cosas.
 
 **Cuando lleguen las fotos buenas**, hay que quitar el `continue-on-error`
 de `check:fotos` en la CI para que pase a bloquear.

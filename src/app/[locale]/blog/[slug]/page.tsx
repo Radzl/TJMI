@@ -129,8 +129,9 @@ export default async function BlogPostPage({ params }: Props) {
             {t('back')}
           </Link>
 
-          {/* Portada del artículo. Mientras no haya foto es un bloque de
-              color, para ver el sitio que va a ocupar. */}
+          {/* Portada del artículo. Aquí el recorte es 21:9, bastante más
+              cerrado que el 3:2 del listado: al cambiar una foto hay que
+              mirarla en los dos. Sin foto, un bloque de color. */}
           <CoverPlaceholder
             cover={post.cover}
             seed={post.slug}

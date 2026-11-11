@@ -17,12 +17,17 @@ export type Post = {
   date: string;
   minutes: number;
   /**
-   * Foto de portada: saldría en el listado, en el artículo y al compartirlo.
+   * Foto de portada: sale en el listado, en el artículo y al compartirlo.
    *
-   * **Ahora mismo no hay ninguna y es a propósito**: el cliente las añadirá
-   * más adelante. Está como opcional y no borrada porque todo lo que la usa
-   * (Open Graph, el marcado `Article`) ya sabe apañarse sin ella, así que el
-   * día que lleguen las fotos basta con rellenar este campo.
+   * **Las diez son de banco** (Pexels, licencia de uso comercial sin
+   * atribución obligatoria; el crédito va igualmente en el aviso legal). Son
+   * provisionales: el día que el cliente mande las suyas, esto es cambiar una
+   * ruta por artículo.
+   *
+   * **Sigue siendo opcional y no hay que volverlo obligatorio.** Todo lo que
+   * la usa —el listado, Open Graph y el marcado `Article`— sabe apañarse sin
+   * ella, y eso es lo que permite publicar un artículo nuevo sin tener la foto
+   * el mismo día. Si se quita una, el hueco lo pinta `CoverPlaceholder`.
    */
   cover?: string;
   content: Record<Locale, PostContent>;
@@ -33,6 +38,7 @@ export const posts: Post[] = [
     slug: 'grupaje-o-camion-completo',
     date: '2026-05-14',
     minutes: 4,
+    cover: '/media/blog/grupaje-o-camion-completo.jpg',
     content: {
       es: {
         title: 'Grupaje o camión completo: cómo elegir según tu carga',
@@ -130,6 +136,7 @@ export const posts: Post[] = [
     slug: 'preparar-pale-azulejos',
     date: '2026-06-11',
     minutes: 3,
+    cover: '/media/blog/preparar-pale-azulejos.jpg',
     content: {
       es: {
         title: 'Cómo preparar un palé de azulejos para que llegue intacto',
@@ -227,6 +234,7 @@ export const posts: Post[] = [
     slug: 'cuanto-tarda-castellon-madrid',
     date: '2026-07-09',
     minutes: 4,
+    cover: '/media/blog/cuanto-tarda-castellon-madrid.jpg',
     content: {
       es: {
         title: 'Cuánto tarda un envío de Castellón a Madrid (y de qué depende)',
@@ -324,6 +332,7 @@ export const posts: Post[] = [
     slug: 'documentacion-transporte-nacional',
     date: '2026-08-20',
     minutes: 3,
+    cover: '/media/blog/documentacion-transporte-nacional.jpg',
     content: {
       es: {
         title: 'Qué documentación necesitas para un transporte nacional',
@@ -411,6 +420,7 @@ export const posts: Post[] = [
     slug: 'azulejo-gran-formato-transporte',
     date: '2026-09-17',
     minutes: 4,
+    cover: '/media/blog/azulejo-gran-formato-transporte.jpg',
     content: {
       es: {
         title: 'Azulejo de gran formato: qué cambia al transportarlo',
@@ -514,6 +524,7 @@ export const posts: Post[] = [
     slug: 'medidas-y-peso-de-un-pale',
     date: '2026-04-16',
     minutes: 4,
+    cover: '/media/blog/medidas-y-peso-de-un-pale.jpg',
     content: {
       es: {
         title: 'Medidas y peso de un palé: europalé, americano y el de azulejo',
@@ -641,6 +652,7 @@ export const posts: Post[] = [
     slug: 'metros-lineales-de-carga',
     date: '2026-07-23',
     minutes: 4,
+    cover: '/media/blog/metros-lineales-de-carga.jpg',
     content: {
       es: {
         title: 'Metros lineales: cómo se mide de verdad lo que ocupa tu carga',
@@ -756,6 +768,7 @@ export const posts: Post[] = [
     slug: 'seguro-de-transporte-y-cmr',
     date: '2026-08-06',
     minutes: 5,
+    cover: '/media/blog/seguro-de-transporte-y-cmr.jpg',
     content: {
       es: {
         title: 'Seguro de transporte: qué cubre y qué tienes que declarar',
@@ -879,6 +892,7 @@ export const posts: Post[] = [
     slug: 'cuanto-cuesta-enviar-un-pale',
     date: '2026-09-24',
     minutes: 5,
+    cover: '/media/blog/cuanto-cuesta-enviar-un-pale.jpg',
     content: {
       es: {
         title: 'Cuánto cuesta enviar un palé de Castellón a Madrid',
@@ -1004,6 +1018,7 @@ export const posts: Post[] = [
     slug: 'almacen-regulador-cuando-compensa',
     date: '2026-10-01',
     minutes: 4,
+    cover: '/media/blog/almacen-regulador-cuando-compensa.jpg',
     content: {
       es: {
         title: 'Almacén regulador: cuándo deja de compensarte guardar en fábrica',
