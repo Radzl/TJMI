@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  ContactShadows,
-  Environment,
-  Lightformer,
-  OrthographicCamera,
-} from '@react-three/drei';
+import { Environment, Lightformer, OrthographicCamera } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import {
@@ -1052,14 +1047,26 @@ export default function Scene() {
       </directionalLight>
       <directionalLight position={[22, 12, 10]} intensity={0.55} />
 
-      <ContactShadows
-        position={[0, 0.03, 0]}
-        scale={90}
-        resolution={1024}
-        blur={3}
-        opacity={0.16}
-        far={14}
-      />
+      {/* **Aquí hubo un `<ContactShadows>` de drei, y no hay que devolverlo.**
+
+          Venía del primer día, de cuando la escena no tenía sombras de
+          verdad. Ese componente no pinta una mancha: **renderiza la escena
+          entera otra vez en cada fotograma**, desde abajo y con un material
+          de profundidad, y como para eso llama a `gl.render`, de paso obliga
+          a recalcular el mapa de sombras por segunda vez.
+
+          Medido sobre producción, apagándolo en caliente: **673 → 285
+          llamadas de dibujo** en el peor fotograma del hero, o sea el 58–61 %
+          de todo lo que se pintaba en el patio, la carga y el arranque (y un
+          28–32 % en la carretera). Y la imagen, con él y sin él, cambia un
+          **0,00–0,08 %**: lo mismo que dos capturas idénticas seguidas. Iba
+          al 16 % de opacidad debajo de unas sombras proyectadas que ya hacen
+          ese trabajo, y de las de contacto propias (`ContactShadow.tsx`), que
+          cuestan una llamada.
+
+          Es el tercer efecto de este proyecto que estaba montado sin que
+          nadie pudiera verlo, después de la viñeta y de la primera versión de
+          las sombras de contacto. Este además se cobraba. */}
 
       {/* Terminal: solo existe mientras la cámara está en vista lateral. */}
       <group ref={terminalRef}>
