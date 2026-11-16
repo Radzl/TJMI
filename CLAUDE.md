@@ -1011,7 +1011,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - Ese manifiesto declara además, por hueco, **el ancho que necesita de verdad** y **qué debería verse**. El ancho lo comprueba `npm run check:fotos`, que mide cada archivo y canta las que no llegan. No es burocracia: una foto de 403 px en un hueco de 1.150 se ve «un poco blanda» y se le echa la culpa a la cámara, cuando lo que pasa es que está ampliada al triple. El comando lo dice con un número.
 - Ese script **distingue lo grave de lo justo** a propósito. Un 6 % de menos no se ve, y marcarlo en rojo solo consigue que se deje de mirar el aviso; lo que sí se ve es una foto ampliada al doble o recortada a la mitad. Solo falla por lo segundo.
 - No usa ninguna librería: lee la cabecera del JPEG/PNG/WebP a mano. Meter `sharp` por esto sería añadir una dependencia nativa de decenas de MB que el proyecto no necesita para nada más.
-- **Hoy no dan la talla tres de ocho**, y las tres por lo mismo: son verticales metidas en huecos apaisados (`ftl`, `intl`, `grupaje`). El encargo de las fotos nuevas está en el propio manifiesto, campo `brief`, que es donde se mira al cambiarlas.
+- **Hoy dan la talla las veinte.** Llegaron a fallar tres de servicio (`ftl`, `intl`, `grupaje`), verticales metidas en huecos apaisados; se cambiaron las seis de servicio por fotos con licencia (ver «Las fotos de servicio tenían marca de agua»). El encargo de las fotos de verdad sigue en el propio manifiesto, campo `brief`, que es donde se mira al cambiarlas.
 - El `alt` de las fotos de servicio va **vacío a propósito**: al lado de cada una está su titular, así que describirla otra vez se la lee dos veces a quien usa lector de pantalla. Si alguna pasa a contar algo que el texto no diga, entonces sí lleva `alt`.
 - **Revelado común de las fotos** (`.photo` en `globals.css`). Las fotos de la casa vienen de días y sitios distintos: unas frías, otras doradas, unas contrastadas y otras planas. Juntas se nota que es un montaje. Esto les pasa a todas el mismo revelado —menos saturación, luces hacia el papel, sombras y matiz hacia el azul noche— y dejan de ser fotos sueltas. Va en CSS y no tocando los archivos: se quita en una línea si algún día llegan ya tratadas. **`isolation: isolate` es obligatorio**, o las capas de mezcla se comen también lo que haya detrás de la foto.
 - **Hubo un raíl de ruta** en el margen izquierdo de la portada (`RouteRail.tsx`), un hilo fijo que recorría Castellón ⇄ Madrid contando kilómetros. Se quitó: acompañaba la página entera, también las secciones que no tienen nada que ver con el viaje, y ahí dejaba de significar nada. El componente está borrado; si alguna vez vuelve, que sea solo durante la intro.
@@ -1293,6 +1293,27 @@ tocarlas.
   **401 a `curl`** y **403** a un navegador sin sesión, así que no hay forma
   limpia de leer sus resultados desde un guion.
 
+### Las fotos de servicio tenían marca de agua
+
+- **Las seis de servicio no eran del cliente**, aunque así constara aquí. Dos
+  llevaban marca de agua de un banco de pago —«Magnific» repetido en diagonal
+  en la de contenedores, y otra en la internacional que solo se veía subiendo
+  el contraste— y una tercera era una imagen generada, con letras que no
+  existen en el rótulo del camión. Se encontró ampliándolas, no mirándolas a
+  tamaño de tarjeta: a ese tamaño no se ve nada.
+- Se cambiaron las seis (`public/media/servicios/`), cinco de Pexels y la
+  internacional de **Wikimedia Commons con CC BY-SA 4.0**, que **obliga** a
+  acreditar autor, licencia y que va recortada: está en el aviso legal.
+- **Pexels puso un control anti-robots** delante de su buscador (403 con «Just
+  a moment…»), así que `contactos.mjs` ya no encuentra nada. Para buscar está
+  **`openverse.mjs`**, que usa la API pública de Openverse (Wikimedia, rawpixel,
+  StockSnap…) con autor y licencia de cada imagen, y baja las miniaturas de una
+  en una porque Wikimedia corta las ráfagas con 429. Las imágenes de Pexels se
+  siguen pudiendo bajar por identificador con `traer.mjs`.
+- **Viven en una carpeta nueva y no con el nombre de antes** porque el
+  optimizador de imágenes de Next guarda cada foto por su dirección: cambiar el
+  archivo sin cambiar el nombre deja la vieja servida.
+
 ### Dónde está la raya: ilustrar sí, afirmar no
 
 - Una foto de banco en `/faq` **ilustra** —«hay gente trabajando aquí»—. Una
@@ -1363,8 +1384,9 @@ Son tres guiones de desarrollo, no entran en lo que se despliega:
     banco nativa a 2,33:1, y **una comprobación que nace en rojo enseña a
     ignorar el aviso**. Que las diez aguantan el recorte del artículo está
     comprobado mirándolas una a una, que es mejor que un umbral.
-- Resultado: **20 fotos, 3 mal**, y las tres son las de servicio del cliente
-  que ya estaban mal antes. Ninguna de las nuevas añade un fallo.
+- Resultado entonces: **20 fotos, 3 mal**, las tres de servicio que ya estaban
+  mal. Después se cambiaron también las de servicio (ver «Las fotos de
+  servicio tenían marca de agua») y hoy pasan las veinte.
 
 ### Comprobado
 
@@ -1421,7 +1443,7 @@ Lo que sí hay que abrir, con el motivo:
 - **No había CI.** `lint`, `build`, `check:fotos`, `check:seo` y `check:3d` solo se lanzaban a mano, o sea cuando alguien se acordaba.
 - Entran los que no necesitan nada más que Node: **`lint`, `check:fotos`, `build` y `npm audit`**. El audit mira **solo producción**: una vulnerabilidad en una herramienta de desarrollo no la sufre el visitante.
 - **`check:3d` y `check:seo` no entran**, y es decisión. Los dos necesitan un servidor levantado, y el visual además un Chrome y las referencias versionadas: en una máquina distinta a la de las capturas las diferencias de renderizado darían falsos fallos, y un arnés que salta solo se deja de mirar a la tercera. Siguen siendo una puerta local.
-- **`check:fotos` informa pero no bloquea** (`continue-on-error`), y también es decisión: hoy ya falla, porque tres de las ocho fotos son verticales en huecos apaisados, y eso lo arregla el cliente mandando archivos. Una comprobación que nace en rojo y seguirá en rojo durante semanas enseña a ignorar el aviso. **Cuando lleguen las fotos buenas, se quita esa línea y pasa a bloquear.**
+- **`check:fotos` bloquea.** Estuvo con `continue-on-error` mientras tres fotos de servicio eran verticales en huecos apaisados —una comprobación que nace en rojo enseña a ignorar el aviso—, y se quitó en cuanto pasaron las veinte.
 - El build de la CI va **sin `--webpack`** y en Linux, así que comprueba de paso la compilación que hará el servidor de producción.
 
 ## Rendimiento de la portada, medido en producción
@@ -2188,7 +2210,7 @@ hay que mirar al retomar el proyecto.
 
 | | qué pasa hoy |
 | --- | --- |
-| **Tres fotos de servicio** (`ftl`, `intl`, `grupaje`) | son verticales metidas en huecos apaisados: se ven ampliadas al doble. Lo canta `npm run check:fotos`, y **son el único fallo que queda ahí** |
+| **Las seis fotos de servicio, las de verdad** | hoy son de banco y provisionales (las anteriores llevaban marca de agua o eran generadas). Dan la talla, pero no son la casa: el `brief` de cada una en `content/media.ts` es el encargo |
 | **Foto de las dos sedes** | el hueco está hecho y **sigue vacío a propósito**: es el único donde una foto de banco afirmaría que esa es nuestra nave. Quien no acepta cookies ve el mapa en blanco |
 | **El vídeo de Nosotros en 1080p** | la copia que hay tiene 848 px de ancho |
 | **Datos societarios** | las páginas legales tienen huecos `[PENDIENTE: ...]` reales |
