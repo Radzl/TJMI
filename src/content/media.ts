@@ -10,9 +10,9 @@
  *
  *  - `needs` es lo que mide el hueco en píxeles de pantalla en el peor caso
  *    (pantalla de las de doble densidad). `npm run check:fotos` compara el
- *    ancho real de cada archivo con ese número y canta las que no llegan. Hoy
- *    no llegan tres, y por eso se ven blandas: no es cosa de la cámara, es que
- *    están ampliadas al triple.
+ *    ancho real de cada archivo con ese número y canta las que no llegan.
+ *    Llegó a haber tres que no llegaban, ampliadas al triple, y se veían
+ *    blandas sin que nadie supiera por qué.
  *  - `brief` es el encargo para cuando se hagan fotos nuevas. Está aquí y no
  *    en un documento aparte porque aquí es donde se mira al cambiarlas.
  *
@@ -32,45 +32,72 @@ export type Photo = {
   brief: string;
 };
 
-/** Las seis de servicio, en el mismo orden que los textos de `messages`. */
+/**
+ * Las seis de servicio, en el mismo orden que los textos de `messages`.
+ *
+ * **Las seis son de banco y son provisionales**, igual que las del blog. Las
+ * que había antes no eran del cliente, aunque así constara: **dos llevaban
+ * marca de agua** («Magnific» repetido en diagonal en la de contenedores, y
+ * otra que solo se veía subiendo el contraste en la internacional), o sea que
+ * eran previsualizaciones de un banco de pago sin licenciar, y una tercera
+ * era una imagen generada, con letras que no existen en el rótulo del camión.
+ * De las otras tres no se sabía de dónde habían salido. Se cambiaron las seis
+ * para que de todas conste la licencia.
+ *
+ * Cinco son de Pexels y la internacional es de Wikimedia Commons (CC BY-SA
+ * 4.0, que **obliga** a acreditar): los créditos van en el aviso legal.
+ *
+ * **Viven en `servicios/` y no en la raíz con el nombre de antes**, y no es
+ * manía de orden: el optimizador de imágenes de Next guarda cada foto por su
+ * dirección, así que cambiar el archivo sin cambiarle el nombre deja la vieja
+ * servida durante horas.
+ *
+ * Se eligieron mirándolas ya recortadas a los cuatro huecos donde salen, que
+ * no se parecen entre sí: la tarjeta del desfile, la fila de `/servicios`
+ * (4:3), la cabecera de la ficha (2:1) y la franja del modal, que es la más
+ * ancha de todas (más de 3:1). Si se cambia una, hay que mirarla en los
+ * cuatro.
+ *
+ * El `brief` de cada una **sigue siendo el encargo para la foto de verdad**.
+ */
 export const SERVICE_PHOTOS: Photo[] = [
   {
-    src: '/media/grupaje.jpg',
+    src: '/media/servicios/grupaje.jpg',
     needs: 1150,
     ratio: 1.9,
     brief:
       'Varios palés de clientes distintos esperando juntos en el muelle, con sus etiquetas a la vista. Lo que cuenta el grupaje es que son envíos de varios en el mismo camión.',
   },
   {
-    src: '/media/ftl.jpg',
+    src: '/media/servicios/ftl.jpg',
     needs: 1150,
     ratio: 1.9,
     brief:
       'El semirremolque cargado a tope y la lona cerrándose, o el tráiler entero de perfil en la nave. Tiene que leerse "esto va solo para ti".',
   },
   {
-    src: '/media/intl.jpg',
+    src: '/media/servicios/intl.jpg',
     needs: 1150,
     ratio: 1.9,
     brief:
       'El CMR o el albarán firmándose sobre el capó, con el camión detrás desenfocado. La internacional se cuenta con papeles, no con mapas.',
   },
   {
-    src: '/media/almacen.jpg',
+    src: '/media/servicios/almacen.jpg',
     needs: 1150,
     ratio: 1.9,
     brief:
       'Pasillo de la nave con las estanterías llenas, hacia el fondo. Que se vea altura y que se vea que está lleno.',
   },
   {
-    src: '/media/picking.jpg',
+    src: '/media/servicios/picking.jpg',
     needs: 1150,
     ratio: 1.9,
     brief:
       'Manos retractilando un palé o pegando la etiqueta. En primer plano las manos y el producto, el resto fuera de foco.',
   },
   {
-    src: '/media/contenedores.jpg',
+    src: '/media/servicios/contenedores.jpg',
     needs: 1150,
     ratio: 1.9,
     brief:

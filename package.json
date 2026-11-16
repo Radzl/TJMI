@@ -39,7 +39,6 @@
     "@types/three": "^0.186.0",
     "eslint": "^9",
     "eslint-config-next": "^16.4.5",
-    "leva": "^0.10.1",
     "pixelmatch": "^7.2.0",
     "playwright-core": "^1.63.0",
     "pngjs": "^7.0.0",

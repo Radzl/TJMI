@@ -97,12 +97,20 @@ export default function RoadIntro() {
                 {t('odometer.label')}
               </p>
 
-              <RouteProgress
-                start={ROAD_TRIGGER.start}
-                end={ROAD_TRIGGER.end}
-                origin={t('origin')}
-                destination={t('destination')}
-              />
+              {/* **En móvil la barra deja hueco a la derecha**, igual que la
+                  del desfile de servicios y por lo mismo: ahí vive el botón
+                  flotante de WhatsApp, que mide 56 px a 24 del borde. Sin
+                  este margen tapaba «Fuenlabrada (Madrid)» y el final de la
+                  línea, o sea justo el destino, en la escena que va de
+                  llegar a él. */}
+              <div className="pr-16 sm:pr-0">
+                <RouteProgress
+                  start={ROAD_TRIGGER.start}
+                  end={ROAD_TRIGGER.end}
+                  origin={t('origin')}
+                  destination={t('destination')}
+                />
+              </div>
             </div>
           </ScrollFade>
         </Container>

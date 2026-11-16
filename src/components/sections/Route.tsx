@@ -66,15 +66,19 @@ export default function Route() {
       </div>
 
       <Container>
-        {/* Cada destino con su filete arriba y su número: se lee como una
-            tabla de rutas, que es lo que es, y no como una lista con viñetas. */}
+        {/* Cada destino con su filete arriba: se lee como una tabla de rutas,
+            que es lo que es, y no como una lista con viñetas.
+
+            **Llevaban además un `01`–`04` en rojo, y se quitó.** Es la misma
+            regla que vació las cabeceras de sección y las preguntas
+            frecuentes: numerar afirma que hay una secuencia, y estos cuatro
+            ámbitos no son pasos de nada —nadie contrata «Madrid y
+            colindantes» después de «Castellón ⇄ Madrid»—. Quien manda aquí es
+            la negrita que abre cada renglón, que dice hasta dónde se llega. */}
         <ul className="mt-20 grid gap-y-10 sm:grid-cols-2 sm:gap-x-12">
-          {coverage.map((item, index) => (
+          {coverage.map((item) => (
             <li key={item.title} className="border-t border-line pt-6">
-              <span className="font-display text-xs tabular-nums tracking-widest text-brand-red-ink">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <p className="mt-4 text-base leading-relaxed text-muted">
+              <p className="text-base leading-relaxed text-muted">
                 <b className="font-semibold text-ink">{item.title}</b>{' '}
                 {item.description}
               </p>

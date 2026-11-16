@@ -44,9 +44,30 @@ for (const foto of eleccion) {
   const destino = path.join('public', foto.destino);
   fs.mkdirSync(path.dirname(destino), { recursive: true });
 
-  const url = `https://images.pexels.com/photos/${foto.id}/pexels-photo-${foto.id}.jpeg?auto=compress&cs=tinysrgb&w=${foto.ancho}`;
+  // Con `alto`, la foto llega **ya recortada** a esa caja, centrada. Hace falta
+  // en dos casos: un hueco muy ancho (el de `/faq` es 2,4:1 y no hay foto de
+  // banco nativa a eso) y un original vertical cuyo sujeto es una franja —un
+  // camión de perfil, por ejemplo—: sin recortar, el comprobador canta que es
+  // vertical, y con razón, porque el navegador se bajaría el doble de alto
+  // para tirarlo.
+  const recorte = foto.alto ? `&h=${foto.alto}&fit=crop` : '';
+  // Con `url` la foto no es de Pexels: se baja de la dirección que se le dé
+  // (una miniatura de Wikimedia Commons, por ejemplo, que solo sirve anchos de
+  // una lista fija: 960, 1280, 1920…).
+  const url =
+    foto.url ??
+    `https://images.pexels.com/photos/${foto.id}/pexels-photo-${foto.id}.jpeg?auto=compress&cs=tinysrgb&w=${foto.ancho}${recorte}`;
 
-  execFileSync('curl', ['-sL', '--max-time', '60', '-o', destino, url]);
+  execFileSync('curl', [
+    '-sL',
+    '--max-time',
+    '90',
+    '-A',
+    'fotos-web/1.0 (uso editorial; cliente generico)',
+    '-o',
+    destino,
+    url,
+  ]);
 
   const medida = medirJpeg(destino);
   const kb = Math.round(fs.statSync(destino).size / 1024);

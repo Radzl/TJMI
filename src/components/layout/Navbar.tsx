@@ -49,7 +49,7 @@ export default function Navbar() {
     <header
       className={`sticky top-0 z-50 transition-[transform,background-color,border-color] duration-300 ${
         scrolled
-          ? 'border-b border-line bg-bone/90 backdrop-blur'
+          ? 'border-b border-line bg-bone'
           : 'border-b border-transparent bg-transparent'
       } ${hidden && !open ? '-translate-y-full' : 'translate-y-0'}`}
     >

@@ -50,11 +50,9 @@ export default function Sites() {
               </div>
 
               <div className="md:pt-2">
-                <span className="font-display text-xs tabular-nums tracking-widest text-brand-red-ink">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-
-                <h3 className="mt-4 font-display text-display-sm uppercase text-ink">
+                {/* Sin `01` / `02` delante: dos sedes no son dos pasos. Es la
+                    misma regla que quitó la numeración de las cabeceras. */}
+                <h3 className="font-display text-display-sm uppercase text-ink">
                   {site.city}
                 </h3>
 

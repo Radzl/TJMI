@@ -51,15 +51,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      # **Informa, no bloquea**, y esto es deliberado: hoy ya falla, porque
-      # tres de las ocho fotos son verticales metidas en huecos apaisados y
-      # eso lo arregla el cliente mandando archivos, no nadie tocando código.
-      # Una comprobación que nace en rojo y seguirá en rojo durante semanas
-      # enseña a ignorar el aviso, que es como muere un arnés. Cuando lleguen
-      # las fotos buenas, se quita esta línea y pasa a bloquear.
+      # **Ahora bloquea.** Estuvo con `continue-on-error` mientras tres de las
+      # fotos de servicio eran verticales metidas en huecos apaisados: una
+      # comprobación que nace en rojo enseña a ignorar el aviso. Al cambiar las
+      # seis fotos de servicio pasaron las veinte, y con eso se quitó la
+      # excepción, que es lo que estaba escrito que había que hacer.
       - name: Comprobar las fotos
         run: npm run check:fotos
-        continue-on-error: true
 
       - name: Compilar
         run: npx next build
