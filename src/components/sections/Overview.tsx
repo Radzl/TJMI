@@ -105,7 +105,7 @@ function Marco({
           la sección, a escala de tarjeta. */}
       <span
         aria-hidden="true"
-        className="absolute left-0 top-0 z-20 h-0.5 w-0 bg-brand-red transition-[width] duration-300 ease-out group-hover:w-full"
+        className="absolute left-0 top-0 z-20 h-0.5 w-0 bg-brand-red transition-[width] duration-300 ease-casa group-hover:w-full"
       />
 
       {/* **Este antetítulo sí se gana el sitio**, al revés que los que se

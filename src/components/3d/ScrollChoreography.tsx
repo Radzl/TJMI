@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
+import { tramoDeEscena } from '@/lib/partitura';
 import { writeProgress, writeSceneProgress } from '@/lib/store';
 
 /**
@@ -42,23 +43,11 @@ export default function ScrollChoreography() {
       // entera detrás del panel y, cuando el panel por fin sale, lo que ya ha
       // pasado no se ha visto. Por eso una sección puede pedir otro arranque
       // con `data-scene-start`.
-      const start =
-        index === 0 ? 'top top' : section.dataset.sceneStart || 'top bottom';
-      // Y termina cuando su borde inferior llega al borde inferior de la
-      // pantalla, no al superior. Ahí es justo donde su bloque `sticky` suelta
-      // el titular, así que la animación entera transcurre con el texto
-      // delante; con `bottom top` sobraba una pantalla al final, sin titular y
-      // con el camión convertido en una tira al fondo. De paso, la sección
-      // siguiente empieza a contar exactamente cuando esta acaba, en vez de
-      // una pantalla antes: eso es lo que hacía que el camión arrancase con la
-      // lona todavía abierta.
-      //
-      // Y una sección puede pedir otro final con `data-scene-end`, por el
-      // mismo motivo por el que el hero lo cambió: si su bloque `sticky` se
-      // suelta antes de que el disparador llegue a 1, **el último tramo de la
-      // coreografía ocurre con el bloque ya subiendo**, o sea sin que se vea.
-      const end =
-        index === 0 ? 'bottom bottom' : section.dataset.sceneEnd || 'bottom top';
+      // **Las reglas del tramo viven en `tramoDeEscena` (`lib/partitura.ts`)**
+      // y no aquí, para que las piezas de HTML que acompañan a cada escena
+      // —el fundido del texto, el cuentakilómetros, la barra de avance— midan
+      // exactamente lo mismo sin llevar su propia copia de `start` y `end`.
+      const { start, end } = tramoDeEscena(section)!;
 
       return ScrollTrigger.create({
         trigger: section,

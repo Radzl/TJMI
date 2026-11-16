@@ -118,11 +118,11 @@ export default function Preloader() {
               un bucle de animación: el progreso llega a saltos —un GLB entero
               de golpe— y sin suavizar, el punto daba brincos. */}
           <span
-            className="absolute inset-y-0 left-0 block bg-brand-blue transition-[width] duration-500 ease-out"
+            className="absolute inset-y-0 left-0 block bg-brand-blue transition-[width] duration-500 ease-casa"
             style={{ width: `${shown}%` }}
           />
           <span
-            className="absolute -top-[3px] block h-[7px] w-[7px] -translate-x-1/2 rounded-full bg-brand-blue transition-[left] duration-500 ease-out"
+            className="absolute -top-[3px] block h-[7px] w-[7px] -translate-x-1/2 rounded-full bg-brand-blue transition-[left] duration-500 ease-casa"
             style={{ left: `${shown}%` }}
           />
         </div>

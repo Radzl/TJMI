@@ -515,6 +515,64 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
   el giro se queda en cero. Para comprobarlo hay que mover el ratón y
   comparar dos capturas.
 
+## La partitura de la intro, las curvas y las transiciones
+
+### Un solo dueño para cada tramo (`lib/partitura.ts`)
+
+- **El problema** estaba escrito por todo este archivo en forma de avisos —«si
+  tocas `closeUp`, toca también estos números», «dos disparadores que miden
+  tramos distintos no comparten fracciones»— y había dado dos fallos de
+  verdad: el fundido del hero cayendo medio pantallazo antes del primer plano,
+  y el cuentakilómetros en **393 km** con el camión aparcado. Las dos veces por
+  lo mismo: cada pieza llevaba **su copia** del tramo de scroll y de la
+  fracción.
+- **El tramo lo dicta la sección.** `tramoDeEscena()` lee `data-scene`,
+  `data-scene-start` y `data-scene-end` con las reglas de siempre (el hero de
+  `top top` a `bottom bottom`; las demás de `top bottom` a `bottom top` salvo
+  que pidan otra cosa). La usan `ScrollChoreography` **y** `ScrollFade`,
+  `RouteOdometer` y `RouteProgress` por defecto, así que cualquier pieza dentro
+  de una sección con escena mide lo mismo que el 3D sin escribir nada.
+- **Las fracciones viven en `PARTITURA`, con nombre**: el primer plano y la
+  salida del texto del hero, la salida del texto de en ruta, y el telón y el
+  texto de la carretera. `Scene.tsx` y las secciones las importan de ahí.
+- **El texto de en ruta cambió de números sin cambiar de sitio.** Su fundido
+  medía una pantalla más que la escena (`top bottom` frente al `top top` que
+  pide `InRoute`); pasado al tramo de la escena, 0,90 → 0,98 son
+  **0,873 → 0,975**. `check:3d` dio 0,00 % en todas las tomas de esa escena.
+- **Por qué no se lee directamente el progreso que escribe el 3D.** Sería lo
+  más corto y dejaría textos invisibles: la coreografía solo se monta con
+  WebGL (y hasta 1,2 s después de cargar), así que sin 3D ese progreso se
+  queda en 0 y un texto que entra en 0,30 no entraría nunca. Cada pieza sigue
+  con su disparador, midiendo el mismo tramo con los mismos números.
+
+### Dos curvas de movimiento con nombre
+
+- `--ease-casa` (llega y se posa) y `--ease-peso` (arranca y frena), en el
+  `@theme` de `globals.css`, con sus clases `ease-casa` / `ease-peso`. Había
+  una curva buena copiada a mano en cuatro sitios, el `ease-out` genérico en
+  otros cuatro y una tercera en `RevealText`. Ahora todo lo de interfaz usa
+  `casa`. Duraciones: 160 ms para responder a un clic, 320 ms para lo que
+  cambia al pasar el ratón y 640 ms para lo que entra.
+
+### `ignoreMobileResize`
+
+- En `lib/gsap.ts`. Al bajar en un móvil la barra de direcciones se esconde y
+  la ventana gana alto; sin esto ScrollTrigger lo tomaba por un cambio de
+  tamaño y recalculaba todos los disparadores en mitad del gesto. Las
+  secciones miden en `svh`, así que no había nada que recalcular.
+
+### Transiciones entre páginas
+
+- `<ViewTransition default="pagina">` alrededor del contenido en el layout, con
+  la API nativa del navegador a través de React (el React que trae Next ya la
+  incluye; no hace falta configurar nada). Solo se funde el contenido: la
+  barra y el pie cambian sin animación, porque fundir todo se lee como un
+  parpadeo. La página vieja se va en 180 ms y la nueva entra en 320 ms
+  subiendo 8 px; con movimiento reducido, nada.
+- **Comprobado que se dispara**, no solo que está puesto: navegando con un
+  enlace del menú, `document.startViewTransition` se llama una vez y sin
+  errores. En un navegador que no la entiende se navega igual que siempre.
+
 ## Movimiento del 3D
 - Todos los disparadores de la intro van a **`scrub: 1`, no `true`**. Con `true` la escena va clavada a la rueda y un acelerón la teletransporta. Si tocas uno, tócalos todos: van juntos para no desincronizarse.
 - `Scene.tsx` usa **muelles amortiguados**, no solo interpolación directa: la pluma llega un pelo tarde respecto a la máquina, y la carga colgada se balancea empujada por su propia velocidad (se queda atrás al acelerar, se adelanta al frenar, y se para sola). Es lo que separa "animación" de "maquinaria".
@@ -549,7 +607,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - `quarterDrop` **sube más en móvil que en escritorio** (0,29 frente a 0,15). Allí el titular va arriba y la maniobra abajo, y entre los dos quedaba una franja de crema vacía de más o menos un octavo de pantalla. En escritorio no pasa, porque el texto está al lado y no encima. Si lo subes más, comprueba que la pluma de la grúa no llega al titular.
 - **El primer plano del camión** (`closeUp` y `TRUCK_FRAME` en `Scene.tsx`): cuando la grúa ya se va, la cámara se cierra y se centra en el camión, y se vuelve a abrir en cuanto arranca.
 - **Y el bloque de texto del hero se aparta justo ahí** (`ScrollFade` en `Hero.tsx`, 0,84 → 0,98, los mismos números que `closeUp`). Ese momento existe porque es el único rato en que el camión está solo en pantalla y se le pueden ver los detalles —el rótulo de la lona, las rayas de la cabina, el operario dentro de la grúa—, y con el texto encima **no llegaba a cumplirse**: el plano se cerraba, el camión crecía, y lo que ganaba en tamaño lo perdía debajo del titular.
-- Ese `ScrollFade` lleva **`start="top top"` y `end="bottom bottom"`, no los de por defecto**, y es lo que más fácil se pasa por alto: el disparador normal de `ScrollFade` mide la sección cruzando la pantalla entera y el de `ScrollChoreography` mide otro tramo, así que una fracción del uno **no es la misma fracción del otro** y el fundido caía medio pantallazo antes de que el plano empezara a cerrarse. Si tocas `closeUp`, toca también estos números.
+- Ese `ScrollFade` **mide el mismo tramo que la escena sin escribirlo**: dentro de una sección con `data-scene` lo saca de ella (`tramoDeEscena` en `lib/partitura.ts`). Antes llevaba `start="top top"` y `end="bottom bottom"` copiados a mano, porque el disparador normal de `ScrollFade` mide otro tramo y una fracción del uno **no es la misma fracción del otro**: el fundido llegó a caer medio pantallazo antes de que el plano empezara a cerrarse. Y los números (`textoSale`) salen de `PARTITURA`, igual que los del `closeUp`. Ver «La partitura de la intro».
 - **En el hero no hay botón de presupuesto**, y no es por falta de sitio: el navbar ya lleva uno idéntico y vuelve en cuanto subes, así que eran dos botones iguales en la misma pantalla —que es lo que se lee como que la página aprieta— y encima el del hero caía sobre la lona y tapaba el rótulo. `hero.ctaPrimary` sigue en `messages` por si se quiere recuperar. En escritorio además **baja** un poco la línea de suelo: al crecer, el techo del semirremolque se metía debajo del titular y del botón. En móvil hace lo contrario, sube hacia el centro, porque allí el texto va arriba y el camión pegado abajo deja medio plano vacío.
 - En móvil la línea de suelo va bastante más alta que en escritorio. La pantalla es muy alta, el camión es una tira horizontal, y pegado al borde de abajo queda lejísimos del texto.
 

@@ -3,6 +3,7 @@ import Container from '@/components/ui/Container';
 import RouteOdometer from '@/components/ui/RouteOdometer';
 import RouteProgress from '@/components/ui/RouteProgress';
 import ScrollFade from '@/components/ui/ScrollFade';
+import { PARTITURA } from '@/lib/partitura';
 import { ROAD_TRIGGER } from '@/lib/route';
 
 export default function RoadIntro() {
@@ -63,15 +64,13 @@ export default function RoadIntro() {
               texto la de abajo. Dejan de pelearse por el mismo sitio. */}
           <ScrollFade
             className="relative max-w-sm [text-shadow:0_0_3px_rgb(246_244_241),0_0_6px_rgb(246_244_241),0_0_12px_rgb(246_244_241),0_0_22px_rgb(246_244_241)] lg:max-w-md"
-            inFrom={0.3}
-            inTo={0.42}
-            outFrom={0.92}
-            outTo={0.99}
+            inFrom={PARTITURA.carretera.textoEntra[0]}
+            inTo={PARTITURA.carretera.textoEntra[1]}
+            outFrom={PARTITURA.carretera.textoSale[0]}
+            outTo={PARTITURA.carretera.textoSale[1]}
             // El mismo tramo que la escena 3D: si midieran distinto, una
             // fracción de aquí no sería la misma fracción de allí y el texto
             // entraría o saldría medio pantallazo a destiempo.
-            start={ROAD_TRIGGER.start}
-            end={ROAD_TRIGGER.end}
           >
             <div className="relative">
               <h2 className="font-display text-display-md uppercase text-ink">
@@ -84,8 +83,6 @@ export default function RoadIntro() {
               {/* Los kilómetros suben al mismo ritmo al que avanza el camión. */}
               <p className="mt-12 flex items-baseline gap-2">
                 <RouteOdometer
-                  start={ROAD_TRIGGER.start}
-                  end={ROAD_TRIGGER.end}
                   total={t('odometer.value')}
                   className="font-display text-6xl leading-none tracking-tight text-brand-blue tabular-nums sm:text-7xl"
                 />
@@ -105,8 +102,6 @@ export default function RoadIntro() {
                   llegar a él. */}
               <div className="pr-16 sm:pr-0">
                 <RouteProgress
-                  start={ROAD_TRIGGER.start}
-                  end={ROAD_TRIGGER.end}
                   origin={t('origin')}
                   destination={t('destination')}
                 />

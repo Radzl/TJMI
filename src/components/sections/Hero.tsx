@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import Container from '@/components/ui/Container';
 import ScrollFade from '@/components/ui/ScrollFade';
+import { PARTITURA } from '@/lib/partitura';
 
 export default function Hero() {
   const t = useTranslations('hero');
@@ -32,17 +33,16 @@ export default function Hero() {
               se cerraba, el camión crecía, y lo que ganaba en tamaño lo perdía
               debajo del titular.
 
-              El `start`/`end` **no es el de por defecto, y es importante**:
-              tiene que ser el mismo que usa `ScrollChoreography` para el hero,
-              porque si no una fracción de este disparador no es la misma
-              fracción de aquel y el fundido cae medio pantallazo antes de que
-              el plano empiece a cerrarse. Los números (0,84 → 0,98) son los
-              del `closeUp` de `Scene.tsx`: si tocas uno, toca el otro. */}
+              **El tramo y los números ya no se escriben aquí.** El fundido mide
+              solo el mismo tramo que la escena (lo saca de la sección con
+              `tramoDeEscena`) y la fracción sale de `PARTITURA`, la misma de
+              la que tira el primer plano de `Scene.tsx`. Antes iban copiados a
+              mano, con un aviso de «si tocas uno, toca el otro», y un fundido
+              que medía otro tramo llegó a caer medio pantallazo antes del
+              plano. */}
           <ScrollFade
-            start="top top"
-            end="bottom bottom"
-            outFrom={0.84}
-            outTo={0.98}
+            outFrom={PARTITURA.hero.textoSale[0]}
+            outTo={PARTITURA.hero.textoSale[1]}
             /* El bloque va a la derecha porque el camión ocupa la franja baja
                izquierda de la maqueta. **Sin 3D vuelve al ancho entero**: con
                la escena apagada, empujarlo a la derecha solo deja media

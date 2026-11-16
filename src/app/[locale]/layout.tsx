@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Archivo, IBM_Plex_Sans } from 'next/font/google';
 import { notFound } from 'next/navigation';
+import { ViewTransition } from 'react';
 import { hasLocale, NextIntlClientProvider, useTranslations } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import CookieConsent from '@/components/legal/CookieConsent';
@@ -163,7 +164,14 @@ export default async function LocaleLayout({
           <SkipLink />
           <Navbar />
           <main id="contenido" className="relative z-10 flex-1">
-            {children}
+            {/* **Transición entre páginas**: un fundido corto del contenido al
+                navegar, con la API nativa del navegador a través de React. La
+                barra superior y el pie no se funden, solo lo que cambia. Las
+                curvas y la duración están en `globals.css`
+                (`::view-transition-*(.pagina)`), y con movimiento reducido no
+                hay nada. En un navegador que no la entiende se navega igual
+                que siempre, sin transición. */}
+            <ViewTransition default="pagina">{children}</ViewTransition>
           </main>
           <Footer />
           <WhatsAppButton />

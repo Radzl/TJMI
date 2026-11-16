@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type ReactNode } from 'react';
 import { ScrollTrigger, prefersReducedMotion } from '@/lib/gsap';
+import { tramoDeEscena } from '@/lib/partitura';
 import { range } from '@/lib/utils';
 
 type Props = {
@@ -38,8 +39,8 @@ export default function ScrollFade({
   inTo = 0,
   outFrom = 1,
   outTo = 1,
-  start = 'top bottom',
-  end = 'bottom top',
+  start,
+  end,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -48,10 +49,15 @@ export default function ScrollFade({
     const section = element?.closest('section');
     if (!element || !section || prefersReducedMotion()) return;
 
+    // Dentro de una sección con escena 3D mide **el mismo tramo que la
+    // escena** (ver `lib/partitura.ts`), así que una fracción de aquí es la
+    // misma fracción de allí. Fuera de ellas, el tramo de siempre: mientras
+    // la sección cruza la pantalla entera.
+    const tramo = tramoDeEscena(section) ?? { start: 'top bottom', end: 'bottom top' };
     const trigger = ScrollTrigger.create({
       trigger: section,
-      start,
-      end,
+      start: start ?? tramo.start,
+      end: end ?? tramo.end,
       scrub: 1,
       onUpdate: (self) => {
         const appear = inTo > inFrom ? range(self.progress, inFrom, inTo) : 1;

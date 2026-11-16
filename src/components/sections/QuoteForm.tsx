@@ -285,7 +285,7 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
             vez del de la barra que avanza. */}
         <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-line">
           <div
-            className="h-full rounded-full bg-brand-red transition-[width] duration-500 ease-out"
+            className="h-full rounded-full bg-brand-red transition-[width] duration-500 ease-casa"
             style={{ width: `${((step + 1) / STEP_FIELDS.length) * 100}%` }}
           />
         </div>

@@ -29,7 +29,7 @@ export default function RevealText({ children }: { children: ReactNode }) {
         if (!entries.some((entry) => entry.isIntersecting)) return;
 
         element.style.transition =
-          'opacity 700ms ease-out, transform 700ms cubic-bezier(0.16, 1, 0.3, 1)';
+          'opacity 640ms var(--ease-casa), transform 640ms var(--ease-casa)';
         element.style.opacity = '1';
         element.style.transform = 'none';
         observer.disconnect();

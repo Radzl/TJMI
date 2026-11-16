@@ -6,6 +6,13 @@ import { useSyncExternalStore } from 'react';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin, SplitText);
+  // **En el móvil, la barra del navegador no recoloca nada.** Al bajar, la
+  // barra de direcciones se esconde y la ventana gana alto; sin esto,
+  // ScrollTrigger lo toma por un cambio de tamaño y recalcula todos los
+  // disparadores en mitad del gesto, que es un saltito en la intro. Las
+  // secciones miden en `svh` (el alto con la barra puesta), así que no hay
+  // nada que recalcular: el cambio de alto se puede ignorar sin perder nada.
+  ScrollTrigger.config({ ignoreMobileResize: true });
 }
 
 export { gsap, ScrollTrigger, SplitText };

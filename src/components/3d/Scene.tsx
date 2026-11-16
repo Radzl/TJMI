@@ -28,6 +28,7 @@ import { fundirPlanos, matrizDe } from './models/planos';
 import Road, { ROAD_CURVE } from './models/Road';
 import TruckModel, { TRUCK } from './models/TruckModel';
 import { ROAD_CAM, ROAD_LEAD, roadFrameWidth, roadProgress } from '@/lib/route';
+import { PARTITURA } from '@/lib/partitura';
 import { useScrollStore, writeTravel } from '@/lib/store';
 import { damp, easeLag, lerp, range, smoothstep } from '@/lib/utils';
 
@@ -376,7 +377,7 @@ export default function Scene() {
     // El telón se abre en 0,14 de la escena, que a 4.320 px son **605 px**.
     // Estuvo en 0,09 (340 px) y se leía como un corte: un fundido de medio
     // segundo de scroll no es un fundido, es un parpadeo lento.
-    const coverOut = smoothstep(range(route, 0.26, 0.4));
+    const coverOut = smoothstep(range(route, ...PARTITURA.carretera.telonAbre));
     const cover = coverIn * (1 - coverOut);
     // Y la cámara gira **más despacio que lo que tarda el telón en abrirse**,
     // así que al descubrirse todavía le queda un pelo de recorrido: se lee
@@ -414,7 +415,7 @@ export default function Scene() {
     // todo (605) pedía arrancar en 0,86 y eso se come la llegada, que está
     // afinada aparte. Si hiciera falta más, lo que toca es adelantar el final
     // del recorrido (`ROAD_RUN.to`), no robarle a la pausa.
-    const closing = smoothstep(range(route, 0.88, 1));
+    const closing = smoothstep(range(route, ...PARTITURA.carretera.telonCierra));
 
     // **Y la escena se va moviéndose, no solo apagándose.** Arranca en 0,86,
     // justo cuando la cámara acaba de posarse sobre la nave (`arriving`), y
@@ -444,7 +445,7 @@ export default function Scene() {
     // dos sitios: la cámara, que cierra el encuadre, y la niebla, que se
     // cierra con él para difuminar el fondo.
     const closeUp =
-      smoothstep(range(hero, 0.84, 1)) *
+      smoothstep(range(hero, ...PARTITURA.hero.primerPlano)) *
       (1 - smoothstep(range(inRoute, 0.02, 0.14)));
 
     // --- Escena 0: cruza el patio con el lote y encara la cola -----------

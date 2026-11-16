@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { ScrollTrigger, prefersReducedMotion } from '@/lib/gsap';
+import { tramoDeEscena } from '@/lib/partitura';
 import { roadProgress } from '@/lib/route';
 
 type Props = {
@@ -20,8 +21,8 @@ type Props = {
 export default function RouteProgress({
   origin,
   destination,
-  start = 'top bottom',
-  end = 'bottom top',
+  start,
+  end,
 }: Props) {
   const fillRef = useRef<HTMLSpanElement>(null);
   const dotRef = useRef<HTMLSpanElement>(null);
@@ -32,10 +33,14 @@ export default function RouteProgress({
     const section = fill?.closest('section');
     if (!fill || !dot || !section || prefersReducedMotion()) return;
 
+    // El tramo de la escena en la que vive (ver `lib/partitura.ts`): así el
+    // avance de aquí es el mismo que el del camión, sin copiar `start` ni
+    // `end`. Es lo que evita el contador en 393 km con el camión aparcado.
+    const tramo = tramoDeEscena(section) ?? { start: 'top bottom', end: 'bottom top' };
     const trigger = ScrollTrigger.create({
       trigger: section,
-      start,
-      end,
+      start: start ?? tramo.start,
+      end: end ?? tramo.end,
       scrub: 1,
       onUpdate: (self) => {
         const advance = roadProgress(self.progress) * 100;

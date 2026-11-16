@@ -143,6 +143,24 @@ html[data-cookies='hecho'] [data-banner-cookies] {
      condensada clara que en mayúsculas sigue siendo legible. */
   --display-width: 78;
 
+  /* **Dos curvas de movimiento con nombre, y no más.** Había una buena
+     —`cubic-bezier(0.22, 1, 0.36, 1)`— copiada a mano en cuatro sitios, el
+     `ease-out` genérico de Tailwind en otros cuatro y una tercera curva en
+     `RevealText`. Tres maneras de moverse en la misma página se notan aunque
+     no se sepa decir por qué.
+
+       · `casa`  llega y se posa: arranca rápido y frena largo. Es la de todo
+                 lo que aparece o crece (filetes, barras, la foto que se
+                 acerca). Con `ease-casa` en Tailwind.
+       · `peso`  arranca y frena: simétrica y más lenta en los extremos. Es
+                 la de lo que se desplaza de un sitio a otro, como un vehículo.
+
+     Las duraciones no van en el tema (Tailwind 4 no tiene ese espacio) y se
+     quedan en tres: 160 ms para responder a un clic, 320 ms para lo que
+     cambia al pasar el ratón y 640 ms para lo que entra. */
+  --ease-casa: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-peso: cubic-bezier(0.65, 0, 0.35, 1);
+
   /* Escala de titulares, única para toda la web.
      Antes cada sección se montaba su propio salto (`text-4xl sm:text-5xl
      lg:text-6xl` aquí, un `clamp` a mano allá), así que no había dos titulares
@@ -333,7 +351,7 @@ body {
 .route-steps li::after {
   background: rgb(255 255 255 / 0.55);
   transform-origin: left center;
-  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.7s var(--ease-casa);
 }
 
 .route-steps li[data-shown='false']::after {
@@ -357,7 +375,7 @@ body {
   background: var(--color-brand-red);
   transition:
     background-color 0.5s ease-out,
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.5s var(--ease-casa);
 }
 
 .route-steps li[data-shown='false'] .route-dot {
@@ -409,7 +427,7 @@ body {
   transition:
     border-color 0.35s ease,
     box-shadow 0.35s ease,
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.35s var(--ease-casa);
 }
 
 .reviews-card:hover {
@@ -452,7 +470,7 @@ body {
   border-radius: 9999px;
   background: var(--color-line);
   transition:
-    width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.4s var(--ease-casa),
     background-color 0.35s ease;
 }
 
@@ -633,5 +651,48 @@ body::after {
 @media print {
   body::after {
     display: none;
+  }
+}
+
+/* ── Transición entre páginas ──────────────────────────────────────────────
+   La activa `<ViewTransition default="pagina">` en el layout. Solo se funde
+   el contenido de la página: el resto del documento (barra superior, pie)
+   cambia sin animación, porque en una web que navega entre páginas que
+   comparten barra un fundido de todo se lee como un parpadeo.
+
+   Corta y con cuentagotas, como pide el criterio de diseño: la página vieja
+   se va en 180 ms y la nueva entra en 320 ms subiendo 8 px. El momento
+   orquestado de esta web es la intro 3D, no esto. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-old(.pagina) {
+  animation: salida-pagina 180ms var(--ease-casa) both;
+}
+
+::view-transition-new(.pagina) {
+  animation: entrada-pagina 320ms var(--ease-casa) 60ms both;
+}
+
+@keyframes salida-pagina {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes entrada-pagina {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

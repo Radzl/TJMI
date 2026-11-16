@@ -4,6 +4,7 @@ import Container from '@/components/ui/Container';
 import RevealHeading from '@/components/ui/RevealHeading';
 import RouteSteps from '@/components/sections/RouteSteps';
 import ScrollFade from '@/components/ui/ScrollFade';
+import { PARTITURA } from '@/lib/partitura';
 
 type Step = {
   /** El sitio o la cifra de esa parada: Castellón, Almazora, 420 km, Madrid. */
@@ -48,7 +49,10 @@ export default function InRoute() {
             con la salida más temprana el bloque de pasos se apagaba todavía
             en pantalla, y en móvil, donde ocupa mucho más alto, daba la
             sensación de que la sección ni llegaba a aparecer. */}
-        <ScrollFade outFrom={0.9} outTo={0.98}>
+        <ScrollFade
+          outFrom={PARTITURA.enRuta.textoSale[0]}
+          outTo={PARTITURA.enRuta.textoSale[1]}
+        >
           <RevealHeading
             text={t('title')}
             // A tamaño cartel: es el centro emocional de la página y pedía peso.
