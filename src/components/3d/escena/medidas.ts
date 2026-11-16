@@ -443,6 +443,51 @@ export const CENTRE_NUDGE = 3.2;
  * otra vez para que quepa el recorrido.
  */
 export const TRUCK_FRAME = { width: 27, narrow: 20 };
+
+/**
+ * **En el móvil, la carga se encuadra a ella y no al camión.**
+ *
+ * Con el encuadre de escritorio estrechado, en un teléfono de 390 px cabían
+ * 30 m de patio: el camión salía de 225 × 50 px, una tira, y casi un tercio de
+ * la pantalla era crema o azul liso. La pantalla es alta y estrecha, así que
+ * no hay forma de que quepan 17 m de camión **y** se vea algo de lo que pasa.
+ *
+ * Así que mientras se carga, la cámara mira solo **la acción**: la cola del
+ * semirremolque, la lona abierta y la carretilla con el lote. Pasa todo entre
+ * x = −5 (la carretilla detrás de la cola) y x = 8 (la mitad trasera de la
+ * caja, que es lo que descubre la lona). 14 m centrados en 1,5 cubren eso con
+ * aire: el semirremolque pasa de 50 a unos 110 px de alto.
+ *
+ * Cuando la carretilla se retira, el plano se abre hasta el camión entero
+ * (`TRUCK_FRAME.narrow`) en el mismo movimiento con el que el escritorio se
+ * cierra sobre él: un travelling de la cola a la cabina. En escritorio no
+ * cambia nada, porque allí el camión entero ya cabe grande.
+ */
+export const LOADING_FRAME = { narrow: 14, x: 1.5 };
+
+/**
+ * **El arranque, cerrado sobre la carretilla.** En el primer fotograma la
+ * cámara en tres cuartos abarcaba 34 m y la carretilla medía unos 45 px: la
+ * protagonista del primer plano de la web era una mota. Ahora arranca con el
+ * encuadre a esta fracción, mirando a la máquina, y se abre a lo normal en los
+ * dos primeros compases, que de todas formas son de ralentí (el avance empieza
+ * en 0,14).
+ *
+ * **No se puede cerrar más, y está mirado.** Se probó a 0,6 en escritorio y
+ * 0,65 en móvil: la carretilla salía enorme, pero como la cámara la mira a
+ * ella y la pila queda detrás, las torres de contenedores subían hasta la
+ * barra superior en escritorio y hasta pisar el párrafo del hero en móvil.
+ */
+export const OPENING = { desktop: 0.75, narrow: 0.82, until: 0.22 };
+
+/**
+ * Altura de la línea de suelo en el móvil mientras se carga (fracción de la
+ * pantalla desde abajo). Con el plano cerrado de `LOADING_FRAME` las naves del
+ * fondo crecen con todo lo demás, y a la altura de siempre (0,3) su borde de
+ * arriba cruzaba la última línea del párrafo del hero.
+ */
+export const LOADING_GROUND = 0.2;
+
 export const ROAD_ORIGIN_X = TRUCK_X + SETTLE_RUN;
 /** Desplazamiento lateral en cenital: deja la columna izquierda al texto. */
 export const ROAD_SHIFT = 9;

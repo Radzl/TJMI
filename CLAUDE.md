@@ -453,6 +453,68 @@ Heredó 0,78 → 1 con 12,5 m y **a 0,90 la carretilla seguía en cuadro**. El p
 
 Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restantes dan 0,00 %**: el camión en ruta, el azul noche y la carretera entera, intactos. Es exactamente lo que tenía que pasar, y es el arnés haciendo su trabajo.
 
+## El encuadre del móvil, el arranque y el ratón
+
+### En el móvil, la carga se encuadra a ella y no al camión
+
+- **El fallo:** en un teléfono de 390 px la vista de perfil abarcaba 30 m de
+  patio, así que el camión salía de **225 × 50 px**, una tira, y casi un
+  tercio de la pantalla era crema o azul liso. En una pantalla alta y estrecha
+  no caben 17 m de camión **y** lo que está pasando.
+- **Ahora son tres tiempos, cada uno con una sola curva** (`Scene.tsx`, bloque
+  de la cámara):
+  1. Mientras se carga, la cámara abarca solo **la acción**: 14 m centrados en
+     la cola (`LOADING_FRAME`). El semirremolque pasa de 50 a unos 110 px de
+     alto, y se ven la lona abierta, el lote y el operario.
+  2. Cuando la carretilla se ha ido, **travelling de la cola al camión entero**
+     (`loadToTruck`, 0,80 → 0,93). Empieza antes que el primer plano de
+     escritorio (0,84) porque en un teléfono hay más camino que recorrer: con
+     el tramo de escritorio el camión llegaba entero justo al acabar el hero y
+     el rato de verlo solo no existía.
+  3. Al arrancar (`departure`), el ancho de siempre. **La salida no cambia**:
+     `check:3d` lo confirma con las tomas de en ruta a 0,00 %.
+- **El encuadre de móvil va por su cuenta y no sigue a `closeUp`**, y es a
+  propósito: combinando los dos, el ancho hacía un pequeño vaivén (se abría
+  hasta 21,5 m para volver a 20). Con una curva por tiempo es monótono.
+- **Durante la carga la línea de suelo va más baja** (`LOADING_GROUND`, 0,2 en
+  vez de 0,3): con el plano cerrado las naves del fondo crecen con todo lo
+  demás, y a la altura de siempre su borde cruzaba la última línea del
+  párrafo del hero.
+- **En escritorio no cambia nada**: allí el camión entero ya cabe grande.
+
+### El arranque, cerrado sobre la carretilla
+
+- En el primer fotograma de la web la carretilla medía unos 45 px: la
+  protagonista era una mota. Ahora la cámara en tres cuartos arranca **cerrada
+  sobre ella** (`OPENING`) y se abre a lo normal en los dos primeros compases,
+  que son de ralentí (el avance empieza en 0,14).
+- El ancho, la altura a la que se mira (`qY`) y el desplazamiento a la columna
+  izquierda (`quarterShift`) **se escalan juntos**, así que la maniobra sigue
+  en la franja baja y lejos del titular mientras se abre.
+- **No se puede cerrar más, y está mirado:** a 0,6 en escritorio y 0,65 en
+  móvil las torres de contenedores, que quedan detrás de la carretilla,
+  subían hasta la barra superior y hasta pisar el párrafo. Va a 0,75 y 0,82.
+- **Las bandas de sombra de la nave siguen en el arranque.** Se planteó
+  quitarlas, pero con el encuadre cerrado ya no cruzan el titular de la misma
+  manera y son lo que estructura el suelo crema; no se tocó la luz.
+
+### La maqueta responde al ratón
+
+- Solo en escritorio y con ratón (`(hover: hover) and (pointer: fine)` y
+  `pointerType === 'mouse'`): la cámara gira alrededor de lo que mira, **1,5°
+  como mucho** en horizontal y 0,7° en vertical. Con cámara ortográfica es lo
+  único que da profundidad de verdad: lo cercano y lo lejano se desplazan
+  distinto. Medido: entre el puntero a la izquierda y a la derecha cambia un
+  **3,4 %** de los píxeles.
+- Se escucha **en la ventana**, porque el lienzo lleva `pointer-events-none`.
+- **Nada en la cenital** de la carretera (se apaga con `topView`): allí el
+  encuadre lo manda el trazado.
+- Vive en un objeto de módulo (`puntero`), no en estado de React, y va
+  amortiguado con `damp`.
+- **`check:3d` no lo ve**, y es correcto: el arnés no mueve el ratón, así que
+  el giro se queda en cero. Para comprobarlo hay que mover el ratón y
+  comparar dos capturas.
+
 ## Movimiento del 3D
 - Todos los disparadores de la intro van a **`scrub: 1`, no `true`**. Con `true` la escena va clavada a la rueda y un acelerón la teletransporta. Si tocas uno, tócalos todos: van juntos para no desincronizarse.
 - `Scene.tsx` usa **muelles amortiguados**, no solo interpolación directa: la pluma llega un pelo tarde respecto a la máquina, y la carga colgada se balancea empujada por su propia velocidad (se queda atrás al acelerar, se adelanta al frenar, y se para sola). Es lo que separa "animación" de "maquinaria".

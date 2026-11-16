@@ -2,7 +2,7 @@
 
 import { Environment, Lightformer, OrthographicCamera } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   Matrix4,
   Vector3,
@@ -56,6 +56,9 @@ import {
   FORK_REACH,
   HOLD,
   LEAVE_WIDEN,
+  LOADING_FRAME,
+  LOADING_GROUND,
+  OPENING,
   PILE,
   PILE_BASE_Y,
   PILE_GAP,
@@ -134,6 +137,34 @@ const BAYS = fundirPlanos(
   })),
 );
 
+/**
+ * **La maqueta responde al ratón, y solo en escritorio.**
+ *
+ * Con cámara ortográfica no hay perspectiva, así que lo único que da
+ * profundidad de verdad es mirar desde otro ángulo: girando la cámara un pelo
+ * alrededor de lo que mira, lo que está cerca y lo que está lejos se desplazan
+ * distinto. Con 1,5° de giro como mucho, las naves del fondo se mueven unos
+ * 30 px respecto al camión: se nota que es un sitio y no un recorte, y no
+ * marea.
+ *
+ * - El puntero se escucha **en la ventana**, no en el lienzo: el lienzo lleva
+ *   `pointer-events-none` para no tapar la página.
+ * - **Nada en pantallas táctiles ni estrechas**: allí no hay puntero que
+ *   seguir, y un toque no debe mover la escena.
+ * - **Nada en la cenital** de la carretera: allí el encuadre lo manda el
+ *   trazado, y girarla movería la carretera bajo el texto.
+ * - Va amortiguado con `damp`, como todo lo que se mueve por fotograma: el
+ *   retraso es lo que hace que se lea como una cámara con peso y no como un
+ *   cursor pegado.
+ * - Vive aquí y no en el estado de React: cambia en cada movimiento del ratón
+ *   y no debe provocar ni un render.
+ */
+const puntero = { x: 0, y: 0, vx: 0, vy: 0 };
+const ORBITA = { giro: 0.026, cabeceo: 0.012 };
+const _brazo = new Vector3();
+const _arriba = new Vector3(0, 1, 0);
+const _lado = new Vector3();
+
 // Scratch reutilizado cada frame: nada de crear objetos dentro de useFrame.
 const roadPoint = new Vector3();
 const roadTangent = new Vector3();
@@ -144,6 +175,28 @@ const roadBulge = new Vector3();
 
 export default function Scene() {
   const cameraRef = useRef<OrthoCamera>(null);
+
+  // El puntero, normalizado de −1 a 1 desde el centro de la ventana. Solo con
+  // ratón: en un táctil `pointerType` es `touch` y no se escucha.
+  useEffect(() => {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    const mover = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      puntero.x = (e.clientX / window.innerWidth) * 2 - 1;
+      puntero.y = (e.clientY / window.innerHeight) * 2 - 1;
+    };
+    // Al salir de la ventana vuelve al centro, en vez de quedarse girada.
+    const salir = () => {
+      puntero.x = 0;
+      puntero.y = 0;
+    };
+    window.addEventListener('pointermove', mover, { passive: true });
+    document.documentElement.addEventListener('pointerleave', salir);
+    return () => {
+      window.removeEventListener('pointermove', mover);
+      document.documentElement.removeEventListener('pointerleave', salir);
+    };
+  }, []);
   const forkliftRef = useRef<Group>(null);
   const cargoRef = useRef<Group>(null);
   const truckRef = useRef<Group>(null);
@@ -805,11 +858,28 @@ export default function Scene() {
       // suelta en cuanto el camión arranca: si se quedase, el recorrido no
       // cabría en pantalla. Es el único momento en que el camión está solo,
       // así que es el momento de verlo entero y con detalle.
-      const sideWidth = lerp(
-        worldWidth,
-        isNarrow ? TRUCK_FRAME.narrow : TRUCK_FRAME.width,
-        closeUp,
-      );
+      // **En el móvil el encuadre lateral va por su cuenta** y no sigue a
+      // `closeUp`. Son tres tiempos con una sola curva cada uno, para que el
+      // ancho no haga ningún vaivén:
+      //
+      //  1. Mientras se carga, solo la acción (`LOADING_FRAME`).
+      //  2. Cuando la carretilla ya se ha ido, travelling de la cola al camión
+      //     entero (`loadToTruck`). Empieza en 0,80 y no en 0,84 como el primer
+      //     plano de escritorio: en un teléfono hay que recorrer más camino, y
+      //     con el tramo de escritorio el camión llegaba entero justo al final
+      //     del hero, o sea que el rato de verlo solo no llegaba a existir.
+      //  3. Al arrancar (`departure`), el ancho de siempre.
+      //
+      // En escritorio no cambia nada: el camión entero ya cabe grande.
+      const departure = smoothstep(range(inRoute, 0.02, 0.14));
+      const loadToTruck = smoothstep(range(hero, 0.8, 0.93));
+      const sideWidth = isNarrow
+        ? lerp(
+            lerp(LOADING_FRAME.narrow, TRUCK_FRAME.narrow, loadToTruck),
+            worldWidth,
+            departure,
+          )
+        : lerp(worldWidth, TRUCK_FRAME.width, closeUp);
 
       // Al cerrar el plano, en móvil el camión sube hacia el centro: la
       // pantalla es muy alta, el camión es una tira horizontal y pegado al
@@ -819,7 +889,13 @@ export default function Scene() {
       // En escritorio baja un poco en vez de subir: el camión crece y, con la
       // línea de suelo donde estaba, el techo del semirremolque se metía
       // justo debajo del titular y del botón.
-      const framedFraction = lerp(heroFraction, isNarrow ? 0.45 : 0.09, closeUp);
+      // En el móvil, mientras se carga, la línea de suelo va más baja
+      // (`LOADING_GROUND`): el plano está cerrado y las naves del fondo
+      // crecen con él. Con el camión entero sube al centro, y al arrancar
+      // vuelve a la de siempre.
+      const framedFraction = isNarrow
+        ? lerp(lerp(LOADING_GROUND, 0.45, loadToTruck), heroFraction, departure)
+        : lerp(heroFraction, 0.09, closeUp);
       const aimY = lerp(
         lerp(
           groundAt(framedFraction, sideWidth),
@@ -847,11 +923,13 @@ export default function Scene() {
       // Antes esto era un seguimiento con una fracción fija (0,52), y por eso
       // el camión derivaba hacia la derecha desde el primer metro y se iba de
       // cuadro enseguida.
-      const parkedX = lerp(
-        isNarrow ? 2.5 : 2,
-        TRUCK_X + TRUCK.length / 2,
-        closeUp,
-      );
+      const parkedX = isNarrow
+        ? lerp(
+            lerp(LOADING_FRAME.x, TRUCK_X + TRUCK.length / 2, loadToTruck),
+            2.5,
+            departure,
+          )
+        : lerp(2, TRUCK_X + TRUCK.length / 2, closeUp);
       const centrePull =
         TRUCK_X + TRUCK.length / 2 - (isNarrow ? 2.5 : 2) + CENTRE_NUDGE;
 
@@ -911,15 +989,28 @@ export default function Scene() {
       // se lee como que baja por la pantalla (sin perspectiva no hay otra
       // forma de contarlo) y pasar a perfil es solo bajar la cámara, sin
       // volteos raros. Además va siguiendo a la máquina.
-      const quarterX = lerp(PILE_VIEW.x, forkliftX, swing) + quarterShift;
-      const quarterZ = lerp(PILE_VIEW.z, forkliftZ, followZ);
+      //
+      // **Y arranca cerrada sobre la carretilla** (`OPENING`): en el primer
+      // fotograma el encuadre es una fracción del normal y mira a la máquina,
+      // no a la pila, y se abre en los dos primeros compases. El ancho, la
+      // altura a la que se mira y el desplazamiento a la columna izquierda se
+      // escalan juntos, así que la maniobra sigue cayendo en la franja baja y
+      // lejos del titular mientras se abre.
+      const openT = smoothstep(range(hero, 0.02, OPENING.until));
+      const opening = lerp(isNarrow ? OPENING.narrow : OPENING.desktop, 1, openT);
+      const qWidth = quarterWidth * opening;
+      const qY = quarterY * opening;
+      const quarterX =
+        lerp(lerp(forkliftX, PILE_VIEW.x, openT), forkliftX, swing) +
+        quarterShift * opening;
+      const quarterZ = lerp(lerp(forkliftZ, PILE_VIEW.z, openT), forkliftZ, followZ);
 
       const aimX = lerp(sideX, quarterX, quarter);
-      const aimYTarget = lerp(aimY - 0.4, quarterY, quarter);
+      const aimYTarget = lerp(aimY - 0.4, qY, quarter);
       const aimZ = lerp(0, quarterZ, quarter);
 
       const camX = lerp(sideX, quarterX, quarter);
-      const camY = lerp(aimY, quarterY + QUARTER_CAM.height, quarter);
+      const camY = lerp(aimY, qY + QUARTER_CAM.height, quarter);
       const camZ = lerp(60, quarterZ + QUARTER_CAM.back, quarter);
 
       // Durante el giro la cámara se abre y vuelve a cerrarse: se lee como un
@@ -940,6 +1031,23 @@ export default function Scene() {
       const focusZ = lerp(aimZ, z, topView);
 
       const focusY = lerp(aimYTarget, 0, topView);
+
+      // Giro de la cámara con el ratón (ver `puntero`, arriba del todo).
+      puntero.vx = damp(puntero.vx, isNarrow ? 0 : puntero.x, 3, dt);
+      puntero.vy = damp(puntero.vy, isNarrow ? 0 : puntero.y, 3, dt);
+      const orbita = 1 - topView;
+      if (orbita > 0.001 && Math.abs(puntero.vx) + Math.abs(puntero.vy) > 1e-4) {
+        _brazo.set(
+          camera.position.x - focusX,
+          camera.position.y - focusY,
+          camera.position.z - focusZ,
+        );
+        _lado.crossVectors(_arriba, _brazo).normalize();
+        _brazo.applyAxisAngle(_arriba, -puntero.vx * ORBITA.giro * orbita);
+        _brazo.applyAxisAngle(_lado, puntero.vy * ORBITA.cabeceo * orbita);
+        camera.position.set(focusX + _brazo.x, focusY + _brazo.y, focusZ + _brazo.z);
+      }
+
       camera.lookAt(focusX, focusY, focusZ);
 
 
@@ -966,7 +1074,7 @@ export default function Scene() {
       camera.zoom =
         size.width /
         ((lerp(
-          lerp(sideWidth, quarterWidth, quarter),
+          lerp(sideWidth, qWidth, quarter),
           roadWidth * (1 + LEAVE_WIDEN * roadLeaving),
           topView,
         ) +
