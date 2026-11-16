@@ -446,7 +446,10 @@
     "ctaButton": "Pedir presupuesto",
     "readMore": "Leer el artículo",
     "moreTitle": "Seguir leyendo",
-    "ctaWhatsapp": "Preguntar por WhatsApp"
+    "ctaWhatsapp": "Preguntar por WhatsApp",
+    "latestTitle": "Antes de mandar un palé",
+    "latestIntro": "Lo que más nos preguntan, contestado: medidas, plazos, seguro y cuánto cuesta.",
+    "latestLink": "Todos los artículos"
   },
   "pages": {
     "services": {

@@ -446,7 +446,10 @@
     "ctaButton": "Request a quote",
     "readMore": "Read the article",
     "moreTitle": "Keep reading",
-    "ctaWhatsapp": "Ask on WhatsApp"
+    "ctaWhatsapp": "Ask on WhatsApp",
+    "latestTitle": "Before you ship a pallet",
+    "latestIntro": "What we get asked most, answered: sizes, lead times, insurance and cost.",
+    "latestLink": "All articles"
   },
   "pages": {
     "services": {

@@ -274,6 +274,15 @@ Decisiones cerradas:
 - **No se puede arreglar cargando el mapa desde el principio, y no es una opinión de estilo.** Un `iframe` de Google Maps pone cookies (`NID`, `SOCS`) y manda datos fuera del EEE en cuanto se monta. Cargarlo antes del consentimiento es exactamente lo que sanciona la AEPD, y la multa sería del cliente. La regla del proyecto —«nada de terceros se carga antes del consentimiento»— no está ahí por gusto.
 - **Lo que sí lo arregla:** que el estado por defecto sea **una foto de la nave**, con la dirección y los dos botones encima. Todo el mundo ve un bloque con aspecto profesional desde el primer momento, sin pedir permiso a nadie, y quien quiere el mapa de verdad lo tiene a un clic. `MapEmbed` ya acepta esa foto.
 - **Los dos huecos están declarados y vacíos a propósito** (`SITE_PHOTOS` en `content/media.ts`), con su `brief` al lado. El día que lleguen los archivos es una línea por sede. Lo que no se hace es rellenarlos con una foto de otro sitio: `camion-02.jpg` **sí** es el patio de Almazora, pero ya es la foto grande de Servicios, y la misma imagen dos veces en la misma página se lee como que no hay más.
+- **Mientras no lleguen, el hueco lleva un mapa nuestro** (`SiteLocator.tsx`, que `MapEmbed` recibe como `fondo`): la zona de cada sede dibujada con los mismos trazados de Natural Earth que el mapa de la ruta, con la provincia marcada, el punto de la nave y el corredor saliendo de ella. No carga nada de nadie, así que se ve desde el primer momento y sin cookies; el aviso y los dos botones bajan a una franja sobre un degradado del color del papel. **Si llega la foto, manda la foto**: `MapEmbed` solo pinta el dibujo cuando no hay `photo`.
+- El punto de la nave va **en el tercio de arriba** del recuadro (`xMidYMin slice`) y no en el centro: la mitad de abajo es del aviso, y centrado quedaba detrás del texto.
+
+## Lo que se añadió para que la portada no se viera vacía
+
+- **Las tarjetas del desfile de servicios llevan sus tres datos** (`highlights`, los mismos de la fila de `/servicios`): eran foto, nombre y una línea, y es la pieza que más tiempo se queda delante, porque el desfile la fija. Cada dato es una cifra, una medida o un límite, en versales pequeñas y separados por filete, como una ficha técnica.
+- **Una franja con los tres últimos artículos del blog** (`LatestPosts.tsx`), entre las sedes y el cierre. El índice de arriba decía «10 artículos» y la portada no enseñaba ninguno, ahora que todos tienen foto. Van ordenados por fecha, sin lista a mano, y el titular dice para qué sirven («Antes de mandar un palé»), no «Del blog». Va justo antes de pedir presupuesto porque contesta las dudas de ese momento: medidas, plazos, seguro y precio.
+- **Los mapas de las sedes**: ver «Las fotos de las sedes y el mapa».
+- **El mapa de la ruta con geografía de verdad**: ver la cabecera de `RouteMap.tsx` y `scripts/gen-mapa.mjs`.
 
 ## El índice de la casa (`Overview.tsx`)
 

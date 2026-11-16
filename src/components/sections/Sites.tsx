@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 import MapEmbed from '@/components/legal/MapEmbed';
+import SiteLocator from '@/components/sections/SiteLocator';
 import { SITE_PHOTOS } from '@/content/media';
 import Container from '@/components/ui/Container';
 import SectionHeading from '@/components/ui/SectionHeading';
@@ -46,6 +47,9 @@ export default function Sites() {
                   title={t('mapTitle', { city: site.city })}
                   mapUrl={site.mapUrl}
                   photo={SITE_PHOTOS[index]?.src}
+                  // Las sedes van en el mismo orden que `contact.sites`:
+                  // primero Almazora y después Fuenlabrada.
+                  fondo={<SiteLocator sede={index === 0 ? 'castellon' : 'madrid'} />}
                 />
               </div>
 

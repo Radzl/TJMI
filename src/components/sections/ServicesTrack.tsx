@@ -214,6 +214,30 @@ export default function ServicesTrack({
                   {item.description}
                 </p>
 
+                {/* **Tres datos por tarjeta**, los mismos `highlights` que la
+                    fila de `/servicios`. La tarjeta era foto, nombre y una
+                    línea: se veía bien y no contaba nada, y es la pieza que
+                    más se mira de la portada, porque el desfile la deja
+                    delante un buen rato. Cada dato es una cifra, una medida o
+                    un límite —«13,6 m y 33 palés», «Carga lateral, sin
+                    muelle»—, que es lo que separa un servicio de otro.
+
+                    Separados por filete y en versales pequeñas, como en
+                    `/servicios`: así se leen como ficha técnica y no compiten
+                    con el titular. */}
+                {item.highlights && item.highlights.length > 0 && (
+                  <ul className="mt-6 divide-y divide-line border-y border-line">
+                    {item.highlights.map((dato) => (
+                      <li
+                        key={dato}
+                        className="py-2.5 font-display text-[0.7rem] uppercase tracking-[0.14em] text-ink"
+                      >
+                        {dato}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
                 {/* Sin esta línea la tarjeta no dice que se pueda abrir, y una
                     tarjeta que no lo dice no se pulsa. */}
                 <span className="mt-6 inline-flex items-center gap-2 font-display text-xs uppercase tracking-widest text-ink transition-colors group-hover:text-brand-red-ink">

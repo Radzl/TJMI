@@ -5,6 +5,7 @@ import Cta from '@/components/sections/Cta';
 import Hero from '@/components/sections/Hero';
 import Overview from '@/components/sections/Overview';
 import InRoute from '@/components/sections/InRoute';
+import LatestPosts from '@/components/sections/LatestPosts';
 import RoadIntro from '@/components/sections/RoadIntro';
 import Reviews from '@/components/sections/Reviews';
 import Route from '@/components/sections/Route';
@@ -61,6 +62,9 @@ export default async function HomePage({ params }: Props) {
       <Route />
       <RouteMapSection />
       <Sites />
+      {/* Los tres últimos artículos: lo que conviene saber, justo antes de
+          pedir presupuesto. Ver la cabecera de `LatestPosts`. */}
+      <LatestPosts />
       {/* **La prueba social cae justo antes de pedir algo**, que es cuando
           sirve: «aquí estamos — esto dicen de nosotros — cuéntanos qué
           necesitas». Más arriba, entre los servicios, sería una interrupción;
