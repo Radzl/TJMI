@@ -2,6 +2,7 @@
 
 import { useGLTF, useTexture } from '@react-three/drei';
 import { TrailerLoad } from './Pallets';
+import { fundirPorMaterial } from './fundirPorMaterial';
 import {
   CURTAIN_RELIEF,
   curtainPlain,
@@ -224,6 +225,23 @@ export default function TruckModel({ curtainRef, roofRef }: Props) {
     const remove: Object3D[] = [];
     const curtain = new Box3();
     const cab = new Box3();
+    // Un clon por material, no uno por pieza. Antes cada cristal y cada pieza
+    // repintada se llevaba su propio clon, y eso impedía fundir las piezas
+    // que comparten material (ver `fundirPorMaterial` más abajo).
+    const clones = new Map<string, MeshStandardMaterial>();
+    const clonUnaVez = (
+      clave: string,
+      original: MeshStandardMaterial,
+      ajustar: (m: MeshStandardMaterial) => void,
+    ) => {
+      let clon = clones.get(clave);
+      if (!clon) {
+        clon = original.clone();
+        ajustar(clon);
+        clones.set(clave, clon);
+      }
+      return clon;
+    };
 
     root.traverse((child) => {
       const name = child.name || '';
@@ -280,12 +298,12 @@ export default function TruckModel({ curtainRef, roofRef }: Props) {
       // del asiento flotando en el vacio. Opaco y reflectante se lee como
       // cristal; translucido y vacio se lee como un agujero.
       if (GLASS_MATERIALS.has(materialName)) {
-        const vidrio = material.clone();
-        vidrio.roughness = 0.08;
-        vidrio.metalness = 0.55;
-        vidrio.envMapIntensity = 2.4;
-        vidrio.color.set('#aebccd');
-        child.material = vidrio;
+        child.material = clonUnaVez(`vidrio:${materialName}`, material, (vidrio) => {
+          vidrio.roughness = 0.08;
+          vidrio.metalness = 0.55;
+          vidrio.envMapIntensity = 2.4;
+          vidrio.color.set('#aebccd');
+        });
         child.castShadow = false;
         return;
       }
@@ -297,14 +315,20 @@ export default function TruckModel({ curtainRef, roofRef }: Props) {
       if (brandColor) {
         // Se clona el material: si no, se repintaría también cualquier otra
         // malla que comparta la misma instancia.
-        const painted = material.clone();
-        painted.color.set(brandColor);
-        painted.map = null;
-        child.material = painted;
+        child.material = clonUnaVez(`marca:${materialName}`, material, (painted) => {
+          painted.color.set(brandColor);
+          painted.map = null;
+        });
       }
     });
 
     remove.forEach((node) => node.removeFromParent());
+
+    // **Fundido por material.** Ver `fundirPorMaterial`: de ~97 mallas a una
+    // por material, que es lo que de verdad cuesta dibujar el camión. La lona
+    // original va invisible (la dibuja la nuestra) y se queda fuera sola,
+    // porque solo se funde lo que se ve.
+    fundirPorMaterial(root);
 
     // Ahora que está limpio se mide de verdad y se recoloca: mirando a +X,
     // apoyado en el suelo y con el origen en la cola.

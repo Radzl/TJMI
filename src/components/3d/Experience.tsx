@@ -1,5 +1,6 @@
 'use client';
 
+import { PerformanceMonitor } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { NoToneMapping } from 'three';
 import { lazy, Suspense, useState } from 'react';
@@ -40,6 +41,17 @@ export default function Experience() {
     () => typeof window !== 'undefined' && window.innerWidth >= ANCHO_MOVIL,
   );
 
+  // **Resolución adaptativa.** El lienzo pinta hasta a 1,5 píxeles reales
+  // por píxel de CSS, que en un teléfono de gama media es lo que más pesa:
+  // el coste crece con el cuadrado. `PerformanceMonitor` mide los fotogramas
+  // y, si se sostienen por debajo de 45, baja el tope a 1; si después pasan
+  // de 57, lo devuelve. Con `flipflops` deja de cambiar si se pone a dudar,
+  // porque cada cambio recrea el búfer de dibujo y eso se nota.
+  //
+  // Es la red de seguridad, no la optimización: lo que de verdad bajó el
+  // coste fue dibujar menos (ver «Rendimiento del 3D» en `CLAUDE.md`).
+  const [topeDpr, setTopeDpr] = useState(1.5);
+
   return (
     <>
       <Preloader />
@@ -62,10 +74,17 @@ export default function Experience() {
             intensidades de `Scene.tsx` están calculadas y no puestas a ojo. */}
         <Canvas
           shadows="percentage"
-          dpr={[1, 1.5]}
+          dpr={[1, topeDpr]}
           frameloop={intro ? "always" : "never"}
           gl={{ antialias: true, toneMapping: NoToneMapping }}
         >
+          <PerformanceMonitor
+            bounds={() => [45, 57]}
+            flipflops={3}
+            onDecline={() => setTopeDpr(1)}
+            onIncline={() => setTopeDpr(1.5)}
+            onFallback={() => setTopeDpr(1)}
+          />
           <Suspense fallback={null}>
             <Scene />
           </Suspense>

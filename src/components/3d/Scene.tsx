@@ -4,6 +4,7 @@ import { Environment, Lightformer, OrthographicCamera } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import {
+  Matrix4,
   Vector3,
   type Fog,
   type Mesh,
@@ -13,13 +14,17 @@ import {
   type MeshBasicMaterial,
   type OrthographicCamera as OrthoCamera,
 } from 'three';
-import ContainerModel, { CONTAINER } from './models/ContainerModel';
+import ContainerStacks, {
+  CONTAINER,
+  type ContainerPlacement,
+} from './models/ContainerModel';
 import ForkliftModel from './models/ForkliftModel';
 import Facility from './models/Facility';
 import TerminalYard, { Sheds, TerminalYardNear } from './models/TerminalYard';
 import YardMarkings from './models/YardMarkings';
 import Pallets, { PalletLoad, PALLET_LOAD } from './models/Pallets';
 import ContactShadow from './models/ContactShadow';
+import { fundirPlanos, matrizDe } from './models/planos';
 import Road, { ROAD_CURVE } from './models/Road';
 import TruckModel, { TRUCK } from './models/TruckModel';
 import { ROAD_CAM, ROAD_LEAD, roadFrameWidth, roadProgress } from '@/lib/route';
@@ -70,6 +75,64 @@ import {
   TRUCK_X,
   YARD_CONTACTS,
 } from './escena/medidas';
+
+/**
+ * Los diecisiete contenedores del patio, colocados una sola vez.
+ *
+ * Son los mismos sitios que antes montaban dos bucles de grupos anidados —la
+ * pila en rejilla y las dos torres de primer término—, escritos como matrices
+ * para que `ContainerStacks` los dibuje todos en cinco llamadas. El orden de
+ * las operaciones es el de aquellos grupos: primero el sitio en el suelo,
+ * después el giro de la torre y por último la altura de cada piso.
+ */
+const CONTAINER_PLACEMENTS: ContainerPlacement[] = (() => {
+  const lista: ContainerPlacement[] = [];
+  const piso = (level: number) =>
+    new Matrix4().makeTranslation(0, PILE_BASE_Y + level * (CONTAINER.height + 0.06), 0);
+
+  for (const pile of PILE_STACKS) {
+    const suelo = new Matrix4().makeTranslation(
+      PILE.x - pile.slot * PILE_GAP,
+      0,
+      PILE.z - pile.row * PILE_ROW_DEPTH,
+    );
+    pile.colors.forEach((color, level) => {
+      lista.push({
+        color,
+        matrix: suelo
+          .clone()
+          .multiply(piso(level))
+          .multiply(new Matrix4().makeRotationY(Math.PI / 2)),
+      });
+    });
+  }
+
+  for (const stack of FOREGROUND_STACKS) {
+    const torre = new Matrix4()
+      .makeTranslation(stack.x, 0, stack.z)
+      .multiply(new Matrix4().makeRotationY(Math.PI / 2 + stack.rotation));
+    stack.colors.forEach((color, level) => {
+      lista.push({ color, matrix: torre.clone().multiply(piso(level)) });
+    });
+  }
+  return lista;
+})();
+
+/**
+ * Las plazas pintadas de la pila, una debajo de cada torre y otra en el hueco
+ * del que sale la carga. Eran ocho mallas con ocho materiales iguales; ahora
+ * es una geometría fundida (`fundirPlanos`) y una llamada.
+ */
+const BAYS = fundirPlanos(
+  [{ slot: 0, row: 0 }, ...PILE_ROWS].map((bay) => ({
+    ancho: CONTAINER.width + 1.3,
+    fondo: CONTAINER.length + 1.3,
+    matriz: matrizDe(
+      [PILE.x - bay.slot * PILE_GAP, 0.02, PILE.z - bay.row * PILE_ROW_DEPTH],
+      [-Math.PI / 2, 0, 0],
+    ),
+  })),
+);
 
 // Scratch reutilizado cada frame: nada de crear objetos dentro de useFrame.
 const roadPoint = new Vector3();
@@ -1101,20 +1164,10 @@ export default function Scene() {
         {/* Plazas pintadas, una debajo de cada torre y otra en el hueco del
             que sale la carga: ese rectángulo vacío es lo que cuenta que la
             grúa acaba de llevarse un contenedor de ahí. */}
-        {[{ slot: 0, row: 0 }, ...PILE_ROWS].map((bay) => (
-          <mesh
-            key={`bay-${bay.slot}-${bay.row}`}
-            position={[
-              PILE.x - bay.slot * PILE_GAP,
-              0.02,
-              PILE.z - bay.row * PILE_ROW_DEPTH,
-            ]}
-            rotation={[-Math.PI / 2, 0, 0]}
-          >
-            <planeGeometry args={[CONTAINER.width + 1.3, CONTAINER.length + 1.3]} />
-            <meshBasicMaterial color="#dcd4c5" toneMapped={false} />
-          </mesh>
-        ))}
+        {/* Las ocho plazas van en una sola malla: ver `BAYS`, arriba. */}
+        <mesh geometry={BAYS}>
+          <meshBasicMaterial color="#dcd4c5" toneMapped={false} />
+        </mesh>
         {/* **Las sombras de contacto, antes de lo que se apoya en ellas.**
             La luz principal va rasante, así que tira la sombra de cada cosa a
             un lado y justo bajo el apoyo no queda nada: eso es lo que hacía
@@ -1122,51 +1175,16 @@ export default function Scene() {
             `ContactShadow.tsx`. */}
         <ContactShadow puntos={YARD_CONTACTS} />
 
-        {/* Pila del patio: dos torres de dos, tumbadas en la misma dirección
-            en la que la grúa agarra. El quinto contenedor es el que se lleva,
-            y arranca en el hueco libre del final de la fila. */}
-        {PILE_STACKS.map((pile) => (
-          <group
-            key={`${pile.slot}-${pile.row}`}
-            position={[
-              PILE.x - pile.slot * PILE_GAP,
-              0,
-              PILE.z - pile.row * PILE_ROW_DEPTH,
-            ]}
-          >
-            {pile.colors.map((color, level) => (
-              <group
-                key={color + level}
-                position={[0, PILE_BASE_Y + level * (CONTAINER.height + 0.06), 0]}
-                rotation={[0, Math.PI / 2, 0]}
-              >
-                <ContainerModel color={color} />
-              </group>
-            ))}
-          </group>
-        ))}
+        {/* Pila del patio y las dos torres de primer término, en un solo
+            componente instanciado. Los sitios están en `CONTAINER_PLACEMENTS`,
+            arriba del todo.
 
-        {/* Primer término: dos torres cortadas por el borde del encuadre.
-            No son decorado, son la pista de profundidad que faltaba: la
-            escena tenía la grúa y la pila, y nada delante. Van giradas un
-            par de grados porque un patio de verdad no está en rejilla, y
-            eso es lo que separa una maqueta de un render de catálogo. */}
-        {FOREGROUND_STACKS.map((stack) => (
-          <group
-            key={`front-${stack.x}`}
-            position={[stack.x, 0, stack.z]}
-            rotation={[0, Math.PI / 2 + stack.rotation, 0]}
-          >
-            {stack.colors.map((color, level) => (
-              <group
-                key={color + level}
-                position={[0, PILE_BASE_Y + level * (CONTAINER.height + 0.06), 0]}
-              >
-                <ContainerModel color={color} />
-              </group>
-            ))}
-          </group>
-        ))}
+            La pila va en rejilla, tumbada en la misma dirección en la que la
+            carretilla trabaja. Las de primer término van cortadas por el
+            borde del encuadre y giradas un par de grados: no son decorado, son
+            la pista de profundidad que faltaba, y un patio de verdad no está
+            en rejilla. */}
+        <ContainerStacks items={CONTAINER_PLACEMENTS} />
 
 
         <group ref={forkliftRef} position={[0, 0, FORKLIFT_Z]}>

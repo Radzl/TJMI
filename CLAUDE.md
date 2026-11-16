@@ -1766,6 +1766,48 @@ mundo: 26 fps en un teléfono de gama baja.
 | En ruta | 582 | 339 |
 | Carretera | 450 | 273 |
 
+### La segunda tanda: de ~600 a ~150
+
+Esos números de arriba estaban mal medidos: el contador de entonces no veía
+una pasada entera que nadie sabía que existía. Medido de nuevo con
+`tests/perf/medidas/llamadas.mjs` (que se puede relanzar y además desglosa por
+pieza con `--desglose`), el punto de partida real era **587 en el patio y 673
+en el peor fotograma**. Esto es lo que se hizo, por orden de lo que devolvió:
+
+| | patio | peor fotograma |
+| --- | --- | --- |
+| Punto de partida | 587 | 673 |
+| Fuera el `<ContactShadows>` de drei | 229 | 284 |
+| Contenedores instanciados y camión fundido por material | 125 | 181 |
+| Pintura del suelo, plazas de la pila y nervios de las naves | **113** | **155** |
+
+- **`<ContactShadows>` de drei renderizaba la escena entera otra vez en cada
+  fotograma** y obligaba a recalcular el mapa de sombras por segunda vez. Era
+  el 60 % de todo. Apagándolo en caliente la imagen cambiaba un 0,00–0,08 %,
+  igual que dos capturas seguidas: las sombras de verdad y las de contacto
+  propias (`ContactShadow.tsx`) ya hacían ese trabajo. Se encontró porque el
+  desglose daba 332 llamadas para las 97 mallas del camión, y esa cuenta solo
+  cuadra si todo se dibuja dos veces. **No hay que devolverlo.**
+- **Los 17 contenedores son un `InstancedMesh` por pieza** (`ContainerStacks`
+  en `ContainerModel.tsx`), con el color de la chapa por instancia: de unas
+  100 llamadas a 6. Los sitios se calculan una vez en `CONTAINER_PLACEMENTS`.
+- **El camión se funde por material** (`fundirPorMaterial.ts`): de 167
+  llamadas a 75. Se puede porque nada del GLB se anima por piezas. Tres
+  trampas que la función resuelve y que vuelven si se reescribe a mano: el
+  GLB va **cuantizado** y hornear sobre enteros de 16 bits los recorta a
+  [−1, 1]; las piezas **en espejo** invierten sus triángulos al hornearlas; y
+  `mergeGeometries` exige **los mismos atributos** en todas. Para que haya algo
+  que fundir, los materiales repintados se clonan **una vez por material**, no
+  una por pieza.
+- **Las 19 rayas del suelo y las 8 plazas** son dos geometrías fundidas
+  (`planos.ts`), y **los nervios de cada nave** un `Instances` por nave. Por
+  nave y no uno para las tres, porque cada nave se funde por su cuenta.
+- **Resolución adaptativa** (`PerformanceMonitor` en `Experience.tsx`): si un
+  teléfono se sostiene por debajo de 45 fps, el lienzo baja de 1,5 a 1 píxel
+  real por píxel de CSS. Es la red de seguridad, no la optimización.
+- En todos los pasos, `check:3d` dio **0,00–0,01 %** en las quince tomas, el
+  primer plano incluido, que es donde se vería una pieza mal fundida.
+
 ### `frustumCulled={false}` en lo instanciado es obligatorio
 
 Un `InstancedMesh` calcula su esfera envolvente a partir de **la geometría

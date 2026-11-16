@@ -202,20 +202,30 @@ function Shed({
 
       {/* Nervios de la chapa. Van juntos y finos, como en la foto: a dos
           metros de paso y a esta distancia se leen como textura, no como
-          barrotes. */}
-      {Array.from({ length: ribs }, (_, index) => (
-        <mesh
-          key={index}
-          position={[
-            -width / 2 + (index + 0.5) * (width / ribs),
-            height / 2,
-            3.04,
-          ]}
-        >
+          barrotes.
+
+          **Instanciados, uno por nave.** Eran una malla cada uno —43 cajas
+          entre las tres naves, contando paredes y remates— y los nervios son
+          casi todas. Un `Instances` por nave y no uno para las tres, porque
+          cada nave se funde por su cuenta (la escena le escribe la opacidad
+          a sus materiales, y este es uno más). `frustumCulled={false}` como
+          todo lo instanciado de esta escena. */}
+      {ribs > 0 && (
+        <Instances limit={ribs} frustumCulled={false}>
           <boxGeometry args={[0.12, height, 0.06]} />
           <meshStandardMaterial color={skin.trim} roughness={0.9} transparent />
-        </mesh>
-      ))}
+          {Array.from({ length: ribs }, (_, index) => (
+            <Instance
+              key={index}
+              position={[
+                -width / 2 + (index + 0.5) * (width / ribs),
+                height / 2,
+                3.04,
+              ]}
+            />
+          ))}
+        </Instances>
+      )}
 
       {/* La escalera enjaulada de la pared de chapa. Es un detalle tonto y es
           lo que más reconoce la nave: en la foto es la única vertical que
