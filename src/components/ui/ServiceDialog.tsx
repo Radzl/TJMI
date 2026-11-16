@@ -19,6 +19,12 @@ export type ServiceDetail = {
    * busca quien llega desde Google.
    */
   heading?: string;
+  /**
+   * La parte de `heading` que va en grande en la cabecera de su página
+   * («GRUPAJE DE PALÉS» / «entre Castellón y Madrid»). Ver `lead` en
+   * `PageHeader`.
+   */
+  headingLead?: string;
   /** Título y descripción para buscadores, de su página propia. */
   seoTitle?: string;
   seoDescription?: string;

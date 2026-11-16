@@ -35,6 +35,11 @@ export type Review = {
   rating: number;
   /** Fecha en ISO. */
   date: string;
+  /**
+   * Foto de quien firma, si la hay (las reseñas de Google traen la del
+   * perfil). Sin ella, la tarjeta pone las iniciales.
+   */
+  photo?: string;
 };
 
 export const reviews: Review[] = [];

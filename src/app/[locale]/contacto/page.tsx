@@ -4,7 +4,8 @@ import QuoteForm from '@/components/sections/QuoteForm';
 import Sites from '@/components/sections/Sites';
 import Container from '@/components/ui/Container';
 import CoverPlaceholder from '@/components/ui/CoverPlaceholder';
-import { PAGE_PHOTOS } from '@/content/media';
+import HeaderPhoto from '@/components/ui/HeaderPhoto';
+import { HEADER_PHOTOS, PAGE_PHOTOS } from '@/content/media';
 import PageHeader, { type PageFact } from '@/components/ui/PageHeader';
 import { pageMetadata } from '@/lib/seo';
 import BusinessJsonLd from '@/components/seo/BusinessJsonLd';
@@ -46,9 +47,17 @@ export default async function ContactPage({ params }: Props) {
 
       <PageHeader
         title={t('title')}
+        lead={t('titleLead')}
         intro={t('intro')}
         crumb={t('crumb')}
         path="/contacto"
+        visual={
+          <HeaderPhoto
+            src={HEADER_PHOTOS.contacto.src}
+            position={HEADER_PHOTOS.contacto.position}
+          />
+        }
+        visualEnMovil={false}
         facts={t.raw('facts') as PageFact[]}
       />
 

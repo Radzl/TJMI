@@ -4,12 +4,14 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Cta from '@/components/sections/Cta';
 import Button from '@/components/ui/Button';
 import Container from '@/components/ui/Container';
+import HeaderPhoto from '@/components/ui/HeaderPhoto';
 import PageHeader, { type PageFact } from '@/components/ui/PageHeader';
 import SectionHeading from '@/components/ui/SectionHeading';
 import type {
   ServiceDetail,
   ServiceLabels,
 } from '@/components/ui/ServiceDialog';
+import { HEADER_PHOTOS } from '@/content/media';
 import { SERVICES } from '@/content/services';
 import { Link } from '@/i18n/navigation';
 import { pageMetadata } from '@/lib/seo';
@@ -44,9 +46,11 @@ export default async function ServicesPage({ params }: Props) {
     <>
       <PageHeader
         title={t('title')}
+        lead={t('titleLead')}
         intro={t('intro')}
         crumb={t('crumb')}
         path="/servicios"
+        visual={<HeaderPhoto src={HEADER_PHOTOS.servicios.src} />}
         facts={t.raw('facts') as PageFact[]}
       />
 

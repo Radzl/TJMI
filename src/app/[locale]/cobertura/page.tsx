@@ -3,6 +3,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Cta from '@/components/sections/Cta';
 import RouteMap from '@/components/sections/RouteMap';
 import Container from '@/components/ui/Container';
+import HeaderPhoto from '@/components/ui/HeaderPhoto';
+import { HEADER_PHOTOS } from '@/content/media';
 import PageHeader, { type PageFact } from '@/components/ui/PageHeader';
 import SectionHeading from '@/components/ui/SectionHeading';
 import { pageMetadata } from '@/lib/seo';
@@ -87,9 +89,11 @@ export default async function CoveragePage({ params }: Props) {
     <>
       <PageHeader
         title={t('title')}
+        lead={t('titleLead')}
         intro={t('intro')}
         crumb={t('crumb')}
         path="/cobertura"
+        visual={<HeaderPhoto src={HEADER_PHOTOS.cobertura.src} />}
         facts={t.raw('facts') as PageFact[]}
       />
 

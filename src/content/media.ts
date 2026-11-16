@@ -220,10 +220,67 @@ export const BLOG_COVER = {
     'Lo que cuenta el artículo, en el patio o en la nave: palés, muelle, carretilla, papeles. Apaisada, nunca vertical. Se ve a 3:2 en el listado y a 21:9 en el artículo, así que el sujeto tiene que aguantar una franja central ancha.',
 };
 
+/**
+ * La imagen de la cabecera de cada página interior (la «pieza a la derecha»
+ * de `PageHeader`).
+ *
+ * **Las cuatro son de la casa, ninguna de banco**, y esa es la decisión que
+ * importa: es lo primero que se ve de cada página, y una cabecera con una foto
+ * de banco dice «esto podría ser cualquier transportista».
+ *
+ * - Servicios y Cobertura llevan las dos fotos del cliente que ya había.
+ * - Contacto y Preguntas llevan **fotogramas del vídeo corporativo**: la
+ *   oficina con el camión de juguete en la mesa, y un conductor con el chaleco
+ *   de la empresa en la ventanilla de recepción. El vídeo mide 848 × 480, así
+ *   que es su techo de resolución: en el hueco de escritorio (unos 480 px) va
+ *   bien, en una pantalla de alta densidad se nota algo blando. Cuando llegue
+ *   el original en 1080p, se vuelven a sacar de ahí con
+ *   `tests/visual/salida/fotograma.mjs` (herramienta de trabajo, fuera de git).
+ *
+ * `needs` es el hueco de escritorio (media columna del `Container`) con algo
+ * de margen; en móvil la foto va a lo ancho y mide menos. `ratio` es el del
+ * recorte de la cabecera (4:3).
+ *
+ * `position` mueve el encuadre cuando el sujeto no está centrado: en la de la
+ * oficina el camión de juguete está pegado al borde derecho y un recorte
+ * centrado se lo comía.
+ */
+export const HEADER_PHOTOS: Record<
+  'servicios' | 'cobertura' | 'contacto' | 'faq',
+  Photo & { position?: string }
+> = {
+  servicios: {
+    src: '/media/camion-02.jpg',
+    needs: 520,
+    ratio: 1.33,
+    brief: 'El camión cargando en el patio, con la lona abierta y la carretilla. Ya es la foto buena.',
+  },
+  cobertura: {
+    src: '/media/camion-01.jpg',
+    needs: 520,
+    ratio: 1.33,
+    brief: 'La tractora con su semirremolque, que es lo que recorre la ruta cada día. Ya es la foto buena.',
+  },
+  contacto: {
+    src: '/media/paginas/contacto-oficina.jpg',
+    needs: 520,
+    ratio: 1.33,
+    position: '70% 50%',
+    brief: 'Fotograma del vídeo: la oficina, alguien al teléfono y el camión de juguete en la mesa. Sacarlo del original en 1080p cuando llegue.',
+  },
+  faq: {
+    src: '/media/paginas/faq-recepcion.jpg',
+    needs: 520,
+    ratio: 1.33,
+    brief: 'Fotograma del vídeo: un conductor con el chaleco de la casa preguntando en la ventanilla de recepción. Sacarlo del original en 1080p cuando llegue.',
+  },
+};
+
 export const ALL_PHOTOS: Photo[] = [
   ...SERVICE_PHOTOS,
   FEATURED_PHOTO,
   VIDEO_POSTER,
+  ...Object.values(HEADER_PHOTOS),
 ];
 
 /** Solo las rutas, que es lo que piden los componentes. */

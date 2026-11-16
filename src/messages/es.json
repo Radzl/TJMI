@@ -88,6 +88,7 @@
           "Prefieres servir pedidos pequeños a menudo en vez de acumular."
         ],
         "heading": "Grupaje de palés entre Castellón y Madrid",
+        "headingLead": "Grupaje de palés",
         "seoTitle": "Grupaje de palés Castellón ⇄ Madrid",
         "seoDescription": "Transporte de grupaje desde uno hasta doce palés. Recogida en la provincia de Castellón, consolidación en nave propia y entrega en Madrid en 24 horas.",
         "highlights": [
@@ -115,6 +116,7 @@
           "Necesitas una hora de entrega concreta."
         ],
         "heading": "Camión completo de Castellón a Madrid",
+        "headingLead": "Camión completo",
         "seoTitle": "Camión completo (FTL) Castellón ⇄ Madrid",
         "seoDescription": "Semirremolque de lonas de 13,6 metros y hasta 33 palés europeos, solo para tu carga. Sin transbordos, con hora de carga y de entrega acordadas.",
         "highlights": [
@@ -142,6 +144,7 @@
           "Quieres que alguien responda del envío de punta a punta."
         ],
         "heading": "Transporte nacional e internacional desde Castellón",
+        "headingLead": "Transporte nacional e internacional",
         "seoTitle": "Transporte nacional e internacional desde Castellón",
         "seoDescription": "Más allá del corredor diario: transporte de mercancía paletizada al resto de España y grupaje para clientes europeos, con salida desde Castellón.",
         "highlights": [
@@ -169,6 +172,7 @@
           "Fabricas por lotes pero sirves poco a poco."
         ],
         "heading": "Almacenaje y almacén regulador en Castellón y Madrid",
+        "headingLead": "Almacenaje y almacén regulador",
         "seoTitle": "Almacenaje y almacén regulador en Castellón",
         "seoDescription": "Más de 4.000 m² de nave entre Almazora y Fuenlabrada para guardar tu stock cerca del cliente y servirlo según lo pide, sin ocupar tu fábrica.",
         "highlights": [
@@ -196,6 +200,7 @@
           "Vendes a distribuidores con pedidos variables."
         ],
         "heading": "Picking y preparación de pedidos",
+        "headingLead": "Picking",
         "seoTitle": "Picking y preparación de pedidos en Castellón",
         "seoDescription": "Preparamos tus pedidos palé a palé o caja a caja: picking, retractilado, etiquetado y salida en la ruta del mismo día.",
         "highlights": [
@@ -223,6 +228,7 @@
           "Quieres que descarga y almacenaje ocurran en el mismo sitio."
         ],
         "heading": "Carga y descarga de contenedores",
+        "headingLead": "Carga y descarga",
         "seoTitle": "Carga y descarga de contenedores en Castellón",
         "seoDescription": "Estufado y desestufado de contenedores en nuestras instalaciones, con el material paletizado listo para seguir viaje por carretera.",
         "highlights": [
@@ -454,6 +460,7 @@
   "pages": {
     "services": {
       "title": "Servicios de transporte y logística en Castellón",
+      "titleLead": "Servicios",
       "intro": "De un solo palé a un camión completo: cubrimos toda la cadena de tu mercancía, con recogida en Castellón y entrega en 24 horas en Madrid.",
       "listEyebrow": "Catálogo completo",
       "listTitle": "Todo lo que movemos",
@@ -475,6 +482,7 @@
     },
     "about": {
       "title": "Cuarenta años en la misma ruta",
+      "titleLead": "Cuarenta años",
       "intro": "Dos naves propias, en Almazora y en Fuenlabrada, y un camión que sale todos los días laborables entre Castellón y Madrid.",
       "body": [
         "Transportes José María Ibáñez es una empresa de transporte terrestre de Castellón especializada en azulejo y material de construcción paletizado. Recogemos en más de 150 localidades de la provincia y entregamos en Madrid en 24 horas.",
@@ -505,6 +513,7 @@
     },
     "coverage": {
       "title": "Dónde recogemos y dónde entregamos",
+      "titleLead": "Dónde recogemos",
       "intro": "Un corredor diario entre Castellón y Madrid, y desde él, cobertura en el resto de España y en la Unión Europea.",
       "crumb": "Cobertura",
       "seoTitle": "Cobertura: Castellón ⇄ Madrid y resto de España",
@@ -585,6 +594,7 @@
     },
     "contact": {
       "title": "Pide presupuesto",
+      "titleLead": "Pide presupuesto",
       "intro": "Cuéntanos qué necesitas mover, desde dónde y hasta dónde. Te respondemos con un presupuesto sin compromiso.",
       "formSoon": "El formulario de presupuesto llegará en la siguiente fase. Mientras tanto, escríbenos por email o WhatsApp, o llámanos a cualquiera de las dos sedes.",
       "facts": [
@@ -606,6 +616,7 @@
     },
     "blog": {
       "title": "Blog de transporte de palés",
+      "titleLead": "Blog",
       "intro": "Consejos prácticos sobre transporte de palés, preparación de carga y la ruta diaria Castellón ⇄ Madrid, escritos desde el muelle.",
       "empty": "Todavía no hay artículos publicados.",
       "listEyebrow": "Al día",

@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Cta from '@/components/sections/Cta';
 import Container from '@/components/ui/Container';
 import CoverPlaceholder from '@/components/ui/CoverPlaceholder';
+import HeaderPhoto from '@/components/ui/HeaderPhoto';
 import PageHeader, { type PageFact } from '@/components/ui/PageHeader';
 import SectionHeading from '@/components/ui/SectionHeading';
 import { sortedPosts } from '@/content/blog';
@@ -57,14 +58,40 @@ export default async function BlogPage({ params }: Props) {
       ),
   }));
 
+  // **El artículo más reciente va en la cabecera, y sale del listado.** La
+  // pieza de la derecha de las demás páginas es una foto de la casa; aquí lo
+  // que mejor representa la página es lo último que se ha publicado. Y se quita
+  // de la lista de abajo a propósito: la misma portada dos veces en la misma
+  // pantalla se lee como que no hay más fotos.
+  const [destacado, ...resto] = posts;
+  const visual = destacado?.cover ? (
+    <Link href={`/blog/${destacado.slug}`} className="group block">
+      <HeaderPhoto src={destacado.cover} ratio="3 / 2" />
+      <p className="mt-6 font-display text-xs uppercase tracking-widest text-muted">
+        <time dateTime={destacado.date}>
+          {dateFormat.format(new Date(destacado.date))}
+        </time>
+        <span className="ml-3 text-brand-red-ink">
+          {tBlog('readTime', { minutes: destacado.minutes })}
+        </span>
+      </p>
+      <h2 className="mt-3 font-display text-2xl uppercase leading-tight tracking-tight text-ink transition-colors group-hover:text-brand-blue sm:text-3xl">
+        {destacado.content[active].title}
+      </h2>
+    </Link>
+  ) : null;
+  const lista = visual ? resto : posts;
+
   return (
     <>
       <PageHeader
         title={t('title')}
+        lead={t('titleLead')}
         intro={t('intro')}
         crumb={t('crumb')}
         path="/blog"
         facts={facts}
+        visual={visual}
       />
 
       <section className="py-20">
@@ -75,7 +102,7 @@ export default async function BlogPage({ params }: Props) {
             title={t('listTitle')}
           />
           <ul className="mt-16 flex flex-col divide-y divide-line border-b border-t border-line">
-            {posts.map((post) => {
+            {lista.map((post) => {
               const content = post.content[active];
 
               return (

@@ -3,7 +3,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Cta from '@/components/sections/Cta';
 import Container from '@/components/ui/Container';
 import CoverPlaceholder from '@/components/ui/CoverPlaceholder';
-import { PAGE_PHOTOS } from '@/content/media';
+import HeaderPhoto from '@/components/ui/HeaderPhoto';
+import { HEADER_PHOTOS, PAGE_PHOTOS } from '@/content/media';
 import PageHeader from '@/components/ui/PageHeader';
 import SectionHeading from '@/components/ui/SectionHeading';
 import { pageMetadata } from '@/lib/seo';
@@ -66,7 +67,15 @@ export default async function FaqPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <PageHeader title={t('title')} intro={t('intro')} path="/faq" />
+      {/* El titular de esta página es corto, así que va entero en grande
+          (`lead` igual al titular). */}
+      <PageHeader
+        title={t('title')}
+        lead={t('title')}
+        intro={t('intro')}
+        path="/faq"
+        visual={<HeaderPhoto src={HEADER_PHOTOS.faq.src} />}
+      />
 
       <section className="py-20">
         <Container>

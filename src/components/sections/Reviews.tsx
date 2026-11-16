@@ -2,7 +2,9 @@ import { useFormatter, useTranslations } from 'next-intl';
 import Container from '@/components/ui/Container';
 import SectionHeading from '@/components/ui/SectionHeading';
 import ReviewsTrack from '@/components/sections/ReviewsTrack';
+import Image from 'next/image';
 import { GOOGLE_PROFILE, sortedReviews } from '@/content/reviews';
+import { REVIEWS_MUESTRA } from '@/content/reviews.muestra';
 
 /**
  * Las reseñas de clientes.
@@ -43,12 +45,13 @@ import { GOOGLE_PROFILE, sortedReviews } from '@/content/reviews';
  * `content/reviews.ts` está vacío: unas tarjetas de relleno publicadas por
  * error no son un fallo de maquetación, son contenido falso.
  *
- * En desarrollo sí se pinta el armazón, con barras en vez de texto, para poder
- * juzgar la maqueta antes de tener el contenido. Es la misma idea que
- * `CoverPlaceholder` en el blog: enseñar la forma sin inventarse el fondo.
- * Van cuatro y no tres **a propósito**: con tres caben en pantalla y los
- * mandos del carrusel se esconderían, así que no se podría ver la pieza que se
- * está diseñando.
+ * En desarrollo se pintan **reseñas de muestra** (`reviews.muestra.ts`): texto
+ * lorem ipsum y retratos de banco, para poder juzgar la tarjeta de verdad antes
+ * de tener el contenido. Antes era un armazón de barras grises, y con barras no
+ * se ve cómo cae una cita larga ni cómo queda una cara en el pie. El lorem
+ * ipsum es a propósito: nadie puede tomarlo por una opinión. Y no salen en
+ * producción salvo que se encienda a mano `NEXT_PUBLIC_RESENAS_MUESTRA=1`
+ * (ver `MUESTRA_PERMITIDA`).
  *
  * ## Sin marcado de valoración, y conviene saber por qué
  *
@@ -94,54 +97,31 @@ const ANCHO =
   'w-[86%] shrink-0 snap-start sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)]';
 
 /**
- * El armazón que se ve solo en desarrollo. Barras, nunca palabras: una
- * tarjeta con texto de relleno es justo lo que no puede publicarse.
+ * Cuándo se pueden enseñar las reseñas de muestra (`reviews.muestra.ts`):
+ * en desarrollo, o en una compilación donde se haya encendido a mano
+ * `NEXT_PUBLIC_RESENAS_MUESTRA=1` —una vista previa para el cliente—. Nunca en
+ * una compilación de producción normal.
+ *
+ * Sustituyen al armazón de barras grises que había antes: con texto y cara se
+ * juzga la tarjeta de verdad, y el armazón obligaba a meter reseñas a mano,
+ * capturar y quitarlas.
  */
-function Skeleton() {
-  return (
-    <>
-      {[0, 1, 2, 3].map((i) => (
-        <li key={i} className={ANCHO}>
-          <div className="reviews-card" aria-hidden="true">
-            <span className="flex gap-1">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <span key={s} className="h-4 w-4 rounded-sm bg-line" />
-              ))}
-            </span>
-
-            <span className="mt-7 flex flex-col gap-3">
-              {[100, 94, 99, 62].map((w, k) => (
-                <span
-                  key={k}
-                  className="block h-3.5 rounded-sm bg-line"
-                  style={{ width: `${w}%` }}
-                />
-              ))}
-            </span>
-
-            <span className="mt-auto flex items-center gap-4 border-t border-line pt-6">
-              <span className="h-11 w-11 shrink-0 rounded-full bg-line" />
-              <span className="flex flex-1 flex-col gap-2">
-                <span className="block h-3 w-28 rounded-sm bg-line" />
-                <span className="block h-2.5 w-20 rounded-sm bg-line/70" />
-              </span>
-            </span>
-          </div>
-        </li>
-      ))}
-    </>
-  );
-}
+const MUESTRA_PERMITIDA =
+  process.env.NODE_ENV === 'development' ||
+  process.env.NEXT_PUBLIC_RESENAS_MUESTRA === '1';
 
 export default function Reviews() {
   const t = useTranslations('reviews');
   const formato = useFormatter();
-  const items = sortedReviews();
+  const reales = sortedReviews();
+  // Con una sola reseña real, las de muestra desaparecen en todas partes.
+  const items =
+    reales.length > 0 ? reales : MUESTRA_PERMITIDA ? REVIEWS_MUESTRA : [];
 
-  // En producción, sin reseñas no hay sección. Ver la nota de arriba.
-  if (items.length === 0 && process.env.NODE_ENV !== 'development') return null;
+  // Sin reseñas no hay sección: ni hueco, ni titular. Ver la nota de arriba.
+  if (items.length === 0) return null;
 
-  const total = items.length || 4;
+  const total = items.length;
 
   return (
     <section data-bg="bone" className="relative z-10 bg-bone pb-28">
@@ -158,10 +138,7 @@ export default function Reviews() {
               goTo: t.raw('goTo') as string,
             }}
           >
-            {items.length === 0 ? (
-              <Skeleton />
-            ) : (
-              items.map((review) => (
+            {items.map((review) => (
                 <li key={`${review.author}-${review.date}`} className={ANCHO}>
                   <figure className="reviews-card">
                     {/* La comilla no es adorno tonto: es lo que dice «esto lo
@@ -186,37 +163,51 @@ export default function Reviews() {
                     </blockquote>
 
                     <figcaption className="mt-auto flex items-center gap-4 border-t border-line pt-6">
-                      {/* Las iniciales en un círculo. No es un avatar
-                          inventado: sale del propio nombre y le pone cara a la
-                          cita sin suponer nada de nadie. */}
-                      <span
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 font-display text-sm tracking-tight text-brand-blue"
-                        aria-hidden="true"
-                      >
-                        {iniciales(review.author)}
-                      </span>
+                      {/* La foto de quien firma si la trae (las de Google
+                          traen la del perfil) y, si no, sus iniciales en un
+                          círculo, que salen del propio nombre y le ponen cara a
+                          la cita sin suponer nada de nadie. Sin `alt`: el
+                          nombre va justo al lado. */}
+                      {review.photo ? (
+                        <Image
+                          src={review.photo}
+                          alt=""
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 shrink-0 rounded-full object-cover ring-1 ring-line"
+                        />
+                      ) : (
+                        <span
+                          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 font-display text-sm tracking-tight text-brand-blue"
+                          aria-hidden="true"
+                        >
+                          {iniciales(review.author)}
+                        </span>
+                      )}
 
+                      {/* Empresa y fecha en dos líneas y no unidas con un
+                          punto medio: es una de las cadenas con `·` que el
+                          criterio de diseño de esta web ya quitó. */}
                       <span className="min-w-0">
                         <span className="block font-display text-sm uppercase tracking-tight text-ink">
                           {review.author}
                         </span>
+                        {review.from && (
+                          <span className="mt-0.5 block text-xs text-muted">
+                            {review.from}
+                          </span>
+                        )}
                         <span className="mt-0.5 block text-xs text-muted">
-                          {[
-                            review.from,
-                            formato.dateTime(new Date(review.date), {
-                              month: 'long',
-                              year: 'numeric',
-                            }),
-                          ]
-                            .filter(Boolean)
-                            .join(' · ')}
+                          {formato.dateTime(new Date(review.date), {
+                            month: 'long',
+                            year: 'numeric',
+                          })}
                         </span>
                       </span>
                     </figcaption>
                   </figure>
                 </li>
-              ))
-            )}
+              ))}
           </ReviewsTrack>
         </div>
 

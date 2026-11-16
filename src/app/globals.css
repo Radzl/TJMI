@@ -264,6 +264,28 @@ body {
   text-wrap: balance;
 }
 
+/* La segunda parte del titular partido de las páginas interiores
+   (`PageHeader`): «SERVICIOS» en grande y «de transporte y logística en
+   Castellón» aquí. Es la misma familia que el titular, pero **abierta y fina**:
+   anchura 100 en vez de 78 y peso 300. El contraste de anchura es lo que la
+   separa de la línea de arriba sin tener que cambiar de tipografía.
+
+   Va en una clase propia y no con `font-display` + utilidades porque la regla
+   de arriba atrapa cualquier clase que contenga «font-display» y le impone
+   la condensación: aquí lo que se quiere es justo la contraria.
+
+   No va en mayúsculas: en caja baja se lee como la continuación de una frase,
+   que es lo que es. El `h1` entero sigue siendo una sola frase para Google. */
+.titular-resto {
+  font-family: var(--font-display), var(--font-body), ui-sans-serif, sans-serif;
+  font-variation-settings: 'wdth' 100;
+  font-weight: 300;
+  font-size: clamp(1.25rem, 2.3vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+}
+
 /* Los cuatro pasos del servicio, que se encienden uno a uno según rueda el
    camión. Ver `RouteSteps.tsx` para el porqué del contenido.
 

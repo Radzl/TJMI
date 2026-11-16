@@ -155,6 +155,7 @@ export default async function ServicePage({ params }: Props) {
           entrada no se pierde: baja a encabezar el cuerpo, debajo de la foto. */}
       <PageHeader
         title={item.heading ?? item.title}
+        lead={item.headingLead}
         crumb={item.title}
         path={`/servicios/${slug}`}
         parent={{ href: '/servicios', label: labels.backToAll }}
