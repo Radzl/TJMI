@@ -102,9 +102,14 @@ export default async function CoveragePage({ params }: Props) {
         intro={tRoute('mapIntro')}
         origin={tRoute('origin')}
         destination={tRoute('destination')}
-        distance={tRoute('odometer.value')}
+        // Con la unidad: aquí iba solo el número y el mapa de esta página
+        // ponía «420» a secas, mientras el de la portada decía «420 km».
+        distance={`${tRoute('odometer.value')} ${tRoute('odometer.unit')}`}
         stops={
           tRoute.raw('mapStops') as { title: string; detail: string }[]
+        }
+        legend={
+          tRoute.raw('mapLegend') as { pickup: string; delivery: string; sea: string }
         }
       />
 

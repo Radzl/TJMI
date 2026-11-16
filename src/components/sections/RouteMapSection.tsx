@@ -16,6 +16,7 @@ export default function RouteMapSection() {
       destination={t('destination')}
       distance={`${t('odometer.value')} ${t('odometer.unit')}`}
       stops={stops}
+      legend={t.raw('mapLegend') as { pickup: string; delivery: string; sea: string }}
     />
   );
 }

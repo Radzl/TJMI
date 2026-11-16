@@ -315,6 +315,11 @@
         "detail": "Madrid and neighbouring provinces."
       }
     ],
+    "mapLegend": {
+      "pickup": "Collection across the province of Castellón",
+      "delivery": "Delivery in Madrid and surroundings",
+      "sea": "Mediterranean Sea"
+    },
     "railFrom": "Castellón",
     "railTo": "Madrid",
     "coverageLink": "See the full coverage"

@@ -315,6 +315,11 @@
         "detail": "Madrid y provincias colindantes."
       }
     ],
+    "mapLegend": {
+      "pickup": "Recogida en la provincia de Castellón",
+      "delivery": "Entrega en Madrid y alrededores",
+      "sea": "Mar Mediterráneo"
+    },
     "railFrom": "Castellón",
     "railTo": "Madrid",
     "coverageLink": "Ver la cobertura completa"
