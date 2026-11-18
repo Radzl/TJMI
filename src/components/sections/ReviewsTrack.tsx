@@ -91,21 +91,38 @@ export default function ReviewsTrack({ children, count, labels }: Props) {
       if (next) next.disabled = track.scrollLeft > sobra - 8;
     };
 
-    const irA = (i: number) => track.scrollTo({ left: paso() * i });
-    const mover = (dir: number) =>
-      track.scrollBy({ left: paso() * dir });
+    // **Cada escuchador se guarda para poder quitarlo.** Se añadían con
+    // funciones sueltas y la limpieza no los quitaba, así que cada vez que el
+    // efecto se volvía a montar se sumaba otro juego: en desarrollo, donde
+    // React monta dos veces, cada flecha avanzaba **dos** tarjetas por clic, y
+    // en producción pasaría cada vez que cambiase el número de reseñas.
+    const alPunto = dots.map((_, i) => () => track.scrollTo({ left: paso() * i }));
+    const alAnterior = () => track.scrollBy({ left: -paso() });
+    const alSiguiente = () => track.scrollBy({ left: paso() });
 
-    dots.forEach((dot, i) => dot.addEventListener('click', () => irA(i)));
-    prev?.addEventListener('click', () => mover(-1));
-    next?.addEventListener('click', () => mover(1));
+    dots.forEach((dot, i) => dot.addEventListener('click', alPunto[i]));
+    prev?.addEventListener('click', alAnterior);
+    next?.addEventListener('click', alSiguiente);
 
     track.addEventListener('scroll', pintar, { passive: true });
-    const observer = new ResizeObserver(pintar);
+    // El observador pinta en el fotograma siguiente y no dentro de su propia
+    // llamada: `pintar` enciende y apaga los mandos, y cambiar algo que mueve
+    // la maquetación dentro del aviso de tamaño es lo que provoca el
+    // «ResizeObserver loop completed with undelivered notifications».
+    let fotograma = 0;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(fotograma);
+      fotograma = requestAnimationFrame(pintar);
+    });
     observer.observe(track);
     pintar();
 
     return () => {
+      dots.forEach((dot, i) => dot.removeEventListener('click', alPunto[i]));
+      prev?.removeEventListener('click', alAnterior);
+      next?.removeEventListener('click', alSiguiente);
       track.removeEventListener('scroll', pintar);
+      cancelAnimationFrame(fotograma);
       observer.disconnect();
     };
   }, [count]);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
-import { ScrollTrigger, prefersReducedMotion } from '@/lib/gsap';
+import { gsap, ScrollTrigger, prefersReducedMotion } from '@/lib/gsap';
 import { tramoDeEscena } from '@/lib/partitura';
 import { range } from '@/lib/utils';
 
@@ -25,6 +25,12 @@ type Props = {
    */
   start?: string;
   end?: string;
+  /**
+   * Consulta de medios en la que actúa el fundido. Fuera de ella el bloque se
+   * queda tal cual, visible. Sirve para coreografías que solo hacen falta en
+   * un ancho: en móvil el texto va encima del 3D y en escritorio al lado.
+   */
+  media?: string;
 };
 
 /**
@@ -41,6 +47,7 @@ export default function ScrollFade({
   outTo = 1,
   start,
   end,
+  media,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -49,28 +56,47 @@ export default function ScrollFade({
     const section = element?.closest('section');
     if (!element || !section || prefersReducedMotion()) return;
 
-    // Dentro de una sección con escena 3D mide **el mismo tramo que la
-    // escena** (ver `lib/partitura.ts`), así que una fracción de aquí es la
-    // misma fracción de allí. Fuera de ellas, el tramo de siempre: mientras
-    // la sección cruza la pantalla entera.
-    const tramo = tramoDeEscena(section) ?? { start: 'top bottom', end: 'bottom top' };
-    const trigger = ScrollTrigger.create({
-      trigger: section,
-      start: start ?? tramo.start,
-      end: end ?? tramo.end,
-      scrub: 1,
-      onUpdate: (self) => {
-        const appear = inTo > inFrom ? range(self.progress, inFrom, inTo) : 1;
-        const leave = outTo > outFrom ? range(self.progress, outFrom, outTo) : 0;
-        element.style.opacity = String(appear * (1 - leave));
-      },
-    });
-
-    return () => {
-      trigger.kill();
-      element.style.opacity = '';
+    const pintar = (progress: number) => {
+      const appear = inTo > inFrom ? range(progress, inFrom, inTo) : 1;
+      const leave = outTo > outFrom ? range(progress, outFrom, outTo) : 0;
+      element.style.opacity = String(appear * (1 - leave));
     };
-  }, [inFrom, inTo, outFrom, outTo, start, end]);
+
+    const montar = () => {
+      // Dentro de una sección con escena 3D mide **el mismo tramo que la
+      // escena** (ver `lib/partitura.ts`), así que una fracción de aquí es la
+      // misma fracción de allí. Fuera de ellas, el tramo de siempre: mientras
+      // la sección cruza la pantalla entera.
+      const tramo = tramoDeEscena(section) ?? { start: 'top bottom', end: 'bottom top' };
+      const trigger = ScrollTrigger.create({
+        trigger: section,
+        start: start ?? tramo.start,
+        end: end ?? tramo.end,
+        scrub: 1,
+        onUpdate: (self) => pintar(self.progress),
+      });
+      // **Se pinta ya, sin esperar al primer scroll.** ScrollTrigger solo
+      // llama a `onUpdate` cuando el progreso cambia, y al cargar arriba del
+      // todo no cambia: un bloque que tiene que *entrar* se quedaría visible
+      // desde el principio. Con uno que solo sale no se notaba, porque en 0
+      // ya está visible.
+      pintar(trigger.progress);
+
+      return () => {
+        trigger.kill();
+        element.style.opacity = '';
+      };
+    };
+
+    if (!media) return montar();
+
+    // Con consulta de medios, `gsap.matchMedia` monta y desmonta el
+    // disparador al cruzar el corte (girar el teléfono, cambiar la ventana),
+    // y al desmontar el bloque vuelve a su opacidad normal.
+    const mm = gsap.matchMedia();
+    mm.add(media, montar);
+    return () => mm.revert();
+  }, [inFrom, inTo, outFrom, outTo, start, end, media]);
 
   return (
     <div ref={ref} className={className}>

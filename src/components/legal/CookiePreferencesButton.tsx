@@ -15,7 +15,7 @@ export default function CookiePreferencesButton({ children }: Props) {
     <button
       type="button"
       onClick={openPreferences}
-      className="hover:text-brand-blue"
+      className="hover:text-azul-texto"
     >
       {children}
     </button>

@@ -10,7 +10,8 @@
  *  - El fundido del texto del hero caía medio pantallazo antes de que el
  *    primer plano empezara a cerrarse, porque su disparador medía otro tramo.
  *  - El cuentakilómetros marcaba **393 km** con el camión ya aparcado, porque
- *    se había quedado con el final antiguo del disparador de la carretera.
+ *    se había quedado con el final antiguo del disparador de la carretera
+ *    (que ya no existe: ver la nota al final de `PARTITURA`).
  *
  * Las dos cosas pasaban porque cada pieza llevaba **su copia** de dos datos:
  * el tramo de scroll que mide (`start` / `end`) y la fracción a la que actúa.
@@ -48,6 +49,22 @@ export const PARTITURA = {
      * verse entero sin nada encima.
      */
     textoSale: [0.84, 0.98],
+    /**
+     * El lote entra en el semirremolque deslizando por el costado (`insert`
+     * en `Scene.tsx`). Antes de esto se coloca detrás de la cola, ya a la
+     * altura del piso.
+     */
+    loteEntra: [0.63, 0.78],
+    /**
+     * **Solo en móvil**: el párrafo del hero aparece cuando el lote está a
+     * punto de entrar, y antes no. En una pantalla estrecha el texto va
+     * encima de la escena, no al lado, y durante la maniobra en tres cuartos
+     * (de 0,15 a 0,40) las torres de contenedores suben hasta él y se le
+     * meten debajo. A partir de 0,45 la cámara ya está de perfil y debajo del
+     * texto solo queda la nave, así que el párrafo entra ahí sin pisar nada y
+     * acaba de aparecer justo cuando el lote empieza a entrar.
+     */
+    subtituloMovil: [0.55, 0.63],
   },
   /** Escena 3, en ruta: el camión se va y sube el azul noche. */
   enRuta: {
@@ -59,17 +76,9 @@ export const PARTITURA = {
      */
     textoSale: [0.873, 0.975],
   },
-  /** Escena 5, la carretera en cenital. */
-  carretera: {
-    /** El telón azul noche se abre y descubre la carretera ya dibujándose. */
-    telonAbre: [0.26, 0.4],
-    /** El texto entra cuando el telón ya está casi abierto. */
-    textoEntra: [0.3, 0.42],
-    /** Y sale justo detrás de la llegada, con el telón cerrándose. */
-    textoSale: [0.92, 0.99],
-    /** El telón se cierra encima de la escena alejándose. */
-    telonCierra: [0.88, 1],
-  },
+  // Hubo una escena 5, la carretera en cenital, con su telón y su texto. Se
+  // quitó: la intro acaba en `InRoute` y lo que viene detrás es el mapa de la
+  // red (`MapaRed`), que lleva su propio disparador porque no es 3D.
 } as const satisfies Record<string, Record<string, Compas>>;
 
 /**

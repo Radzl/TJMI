@@ -2,7 +2,7 @@
 
 import { Environment, Lightformer, OrthographicCamera } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Matrix4,
   Vector3,
@@ -19,15 +19,12 @@ import ContainerStacks, {
   type ContainerPlacement,
 } from './models/ContainerModel';
 import ForkliftModel from './models/ForkliftModel';
-import Facility from './models/Facility';
 import TerminalYard, { Sheds, TerminalYardNear } from './models/TerminalYard';
 import YardMarkings from './models/YardMarkings';
 import Pallets, { PalletLoad, PALLET_LOAD } from './models/Pallets';
 import ContactShadow from './models/ContactShadow';
 import { fundirPlanos, matrizDe } from './models/planos';
-import Road, { ROAD_CURVE } from './models/Road';
 import TruckModel, { TRUCK } from './models/TruckModel';
-import { ROAD_CAM, ROAD_LEAD, roadFrameWidth, roadProgress } from '@/lib/route';
 import { PARTITURA } from '@/lib/partitura';
 import { useScrollStore, writeTravel } from '@/lib/store';
 import { damp, easeLag, lerp, range, smoothstep } from '@/lib/utils';
@@ -37,9 +34,6 @@ import { damp, easeLag, lerp, range, smoothstep } from '@/lib/utils';
 import {
   APPROACH_FROM,
   APPROACH_TO,
-  ARRIVAL_AT,
-  ARRIVAL_HEADING,
-  ARRIVAL_VIEW,
   CARGO_Z,
   CARRY_Y,
   CENTRE_NUDGE,
@@ -49,14 +43,12 @@ import {
   FOG_DAY,
   FOG_NIGHT,
   FOG_QUARTER,
-  FOG_ROAD,
   FOG_SIDE,
   FOREGROUND_STACKS,
   FORKLIFT_CONTACTS,
   FORKLIFT_Z,
   FORK_REACH,
   HOLD,
-  LEAVE_WIDEN,
   LOADING_FRAME,
   LOADING_GROUND,
   OPENING,
@@ -69,11 +61,8 @@ import {
   PILE_VIEW,
   QUARTER_CAM,
   QUARTER_UP,
-  ROAD_ORIGIN_X,
-  ROAD_SHIFT,
   SETTLE_RUN,
   STAGE,
-  TRUCK_BANK,
   TRUCK_CONTACTS,
   TRUCK_FRAME,
   TRUCK_X,
@@ -152,8 +141,6 @@ const BAYS = fundirPlanos(
  *   `pointer-events-none` para no tapar la página.
  * - **Nada en pantallas táctiles ni estrechas**: allí no hay puntero que
  *   seguir, y un toque no debe mover la escena.
- * - **Nada en la cenital** de la carretera: allí el encuadre lo manda el
- *   trazado, y girarla movería la carretera bajo el texto.
  * - Va amortiguado con `damp`, como todo lo que se mueve por fotograma: el
  *   retraso es lo que hace que se lea como una cámara con peso y no como un
  *   cursor pegado.
@@ -165,14 +152,6 @@ const ORBITA = { giro: 0.026, cabeceo: 0.012 };
 const _brazo = new Vector3();
 const _arriba = new Vector3(0, 1, 0);
 const _lado = new Vector3();
-
-// Scratch reutilizado cada frame: nada de crear objetos dentro de useFrame.
-const roadPoint = new Vector3();
-const roadTangent = new Vector3();
-/** Punto de la curva donde cae el morro del camión. Ver `heading`. */
-const roadNose = new Vector3();
-/** Punto medio del arco que ocupa el camión. Sirve para centrarlo. */
-const roadBulge = new Vector3();
 
 export default function Scene() {
   const cameraRef = useRef<OrthoCamera>(null);
@@ -202,12 +181,9 @@ export default function Scene() {
   const cargoRef = useRef<Group>(null);
   const truckRef = useRef<Group>(null);
   const bandRef = useRef<Group>(null);
-  const roadRef = useRef<Group>(null);
-  const terminalRef = useRef<Group>(null);
   const nearYardRef = useRef<Group>(null);
   const farFenceRef = useRef<Group>(null);
   const curtainRef = useRef<Group>(null);
-  const roofRef = useRef<Group>(null);
   const shedsRef = useRef<Group>(null);
   const keyLightRef = useRef<DirectionalLight>(null);
   const fogRef = useRef<Fog>(null);
@@ -215,56 +191,10 @@ export default function Scene() {
   // cada fotograma y no deben provocar ni un solo render.
   const beaconRef = useRef<Mesh>(null);
   const veilRef = useRef<MeshBasicMaterial>(null);
-  const trailRef = useRef<Group>(null);
-  const trailNearRef = useRef<MeshBasicMaterial>(null);
-  const trailFarRef = useRef<MeshBasicMaterial>(null);
-  const speedRef = useRef(0);
-  const lastRoadT = useRef(0);
-
-  /**
-   * Cuánto se inclina el camión hacia fuera en las curvas, en radianes.
-   *
-   * Va en una ref y amortiguado, como todo lo que se mueve por fotograma en
-   * esta escena: la curvatura del trazado cambia de golpe al entrar y salir
-   * de una curva, y un camión de veinte toneladas no se endereza de un
-   * fotograma al siguiente. El retraso es justo lo que se lee como peso.
-   */
-  const truckBank = useRef(0);
-
-  const roadLength = useMemo(() => ROAD_CURVE.getLength(), []);
-
-  /**
-   * Cuánto del trazado puede recorrer **la cola** del camión.
-   *
-   * **Esto arreglaba que el camión se saliera al llegar, y el fallo llevaba
-   * ahí desde el principio.** El origen del modelo está en la cola, así que
-   * los 17,3 m se extienden hacia delante: si la cola recorre la curva hasta
-   * el final, el morro acaba **17 m más allá del último metro de asfalto**.
-   * Medido recorriendo el trayecto entero y mirando las seis esquinas del
-   * conjunto contra el eje: empezaba a salirse en el **95 %** del recorrido y
-   * terminaba **12,35 m fuera**, flotando sobre el fondo sin carretera
-   * debajo. Y pasaba justo en la llegada, que es cuando la cámara se cierra
-   * sobre el camión, o sea en el peor momento posible.
-   *
-   * Mapeando el avance a este tramo, **el que llega al muelle es el morro** y
-   * la cola se queda un camión por detrás, que es lo que pasa de verdad.
-   * Medido igual: **0,00 m fuera, en ningún punto del trayecto**.
-   *
-   * Tiene un segundo efecto que viene de regalo: `noseT` ya nunca se pasa de
-   * 1, así que **la cuerda no se queda nunca sin carretera por delante** y la
-   * salvaguarda de abajo deja de dispararse.
-   */
-  const tailSpan = useMemo(
-    () => 1 - TRUCK.length / roadLength,
-    [roadLength],
-  );
 
   const size = useThree((state) => state.size);
   const isNarrow = size.width < 768;
   const worldWidth = isNarrow ? 30 : 34;
-  // Lo comparte con el trazado, que necesita el mismo dato para saber cuánta
-  // carretera llevar dibujada por delante. Ver `lib/route.ts`.
-  const roadWidth = roadFrameWidth(size.width);
 
   // Encuadre lateral: decidimos a qué altura de la pantalla cae la línea de
   // suelo (y = 0). En el hero va abajo, dejando ver la franja oscura del suelo
@@ -308,7 +238,7 @@ export default function Scene() {
     // llega un salto enorme y los muelles pegan un latigazo.
     const dt = Math.min(frameDelta, 0.05);
 
-    const [hero, , inRoute, , route] = useScrollStore.getState().scenes;
+    const [hero, , inRoute] = useScrollStore.getState().scenes;
 
     // Vida en reposo: antes de que nadie toque el scroll, la carga se balancea
     // un poco colgada de la pluma. Se apaga en cuanto empiezas a bajar.
@@ -324,8 +254,8 @@ export default function Scene() {
 
     // Arranque del camión en llano, sobre la sección oscura. La curva es
     // cuadrática y no `smoothstep` a propósito: arranca parado y va ganando
-    // velocidad, en vez de frenar al final. Así entrega el relevo a la
-    // carretera todavía acelerando y no se nota el cambio.
+    // velocidad, en vez de frenar al final: sale de plano todavía acelerando,
+    // que es como sale un camión de un patio.
     // El tramo va al principio de la sección a propósito. Antes ocupaba casi
     // toda (0.18 → 1) y no se veía: la cámara sube a llenar la pantalla de
     // azul noche a partir de 0.22, así que el camión salía de cuadro con el
@@ -347,89 +277,17 @@ export default function Scene() {
     // toneladas saliendo de parado.
     const pull = Math.sin(Math.min(1, groundT * 2.2) * Math.PI);
 
-    // --- Escena 5: la cámara gira a cenital y aparece la carretera -------
-    // El suelo oscuro aguanta hasta que el texto claro de la escena 3 ha
-    // salido de pantalla; si no, ese texto se queda en blanco sobre crema.
-    // **El relevo a la carretera va con telón, y esto es lo que lo arregla.**
+    // --- Cierre de la intro: telón a azul noche --------------------------
+    // **La intro termina aquí, al final de `InRoute`.** Hubo una quinta
+    // escena —la carretera en cenital— y se quitó: se leía como un circuito de
+    // juguete y solo contaba una ruta. Lo que la sustituye es el mapa de la red
+    // (`MapaRed`), que va sobre este mismo azul noche.
     //
-    // La franja oscura que llena la pantalla en `InRoute` es un cajón de
-    // 600 × 600, o sea **finito**. Se retiraba bajándola mientras la cámara
-    // giraba a cenital, y al girar entraba en cuadro su borde: aparecía una
-    // cuña de crema por una esquina, el giro la volvía a tapar y después
-    // reaparecía. Medido de 25 en 25 px: el crema subía al 17 %, **volvía a
-    // 0 %** y luego subía otra vez. Eso es lo que se veía como un parpadeo.
-    //
-    // No es un problema de tiempos, es de geometría: con cámara ortográfica un
-    // plano no se encoge al alejarlo, así que mientras esté en escena ocupa lo
-    // que ocupa, y su borde acaba cruzando el encuadre sí o sí.
-    //
-    // La solución es la que ya usa el cierre de la intro: **un telón pegado a
-    // la cámara**, que no tiene bordes porque mide más que el encuadre. El
-    // telón se funde a azul noche sobre la franja —son el mismo color, así que
-    // no se nota—, la franja se apaga debajo cuando ya no se ve nada, la
-    // cámara gira detrás del telón, y al final el telón se abre y descubre la
-    // carretera ya empezándose a dibujar. Un fundido, no un borde moviéndose.
-    //
-    // `coverIn` se ata a `InRoute` y no a esta escena porque el telón tiene que
-    // estar puesto **antes** de que la cámara se mueva, y la cámara se mueve
-    // cuando esta escena ya ha empezado.
+    // El telón es un plano pegado a la cámara, así que no tiene bordes: cuando
+    // el camión ya se ha ido y el suelo azul llena la pantalla, se funde encima
+    // y la escena queda en azul liso. La sección del mapa entra justo después
+    // con el mismo color, y el relevo no se ve.
     const coverIn = smoothstep(range(inRoute, 0.52, 0.6));
-    // El telón se abre en 0,14 de la escena, que a 4.320 px son **605 px**.
-    // Estuvo en 0,09 (340 px) y se leía como un corte: un fundido de medio
-    // segundo de scroll no es un fundido, es un parpadeo lento.
-    const coverOut = smoothstep(range(route, ...PARTITURA.carretera.telonAbre));
-    const cover = coverIn * (1 - coverOut);
-    // Y la cámara gira **más despacio que lo que tarda el telón en abrirse**,
-    // así que al descubrirse todavía le queda un pelo de recorrido: se lee
-    // como una cámara llegando, no como una cámara que ya estaba puesta.
-    const topView = smoothstep(range(route, 0.19, 0.42));
-    // Arranca despacio al salir de la nave y frena al llegar a la de destino.
-    const roadT = roadProgress(route);
-
-    // Velocidad suavizada, para las rodadas: cuanto más rápido bajas, más
-    // marcadas quedan sobre el asfalto.
-    const delta = Math.abs(roadT - lastRoadT.current);
-    lastRoadT.current = roadT;
-    speedRef.current = lerp(speedRef.current, Math.min(1, delta * 90), 0.15);
-    // Y la intro se cierra fundiendo a azul noche desde el propio 3D, que es
-    // el color al que ya ha virado el fondo de la página.
-    // Se deja un respiro entre que el camión aparca y empieza el fundido: sin
-    // esa pausa no se lee como "ha llegado", se lee como un corte.
-    // Se deja un respiro **de verdad** entre que el camión aparca y empieza
-    // el fundido: el camión llega en 0,84 y esto no arranca hasta 0,88, o sea
-    // unos 170 px de llegada a la vista. Con el reparto más antiguo eran 76 px
-    // y la nave de destino se veía ya oscurecida.
-    //
-    // **Y el fundido dura lo más parecido posible al de entrada, que es el
-    // mismo telón.** Estaba en 0,90 → 0,99: nueve centésimas, **389 px**,
-    // contra los 605 px que tarda en abrirse al entrar. O sea que la escena
-    // entraba con un fundido y se iba con un parpadeo, y es justo lo que se
-    // veía como «se acaba de golpe».
-    //
-    // La ironía es que la entrada **estuvo en esas mismas nueve centésimas** y
-    // se cambió por esto mismo: «un fundido de medio segundo de scroll no es
-    // un fundido, es un parpadeo lento». La salida se quedó con el valor que
-    // la entrada ya había descartado.
-    //
-    // Ahora son 0,88 → 1, o sea **518 px**: un 33 % más largo. Igualarlo del
-    // todo (605) pedía arrancar en 0,86 y eso se come la llegada, que está
-    // afinada aparte. Si hiciera falta más, lo que toca es adelantar el final
-    // del recorrido (`ROAD_RUN.to`), no robarle a la pausa.
-    const closing = smoothstep(range(route, ...PARTITURA.carretera.telonCierra));
-
-    // **Y la escena se va moviéndose, no solo apagándose.** Arranca en 0,86,
-    // justo cuando la cámara acaba de posarse sobre la nave (`arriving`), y
-    // por tanto **antes** de que el telón empiece a cerrarse en 0,88: igual
-    // que a la entrada, donde la cámara empieza a girar en 0,19 y el telón no
-    // se abre hasta 0,26. El movimiento abre y cierra la escena; el telón solo
-    // tapa la costura.
-    // Nombre largo a propósito: dentro del bloque de cámara ya hay un
-    // `leaving`, el del camión saliendo de plano en `InRoute`, y una variable
-    // declarada más adentro **tapa** a la de fuera sin dar ningún error. El
-    // encuadre se abría durante la salida del camión en vez de al final de la
-    // carretera, que es justo el tipo de fallo que compila y se ve tres
-    // pantallas más abajo.
-    const roadLeaving = smoothstep(range(route, 0.86, 1));
 
     // Cuánto queda de vista en tres cuartos. Se usa también para el suelo:
     // desde una cámara elevada la franja oscura deja de ser una franja y se
@@ -482,7 +340,8 @@ export default function Scene() {
     // Entrar en diagonal parecería de juguete, y entrar por arriba es
     // imposible: este semirremolque tiene techo.
     const place = smoothstep(range(hero, 0.5, 0.62));
-    const insert = smoothstep(range(hero, 0.63, 0.78));
+    // Vive en la partitura porque el párrafo del hero en móvil se ata a él.
+    const insert = smoothstep(range(hero, ...PARTITURA.hero.loteEntra));
     const cargoX1 = lerp(lerp(HOLD.x, STAGE.x, place), DROP.x, insert);
 
     // La lona se abre antes de que el lote llegue y se cierra cuando ya está
@@ -571,137 +430,30 @@ export default function Scene() {
       forkliftRef.current.rotation.y = craneAngle;
     }
 
-    // --- Camión y carga: primero en llano, después por la carretera ------
-    //
-    // **El avance manda el morro, no la cola.** `roadT` sigue siendo el viaje
-    // de 0 a 1 —de ahí comen el cuentakilómetros y el asfalto que se va
-    // dibujando—, pero la cola solo recorre hasta `tailSpan`, que es el
-    // trazado menos un camión. Ver la nota de `tailSpan` arriba: sin esto, el
-    // morro terminaba 12,35 m más allá del final del asfalto.
-    const tailT = roadT * tailSpan;
-    ROAD_CURVE.getPointAt(tailT, roadPoint);
-    ROAD_CURVE.getTangentAt(tailT, roadTangent);
-
-    // **El morro se apunta al trozo de curva que le toca, no a la tangente.**
-    //
-    // Esto es lo que hacía que el camión se saliera de la carretera en todas
-    // las curvas, y la causa está en un detalle del modelo: **su origen está
-    // en la cola**, así que los 17,3 m se extienden hacia delante desde el
-    // punto de la curva, no 8,65 a cada lado. Orientándolo con la tangente de
-    // la cola, el morro se va por la recta mientras la carretera gira, y en un
-    // radio de 35 m eso son **4,27 m** de desvío. La media calzada son 5 m y
-    // el camión mide 2,5 de ancho: el margen real es 3,75 m, así que el morro
-    // se salía por el arcén.
-    //
-    // La cuerda lo arregla de raíz: se mira dónde cae la curva un camión más
-    // allá y se apunta ahí. Entonces **la cola y el morro quedan los dos sobre
-    // el eje** y lo único que se sale es el centro del remolque, por dentro de
-    // la curva, que es exactamente lo que le pasa a un semirremolque de verdad
-    // y mide 1,07 m: sobra margen.
-    //
-    // Y encima va **centrado sobre el eje**, no apoyado en él. Con la cuerda a
-    // secas, la cola y el morro quedan clavados en el eje y todo el bombeo se
-    // va hacia dentro de la curva. Corriendo el camión medio bombeo hacia
-    // fuera, el error se reparte: lo que antes se desviaba 2,21 m del eje
-    // ahora se desvía 1,31. Medido recorriendo la curva entera.
-    const noseT = Math.min(1, tailT + TRUCK.length / roadLength);
-    ROAD_CURVE.getPointAt(noseT, roadNose);
-    ROAD_CURVE.getPointAt((tailT + noseT) / 2, roadBulge);
-
-    // Medio bombeo del arco respecto a la cuerda. Se calcula por componentes
-    // para no reservar vectores en cada fotograma.
-    const centreX = (roadBulge.x - (roadPoint.x + roadNose.x) / 2) * 0.5;
-    const centreZ = (roadBulge.z - (roadPoint.z + roadNose.z) / 2) * 0.5;
-
-    roadNose.sub(roadPoint);
-    // Salvaguarda, que desde que la cola para en `tailSpan` **ya no debería
-    // dispararse nunca**: `noseT` cae siempre justo en el final de la curva o
-    // antes, así que la cuerda mide un camión entero de principio a fin. Se
-    // deja por si alguien cambia el tramo y vuelve a quedarse corto.
-    if (roadNose.lengthSq() < 1) roadNose.copy(roadTangent);
-
-    const onRoad = topView;
-    const truckX = lerp(
-      TRUCK_X + groundRun,
-      ROAD_ORIGIN_X + roadPoint.x + centreX,
-      onRoad,
-    );
-    const truckZ = lerp(0, roadPoint.z + centreZ, onRoad);
-    const heading = Math.atan2(-roadNose.z, roadNose.x);
-
-    // **El camión se inclina hacia fuera al girar.**
-    //
-    // Cuánto gira se saca del propio trazado y no de medir el rumbo entre
-    // fotogramas: el producto vectorial entre la tangente de la cola y la
-    // cuerda hasta el morro da **el seno del ángulo que el camión tiene por
-    // delante**, con su signo. Sale gratis porque los dos vectores ya están
-    // calculados para orientarlo, y además no depende de lo rápido que se
-    // haga scroll, que es lo que pasaría midiendo diferencias por fotograma.
-    const chord = Math.hypot(roadNose.x, roadNose.z) || 1;
-    const turn =
-      (roadTangent.x * roadNose.z - roadTangent.z * roadNose.x) / chord;
-    truckBank.current = damp(truckBank.current, turn * TRUCK_BANK, 5, dt);
+    // --- Camión y carga, en llano ----------------------------------------
+    const truckX = TRUCK_X + groundRun;
 
     if (truckRef.current) {
-      truckRef.current.position.set(truckX, 0, truckZ);
-      truckRef.current.rotation.y = heading * onRoad;
-      // **Con el orden `YXZ`, `rotation.x` bascula sobre el eje del propio
-      // camión** y no sobre el X del mundo. Con el orden por defecto el giro
-      // en X se aplica por fuera del rumbo, así que en una curva el camión no
-      // se habría inclinado: se habría ido de morro contra el suelo.
-      truckRef.current.rotation.x = truckBank.current * onRoad;
-      // Solo en llano: en cenital el morro levantado no se vería y además
-      // pelearía con el giro del rumbo.
-      truckRef.current.rotation.z = pull * 0.013 * (1 - onRoad);
+      truckRef.current.position.set(truckX, 0, 0);
+      // El morro se levanta al tirar y se vuelve a posar.
+      truckRef.current.rotation.z = pull * 0.013;
     }
-    // Metros hechos: de aquí sacan las ruedas su giro. Va con `tailT` y no
-    // con `roadT` porque lo que tiene que cuadrar es el suelo que pisa la
-    // rueda, y la cola recorre un camión menos que el trazado entero.
-    writeTravel(groundRun + tailT * roadLength);
+    // Metros hechos: de aquí sacan las ruedas su giro.
+    writeTravel(groundRun);
 
-    // El logo del techo solo existe mirando desde arriba. En perfil la cámara
-    // no va del todo horizontal, así que se vería aplastado sobre el techo.
-    if (roofRef.current) roofRef.current.visible = topView > 0.08;
-
-    if (trailRef.current) {
-      trailRef.current.position.set(truckX, 0, truckZ);
-      trailRef.current.rotation.y = heading * onRoad;
-      trailRef.current.visible = topView > 0.05;
-    }
-    const trailAlpha = speedRef.current * 0.3 * topView;
-    if (trailNearRef.current) trailNearRef.current.opacity = trailAlpha;
-    if (trailFarRef.current) trailFarRef.current.opacity = trailAlpha * 0.45;
-    // La carga va montada encima, con el mismo giro alrededor del camión.
+    // La carga va montada encima del camión.
     if (cargoRef.current) {
-      const dropOffset = cargoX - TRUCK_X;
-      const angle = heading * onRoad;
-      cargoRef.current.position.set(
-        truckX + Math.cos(angle) * dropOffset,
-        cargoY,
-        truckZ - Math.sin(angle) * dropOffset + cargoZ,
-      );
+      cargoRef.current.position.set(truckX + (cargoX - TRUCK_X), cargoY, cargoZ);
       // Llega un pelo torcido y se endereza al posarse, como cuando el
       // operario corrige en el último momento.
       const skew = (1 - smoothstep(range(hero, 0.62, 0.78))) * 0.04;
-      cargoRef.current.rotation.y = angle + craneAngle + skew * act;
-      // La carga se inclina con el camión: si no, el contenedor se quedaría
-      // plano mientras el morro sube.
-      cargoRef.current.rotation.z =
-        sway * 0.02 + pull * 0.013 * (1 - onRoad);
+      cargoRef.current.rotation.y = craneAngle + skew * act;
+      // La carga se inclina con el camión: si no, se quedaría plana mientras
+      // el morro sube.
+      cargoRef.current.rotation.z = sway * 0.02 + pull * 0.013;
     }
 
-    // --- Suelo oscuro de la terminal y carretera --------------------------
-    if (roadRef.current) {
-      roadRef.current.visible = topView > 0.01;
-    }
-    // La grúa y la pila son de la terminal: en cuanto la cámara sube a
-    // cenital estorban, porque el encuadre abarca decenas de metros.
-    if (terminalRef.current) {
-      // Se apaga tarde a propósito: mientras la cámara se levanta hace falta
-      // que haya suelo debajo, o el encuadre se queda sin nada contra lo que
-      // leerse. Para cuando la cenital se asienta ya no está.
-      terminalRef.current.visible = topView < 0.12;
-    }
+    // --- Fondo del patio ----------------------------------------------------
     // El tramo de fondo que pasa por detrás del camión solo se enciende con la
     // cámara ya casi de perfil. En tres cuartos cruzaría por detrás del
     // titular, y para entonces todavía queda fuera de plano por la derecha,
@@ -759,48 +511,36 @@ export default function Scene() {
     if (farFenceRef.current) farFenceRef.current.position.x = fenceShift;
     if (nearYardRef.current) nearYardRef.current.position.x = fenceShift;
     // La niebla vira al azul noche cuando el fondo de la escena deja de ser
-    // crema: mientras el suelo oscuro llena la pantalla y durante el cierre.
-    // Si se quedase en crema, el fondo del patio se aclararía sobre el oscuro
-    // y se vería el truco.
+    // crema: mientras el suelo oscuro llena la pantalla. Si se quedase en
+    // crema, el fondo del patio se aclararía sobre el oscuro y se vería el
+    // truco.
     if (fogRef.current) {
-      const darkness = Math.max(
-        smoothstep(range(inRoute, 0.48, 0.62)) * (1 - topView),
-        closing,
-      );
+      const darkness = smoothstep(range(inRoute, 0.48, 0.62));
       fogRef.current.color.copy(FOG_DAY).lerp(FOG_NIGHT, darkness);
       // El alcance acompaña a la cámara: corto en tres cuartos (está cerca),
       // largo en perfil (se ha ido a 60 m) y cerrado por detrás en el primer
       // plano del camión, que es el desenfoque de maqueta que no se puede
       // montar con postprocesado.
-      // Perfil → primer plano → tres cuartos → cenital, en ese orden. Cada
-      // vista pone la cámara a una distancia distinta y la niebla se mide
-      // desde la cámara, así que el alcance tiene que acompañarla.
-      let fogNear = lerp(FOG_SIDE.near, FOG_CLOSE.near, closeUp);
-      fogNear = lerp(fogNear, FOG_QUARTER.near, quarter);
-      fogRef.current.near = lerp(fogNear, FOG_ROAD.near, topView);
+      // Perfil → primer plano → tres cuartos, en ese orden. Cada vista pone
+      // la cámara a una distancia distinta y la niebla se mide desde la
+      // cámara, así que el alcance tiene que acompañarla.
+      const fogNear = lerp(FOG_SIDE.near, FOG_CLOSE.near, closeUp);
+      fogRef.current.near = lerp(fogNear, FOG_QUARTER.near, quarter);
 
-      let fogFar = lerp(FOG_SIDE.far, FOG_CLOSE.far, closeUp);
-      fogFar = lerp(fogFar, FOG_QUARTER.far, quarter);
-      fogRef.current.far = lerp(fogFar, FOG_ROAD.far, topView);
+      const fogFar = lerp(FOG_SIDE.far, FOG_CLOSE.far, closeUp);
+      fogRef.current.far = lerp(fogFar, FOG_QUARTER.far, quarter);
     }
 
     if (veilRef.current) {
-      // El mismo telón hace dos trabajos y van los dos en azul noche: tapar el
-      // relevo a la carretera al principio de la escena y cerrar la intro al
-      // final. No se solapan nunca, así que basta con quedarse con el mayor.
-      const opacidad = Math.max(closing, cover);
-      veilRef.current.opacity = opacidad;
-      veilRef.current.visible = opacidad > 0.001;
+      // El telón que cierra la intro. Ver `coverIn`, arriba.
+      veilRef.current.opacity = coverIn;
+      veilRef.current.visible = coverIn > 0.001;
     }
     if (bandRef.current) {
       // Está desde el principio: es el suelo de la vista de perfil. Se baja y
       // se oculta en tres cuartos, donde no se quiere.
       bandRef.current.position.y = lerp(-300, -520, quarter);
-      // **Y se apaga con el telón ya puesto, no al salir a ruta.** El apagado
-      // va con `coverIn`, que solo sube, y no con `cover`, que vuelve a bajar
-      // al abrirse el telón: si fuera con `cover`, la franja reaparecería en
-      // mitad del fundido y volvería a verse su borde, que es justo el fallo
-      // que esto arregla.
+      // Y se apaga con el telón ya puesto: debajo de él ya no se ve nada.
       bandRef.current.visible = quarter < 0.99 && coverIn < 0.999;
     }
 
@@ -966,25 +706,6 @@ export default function Scene() {
 
       const sideX = parkedX + camRun;
 
-      // La cámara mira a un punto por delante del camión, siguiendo la
-      // tangente del trazado: así vale igual en recta y en curva.
-      //
-      // El adelanto se cierra al llegar (`settle`), para que la cámara
-      // alcance al camión justo cuando frena. Si se mantuviera, al pararse
-      // se quedaría mirando veinte metros de asfalto vacío pasada la nave.
-      const settle = 1 - smoothstep(range(route, 0.84, 0.92));
-      const lead = roadWidth * aspect * ROAD_LEAD * settle;
-
-      // **Y al final deja de seguir al camión y se posa sobre la nave.** Es lo
-      // que hace que el viaje termine en un sitio con nombre en vez de en la
-      // esquina de la pantalla. El camión frena en el muelle, así que los dos
-      // caben de sobra en el encuadre: no se pierde de vista.
-      const arriving = smoothstep(range(route, 0.7, 0.86));
-      const leadX = lerp(truckX + roadTangent.x * lead, ARRIVAL_VIEW.x, arriving);
-      const leadZ = lerp(truckZ + roadTangent.z * lead, ARRIVAL_VIEW.z, arriving);
-
-      const z = lerp(0, leadZ + ROAD_SHIFT, topView);
-
       // Arranque en tres cuartos: la cámara mira desde la misma dirección que
       // el perfil, pero desde arriba. Así el avance de la grúa hacia nosotros
       // se lee como que baja por la pantalla (sin perspectiva no hay otra
@@ -1014,38 +735,23 @@ export default function Scene() {
       const camY = lerp(aimY, qY + QUARTER_CAM.height, quarter);
       const camZ = lerp(60, quarterZ + QUARTER_CAM.back, quarter);
 
-      // Durante el giro la cámara se abre y vuelve a cerrarse: se lee como un
-      // "levantar el vuelo" en vez de como un volteo plano.
-      const swell = Math.sin(topView * Math.PI) * 16;
-
-      // La cenital no mira a plomo: se echa hacia atrás unos 16°, que es lo
-      // que hace que el camión deje de ser una silueta plana.
-      camera.position.set(
-        lerp(camX, leadX, topView) - ROAD_CAM.tilt * topView,
-        lerp(camY, ROAD_CAM.height, topView),
-        lerp(camZ, z, topView),
-      );
-      // En cenital el "arriba" de la pantalla pasa a ser -X, así que el camión
-      // avanza hacia abajo mientras sigues bajando por la página.
-      camera.up.set(-topView, 1 - topView, 0).normalize();
-      const focusX = lerp(aimX, leadX, topView);
-      const focusZ = lerp(aimZ, z, topView);
-
-      const focusY = lerp(aimYTarget, 0, topView);
+      camera.position.set(camX, camY, camZ);
+      const focusX = aimX;
+      const focusY = aimYTarget;
+      const focusZ = aimZ;
 
       // Giro de la cámara con el ratón (ver `puntero`, arriba del todo).
       puntero.vx = damp(puntero.vx, isNarrow ? 0 : puntero.x, 3, dt);
       puntero.vy = damp(puntero.vy, isNarrow ? 0 : puntero.y, 3, dt);
-      const orbita = 1 - topView;
-      if (orbita > 0.001 && Math.abs(puntero.vx) + Math.abs(puntero.vy) > 1e-4) {
+      if (Math.abs(puntero.vx) + Math.abs(puntero.vy) > 1e-4) {
         _brazo.set(
           camera.position.x - focusX,
           camera.position.y - focusY,
           camera.position.z - focusZ,
         );
         _lado.crossVectors(_arriba, _brazo).normalize();
-        _brazo.applyAxisAngle(_arriba, -puntero.vx * ORBITA.giro * orbita);
-        _brazo.applyAxisAngle(_lado, puntero.vy * ORBITA.cabeceo * orbita);
+        _brazo.applyAxisAngle(_arriba, -puntero.vx * ORBITA.giro);
+        _brazo.applyAxisAngle(_lado, puntero.vy * ORBITA.cabeceo);
         camera.position.set(focusX + _brazo.x, focusY + _brazo.y, focusZ + _brazo.z);
       }
 
@@ -1068,19 +774,9 @@ export default function Scene() {
       // Empuje lento durante todo el hero: un 4 % de acercamiento repartido
       // en toda la sección. Una cámara clavada se siente a software; con esta
       // deriva, que por sí sola no se ve, la escena deja de estar congelada.
-      // Se suelta al pasar a cenital, que allí el encuadre lo manda la
-      // carretera.
-      const creep = 1 - 0.04 * smoothstep(range(hero, 0.05, 0.95)) * (1 - topView);
+      const creep = 1 - 0.04 * smoothstep(range(hero, 0.05, 0.95));
 
-      camera.zoom =
-        size.width /
-        ((lerp(
-          lerp(sideWidth, qWidth, quarter),
-          roadWidth * (1 + LEAVE_WIDEN * roadLeaving),
-          topView,
-        ) +
-          swell) *
-          creep);
+      camera.zoom = size.width / (lerp(sideWidth, qWidth, quarter) * creep);
       camera.updateProjectionMatrix();
     }
   });
@@ -1240,8 +936,8 @@ export default function Scene() {
           nadie pudiera verlo, después de la viñeta y de la primera versión de
           las sombras de contacto. Este además se cobraba. */}
 
-      {/* Terminal: solo existe mientras la cámara está en vista lateral. */}
-      <group ref={terminalRef}>
+      {/* Terminal: el patio entero, con la carretilla y las pilas. */}
+      <group>
         <TerminalYard fenceRef={farFenceRef} />
 
         {/* El carril va pintado justo por donde circula la grúa: primero
@@ -1323,53 +1019,10 @@ export default function Scene() {
         <PalletLoad />
       </group>
 
-      <group ref={truckRef} position={[TRUCK_X, 0, 0]} rotation-order="YXZ">
-        {/* Dentro del grupo del camión, así que lo acompaña por el patio y
-            también por la carretera: un camión sobre asfalto también apoya. */}
+      <group ref={truckRef} position={[TRUCK_X, 0, 0]}>
+        {/* Dentro del grupo del camión, así que lo acompaña cuando arranca. */}
         <ContactShadow puntos={TRUCK_CONTACTS} fuerza={0.32} y={0.045} />
-        <TruckModel curtainRef={curtainRef} roofRef={roofRef} />
-      </group>
-
-      {/* Rodadas sobre el asfalto: aparecen cuanto más rápido bajas. */}
-      <group ref={trailRef} visible={false}>
-        <mesh position={[-9, 0.09, 0.95]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[18, 0.5]} />
-          <meshBasicMaterial
-            ref={trailNearRef}
-            color="#f6f4f1"
-            transparent
-            opacity={0}
-            depthWrite={false}
-          />
-        </mesh>
-        <mesh position={[-9, 0.09, -0.95]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[18, 0.5]} />
-          <meshBasicMaterial
-            ref={trailFarRef}
-            color="#f6f4f1"
-            transparent
-            opacity={0}
-            depthWrite={false}
-          />
-        </mesh>
-      </group>
-
-      {/* Carretera con su nave de salida y su nave de llegada. */}
-      <group ref={roadRef} position={[ROAD_ORIGIN_X, 0, 0]} visible={false}>
-        <Road />
-        {/* Nave de salida: su cara de muelles coincide con el inicio del
-            trazado, así que el camión arranca aparcado en un muelle. */}
-        <group position={[0, 0, 0]}>
-          <Facility accent="#34548a" />
-        </group>
-        {/* Nave de llegada: colocada justo delante de donde queda el morro al
-            terminar el recorrido, y girada para recibirlo de frente. */}
-        <group
-          position={[ARRIVAL_AT.x, 0, ARRIVAL_AT.z]}
-          rotation={[0, ARRIVAL_HEADING + Math.PI, 0]}
-        >
-          <Facility accent="#d03b40" />
-        </group>
+        <TruckModel curtainRef={curtainRef} />
       </group>
 
       {/* Suelo oscuro de la terminal: está desde el primer fotograma y se

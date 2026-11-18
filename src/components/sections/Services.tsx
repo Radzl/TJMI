@@ -26,7 +26,8 @@ export default function Services() {
     // y rojo solo como acentos, **nunca como fondos masivos**», y autoriza
     // **una** sección oscura, la que sube desde abajo en la intro. Esta era
     // una segunda, y además dejaba la portada en zigzag —oscuro en `InRoute`,
-    // claro en `RoadIntro`, oscuro aquí, claro, oscuro en el cierre—. Ahora la
+    // claro en la carretera de entonces, oscuro aquí, claro, oscuro en el
+    // cierre—. Ahora la
     // página va clara de principio a fin y los dos oscuros que quedan son los
     // dos extremos: el momento de la intro y el cierre.
     //
@@ -38,8 +39,8 @@ export default function Services() {
     // el bloque de las tarjetas, y un ancestro con overflow recortado rompe
     // el `position: sticky` que usa ScrollTrigger para fijarlo.
     <section
-      data-bg="bone"
-      className="relative z-10 bg-bone pb-0 pt-32 text-ink"
+      data-bg="night"
+      className="tema-noche relative z-10 bg-bone pb-0 pt-32 text-ink"
     >
       <Container className="relative">
         <SectionHeading title={t('title')} lead={t('intro')} />
@@ -47,7 +48,7 @@ export default function Services() {
         {/* Bloque destacado: es el servicio de la casa, así que no puede ir
             como una tarjeta más. Va a lo ancho, con la foto sangrando por el
             borde y un filete rojo arriba que lo señala. */}
-        <article className="group/featured relative mt-16 overflow-hidden rounded-2xl border border-line bg-white lg:grid lg:grid-cols-[1fr_1.1fr]">
+        <article className="group/featured relative mt-16 overflow-hidden rounded-2xl border border-line bg-card lg:grid lg:grid-cols-[1fr_1.1fr]">
           <span
             className="absolute inset-x-0 top-0 h-px bg-brand-red"
             aria-hidden="true"
@@ -129,7 +130,7 @@ export default function Services() {
         <div className="mt-6 flex flex-wrap items-center justify-center gap-6 border-t border-line pt-8">
           <Link
             href="/servicios"
-            className="group/cta inline-flex items-center gap-3 font-display text-sm uppercase tracking-widest text-brand-red-ink transition-colors hover:text-brand-blue"
+            className="group/cta inline-flex items-center gap-3 font-display text-sm uppercase tracking-widest text-brand-red-ink transition-colors hover:text-azul-texto"
           >
             {t('cta')}
           </Link>

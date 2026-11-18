@@ -43,7 +43,9 @@ export default async function ServicesPage({ params }: Props) {
   const featuredTags = tServices.raw('featured.tags') as string[];
 
   return (
-    <>
+    // Página oscura: el tema noche se aplica a todo el contenido. Ver
+    // `.tema-noche` en `globals.css`.
+    <div className="tema-noche" data-bg="night">
       <PageHeader
         title={t('title')}
         lead={t('titleLead')}
@@ -156,7 +158,7 @@ export default async function ServicesPage({ params }: Props) {
                         aria-hidden="true"
                         className="block h-0.5 w-12 bg-brand-red"
                       />
-                      <span className="mt-6 font-display text-3xl uppercase tracking-tight text-ink transition-colors group-hover:text-brand-blue sm:text-4xl">
+                      <span className="mt-6 font-display text-3xl uppercase tracking-tight text-ink transition-colors group-hover:text-azul-texto sm:text-4xl">
                         {item.title}
                       </span>
                       <span className="mt-5 max-w-md text-base leading-relaxed text-muted">
@@ -208,6 +210,6 @@ export default async function ServicesPage({ params }: Props) {
       </section>
 
       <Cta />
-    </>
+    </div>
   );
 }

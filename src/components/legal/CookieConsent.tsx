@@ -135,7 +135,7 @@ export default function CookieConsent() {
                 {t('bannerText')}{' '}
                 <Link
                   href="/cookies"
-                  className="text-brand-blue underline underline-offset-4"
+                  className="text-azul-texto underline underline-offset-4"
                 >
                   {t('policyLink')}
                 </Link>
@@ -160,7 +160,7 @@ export default function CookieConsent() {
               <button
                 type="button"
                 onClick={openPanel}
-                className="text-sm text-muted underline underline-offset-4 hover:text-brand-blue"
+                className="text-sm text-muted underline underline-offset-4 hover:text-azul-texto"
               >
                 {t('configure')}
               </button>

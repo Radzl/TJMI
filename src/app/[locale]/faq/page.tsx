@@ -74,7 +74,7 @@ export default async function FaqPage({ params }: Props) {
         lead={t('title')}
         intro={t('intro')}
         path="/faq"
-        visual={<HeaderPhoto src={HEADER_PHOTOS.faq.src} />}
+        visual={<HeaderPhoto src={HEADER_PHOTOS.faq.src} seed="faq-cabecera" />}
       />
 
       <section className="py-20">
@@ -139,13 +139,12 @@ export default async function FaqPage({ params }: Props) {
               acaban las respuestas, se ve a quien las da y entonces se pide
               presupuesto.
 
-              La de ahora es de banco y provisional, y va **ya recortada a
-              2,4:1 en el archivo**: no hay foto de banco que venga nativa tan
-              ancha, así que recortarla al descargarla es lo que evita que el
-              navegador se baje un tercio de alto para tirarlo. Ver
-              `PAGE_PHOTOS`. */}
+              **Hoy es un hueco preparado**: el cliente pidió quitar los
+              fotogramas del vídeo y dejar el sitio listo para una fotografía.
+              Lo pinta `CoverPlaceholder` con la proporción que tendrá (2,4:1)
+              hasta que `PAGE_PHOTOS` tenga la ruta de la foto. */}
           <CoverPlaceholder
-            cover={PAGE_PHOTOS.faq?.src}
+            cover={PAGE_PHOTOS.faq.src ?? undefined}
             seed="faq"
             className="mt-20 aspect-[2.4] rounded-2xl"
             sizes="(max-width: 1024px) 100vw, 1150px"

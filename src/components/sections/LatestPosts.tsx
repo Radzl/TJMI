@@ -46,7 +46,7 @@ export default async function LatestPosts() {
           <SectionHeading title={t('latestTitle')} lead={t('latestIntro')} />
           <Link
             href="/blog"
-            className="font-display text-xs uppercase tracking-widest text-brand-red-ink transition-colors hover:text-brand-blue"
+            className="font-display text-xs uppercase tracking-widest text-brand-red-ink transition-colors hover:text-azul-texto"
           >
             {t('latestLink')}
           </Link>
@@ -79,7 +79,7 @@ export default async function LatestPosts() {
                     </span>
                   </p>
 
-                  <h3 className="mt-3 font-display text-xl uppercase leading-tight tracking-tight text-ink transition-colors group-hover:text-brand-blue sm:text-2xl">
+                  <h3 className="mt-3 font-display text-xl uppercase leading-tight tracking-tight text-ink transition-colors group-hover:text-azul-texto sm:text-2xl">
                     {content.title}
                   </h3>
 

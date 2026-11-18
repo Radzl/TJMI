@@ -12,6 +12,7 @@ import type {
 } from '@/components/ui/ServiceDialog';
 import { SERVICES, findService } from '@/content/services';
 import { Link } from '@/i18n/navigation';
+import { medidaFoto } from '@/lib/medidaFoto';
 import { SITE_URL } from '@/lib/site';
 import { organizationRef, pageMetadata, WEBSITE_ID } from '@/lib/seo';
 
@@ -33,19 +34,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const items = t.raw('items') as ServiceDetail[];
   const item = items[service.index];
 
-  const meta = await getTranslations({ locale, namespace: 'meta' });
-
   return pageMetadata({
     locale,
     path: `/servicios/${slug}`,
     title: item.seoTitle ?? item.title,
     description: item.seoDescription ?? item.description,
-    // **Sin foto propia por servicio, y es decisión.** Lo suyo sería la que
-    // encabeza cada ficha, pero tres de las seis son verticales y de menos de
-    // 500 px —lo canta `npm run check:fotos`—: como tarjeta social saldrían
-    // recortadas y borrosas, peor que la del camión. Cuando lleguen las
-    // apaisadas que pide el `brief` de `content/media.ts`, aquí.
-    imageAlt: meta('ogAlt'),
+    // **Cada ficha se comparte con su propia foto**, la misma que la encabeza.
+    // Antes las seis salían con la del camión de la portada, así que mandar
+    // por WhatsApp la página de grupaje o la de almacenaje se veía igual.
+    // Estuvo sin poner porque tres de las fotos de entonces eran verticales y
+    // de menos de 500 px; las seis de ahora son apaisadas y de 1.600 px o más.
+    // Las medidas se leen del archivo para que no se queden viejas.
+    image: { url: service.photo.src, ...medidaFoto(service.photo.src) },
+    imageAlt: item.heading ?? item.title,
   });
 }
 
@@ -142,7 +143,9 @@ export default async function ServicePage({ params }: Props) {
   };
 
   return (
-    <>
+    // Página oscura: el tema noche se aplica a todo el contenido. Ver
+    // `.tema-noche` en `globals.css`.
+    <div className="tema-noche" data-bg="night">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -236,9 +239,9 @@ export default async function ServicePage({ params }: Props) {
                 <li key={other.slug}>
                   <Link
                     href={`/servicios/${other.slug}`}
-                    className="group flex h-full flex-col bg-bone p-7 transition-colors hover:bg-white"
+                    className="group flex h-full flex-col bg-bone p-7 transition-colors hover:bg-card"
                   >
-                    <span className="font-display text-lg uppercase tracking-tight text-ink transition-colors group-hover:text-brand-blue">
+                    <span className="font-display text-lg uppercase tracking-tight text-ink transition-colors group-hover:text-azul-texto">
                       {items[other.index].title}
                     </span>
                     <span className="mt-3 text-sm leading-relaxed text-muted">
@@ -253,6 +256,6 @@ export default async function ServicePage({ params }: Props) {
       </section>
 
       <Cta />
-    </>
+    </div>
   );
 }

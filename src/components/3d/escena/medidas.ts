@@ -29,7 +29,6 @@
 
 import { CONTAINER } from '../models/ContainerModel';
 import { FORKLIFT } from '../models/ForkliftModel';
-import { FACILITY_CENTRE_X } from '../models/Facility';
 import { PALLET, PALLET_LOAD, PALLET_STACKS } from '../models/Pallets';
 import { TRUCK } from '../models/TruckModel';
 import { Color } from 'three';
@@ -105,27 +104,6 @@ export const FORKLIFT_Z = CARGO_Z;
 
 /** Cuánto recula para salir de plano. Ver la nota de `exit`. */
 export const EXIT_RUN = 18;
-
-/**
- * Cuánto se abre el encuadre de la carretera al irse la escena.
- *
- * **La escena entraba moviéndose y se iba apagándose**, y eso es lo que se
- * notaba como «desaparece de golpe» aunque el fundido durase lo mismo: la
- * entrada gira la cámara entera de perfil a cenital (`topView`) mientras el
- * telón se abre, y la salida no movía nada. El telón tapaba una escena
- * congelada.
- *
- * Ahora la cámara **se aleja**: el encuadre se abre al 190 %, así que la
- * nave, el camión y la carretera se van haciendo pequeños mientras el telón
- * se cierra encima.
- *
- * **Y se hace abriendo el encuadre, no subiendo la cámara.** Con cámara
- * ortográfica alejarse no encoge nada —un plano ocupa lo que ocupa esté donde
- * esté—, y subirla mirando al mismo punto lo que haría es **enderezar la
- * vista a plomo**, que es otro efecto distinto y le quita al camión el poco
- * volumen que tiene. Lo único que aleja de verdad aquí es el ancho de mundo.
- */
-export const LEAVE_WIDEN = 0.9;
 
 /**
  * Dónde termina el acercamiento, en profundidad.
@@ -254,20 +232,6 @@ export const FOG_NIGHT = new Color('#0f1a2e');
 export const FOG_QUARTER = { near: 40, far: 200 };
 /** Perfil: la cámara se va a 60 m, así que todo se corre hacia atrás. */
 export const FOG_SIDE = { near: 70, far: 280 };
-
-/**
- * Y la cenital de la carretera: **prácticamente sin niebla**.
- *
- * Aquí la cámara está a 70 m de altura y lo que se ve —asfalto, camión,
- * naves de los extremos— está todo a una distancia parecida. La niebla no
- * tiene nada que separar: lo único que hace es lavar, y lava justo lo que
- * hay que mirar. Con el alcance del perfil el camión salía como un fantasma
- * gris sobre el asfalto negro en la segunda mitad del recorrido.
- *
- * Así que se manda el fondo de la niebla lejísimos. Lo que da profundidad en
- * esta escena no es el aire, es el contraste: asfalto negro, camión claro.
- */
-export const FOG_ROAD = { near: 95, far: 420 };
 
 /**
  * Y el primer plano del camión, que cierra el fondo sin tocar al camión.
@@ -419,9 +383,8 @@ export const FORKLIFT_CONTACTS: Contacto[] = [
   { x: -FORKLIFT.length / 2, z: 0, width: FORKLIFT.length + 0.3, depth: 1.4 },
 ];
 
-// Avance del camión antes de salir a ruta. Es largo a propósito: con pocos
-// metros no se leía como que avanzaba. La carretera arranca justo donde lo
-// deja la sección oscura, para que el salto a cenital no se note.
+// Avance del camión al arrancar, sobre la sección oscura. Es largo a
+// propósito: con pocos metros no se leía como que avanzaba.
 export const SETTLE_RUN = 120;
 /** Cuánto acompaña la cámara al camión en ese arranque. Por debajo de 1 el
  *  camión gana terreno en pantalla: es lo que hace que se vea avanzar. */
@@ -487,50 +450,6 @@ export const OPENING = { desktop: 0.75, narrow: 0.82, until: 0.22 };
  * arriba cruzaba la última línea del párrafo del hero.
  */
 export const LOADING_GROUND = 0.2;
-
-export const ROAD_ORIGIN_X = TRUCK_X + SETTLE_RUN;
-/** Desplazamiento lateral en cenital: deja la columna izquierda al texto. */
-export const ROAD_SHIFT = 9;
-
-/**
- * Cuánto se inclina el camión en la curva más cerrada, en radianes.
- *
- * **Está medido contra el trazado, no puesto a ojo.** El giro que el camión
- * tiene por delante llega como mucho a un seno de 0,44 en la curva de
- * entrada al patio de destino, así que con este factor la inclinación máxima
- * son unos 2,3 grados. Un camión real bascula entre 2 y 4; por encima de eso
- * deja de leerse como peso y pasa a leerse como que el modelo se cae.
- */
-export const TRUCK_BANK = 0.09;
-/** Cuánto se echa atrás la cámara cenital: unos 16° sobre la vertical. */
-
-/** Rumbo del camión al entrar en el patio de destino. */
-export const ARRIVAL_HEADING = Math.atan2(14, 20);
-
-/** Dónde se planta la nave de llegada, en coordenadas del grupo de carretera. */
-export const ARRIVAL_AT = { x: 201.6, z: -108.9 };
-
-/**
- * El punto al que se posa la cámara al llegar: el centro de los edificios de
- * la nave de destino.
- *
- * **Por qué hace falta.** La cenital seguía al camión hasta el final, y el
- * camión frena en el muelle; los edificios quedan por delante de él, así que
- * la nave de llegada **no llegaba a entrar en cuadro nunca**. Lo que se veía
- * era un camión yéndose hacia la esquina de abajo a la derecha y la escena
- * fundiendo: el viaje no terminaba en ningún sitio. Y eso es justo lo que la
- * escena está para contar, ahora que la cubierta lleva el nombre escrito.
- *
- * Sale de la posición y el giro de la nave, no de un par de números a ojo: si
- * se mueve la nave o se cambia el trazado, la cámara la sigue sola.
- */
-export const ARRIVAL_VIEW = {
-  x:
-    ROAD_ORIGIN_X +
-    ARRIVAL_AT.x +
-    FACILITY_CENTRE_X * Math.cos(ARRIVAL_HEADING + Math.PI),
-  z: ARRIVAL_AT.z - FACILITY_CENTRE_X * Math.sin(ARRIVAL_HEADING + Math.PI),
-};
 
 // El camión **no se mueve** al recibir la carga, y es una decisión, no un
 // olvido. Hubo un hundimiento con rebote (`LANDING_DIP`) para contar que lo

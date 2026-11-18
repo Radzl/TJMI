@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 import Container from '@/components/ui/Container';
 import ScrollFade from '@/components/ui/ScrollFade';
 import { PARTITURA } from '@/lib/partitura';
+import { ANCHO_MOVIL } from '@/lib/pantalla';
 
 export default function Hero() {
   const t = useTranslations('hero');
@@ -72,14 +73,33 @@ export default function Hero() {
                 apoyo deja de leerse de un vistazo, que es justo lo único que se
                 le pide a un subtítulo. */}
             {/* **Más pequeño en móvil, y no es por estética.** Este párrafo cae
-                sobre la maqueta 3D nada más entrar, así que cada línea de más
-                es un trozo de escena tapado. A 16 px ocupaba cuatro líneas y
-                104 px de alto; a 14 se queda en bastante menos y el patio
-                respira. De tableta para arriba el texto va al lado del 3D y no
-                encima, así que ahí recupera su tamaño. */}
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-muted sm:mt-6 sm:text-base">
-              {t('subtitle')}
-            </p>
+                sobre la maqueta 3D, así que cada línea de más es un trozo de
+                escena tapado. A 16 px ocupaba cuatro líneas y 104 px de alto;
+                a 14 se queda en bastante menos y el patio respira. De tableta
+                para arriba el texto va al lado del 3D y no encima, así que ahí
+                recupera su tamaño.
+
+                **Y en móvil no está desde el principio: entra cuando el lote
+                va a entrar en el camión.** Durante la maniobra en tres cuartos
+                las torres de contenedores subían hasta él y se le metían
+                debajo; ver `subtituloMovil` en `PARTITURA`. Se apaga solo con
+                la opacidad, así que sigue ocupando su sitio y el titular no se
+                mueve cuando aparece.
+
+                `sin3d:opacity-100!` es la red: si la escena no llega a montarse
+                (sin WebGL, o se cae) no hay maniobra que esperar, y el
+                `!important` gana a la opacidad que escribe el disparador. Con
+                movimiento reducido `ScrollFade` ni siquiera se monta. */}
+            <ScrollFade
+              inFrom={PARTITURA.hero.subtituloMovil[0]}
+              inTo={PARTITURA.hero.subtituloMovil[1]}
+              media={`(max-width: ${ANCHO_MOVIL - 1}px)`}
+              className="sin3d:opacity-100!"
+            >
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-muted sm:mt-6 sm:text-base">
+                {t('subtitle')}
+              </p>
+            </ScrollFade>
 
             {/* Aquí había un botón «Pedir presupuesto» y se ha quitado. No
                 por sitio: el navbar ya lleva uno idéntico y vuelve en cuanto

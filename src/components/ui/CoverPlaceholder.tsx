@@ -1,4 +1,25 @@
 import Image from 'next/image';
+import type { CSSProperties } from 'react';
+
+/**
+ * El fondo de un hueco de foto vacío: un azul de la casa con una luz suave
+ * arriba a la izquierda. Lo comparten todos los huecos preparados de la web
+ * —este, las cabeceras (`HeaderPhoto`) y los paneles del índice—, para que
+ * un sitio a la espera de foto se vea igual en todas partes.
+ *
+ * Suma de caracteres: no es un hash bueno y no hace falta que lo sea, solo que
+ * sea estable y reparta. Se mueve dentro del azul de la casa, sin salirse a
+ * tonos que no son de la marca.
+ */
+export function fondoHueco(seed: string): CSSProperties {
+  const sum = Array.from(seed).reduce((total, c) => total + c.charCodeAt(0), 0);
+  const tone = 206 + (sum % 5) * 7;
+  const light = 22 + (sum % 3) * 6;
+  return {
+    backgroundColor: `hsl(${tone} 38% ${light}%)`,
+    backgroundImage: `radial-gradient(120% 85% at 25% 15%, hsl(${tone} 42% ${light + 14}%) 0%, transparent 65%)`,
+  };
+}
 
 type Props = {
   /** La portada de verdad, si ya existe. */
@@ -43,21 +64,11 @@ export default function CoverPlaceholder({
     );
   }
 
-  // Suma de caracteres: no es un hash bueno y no hace falta que lo sea, solo
-  // que sea estable y reparta. Se mueve dentro del azul de la casa, sin salirse
-  // a tonos que no son de la marca.
-  const sum = Array.from(seed).reduce((total, c) => total + c.charCodeAt(0), 0);
-  const tone = 206 + (sum % 5) * 7;
-  const light = 22 + (sum % 3) * 6;
-
   return (
     <div
       aria-hidden="true"
       className={`relative overflow-hidden ${className}`}
-      style={{
-        backgroundColor: `hsl(${tone} 38% ${light}%)`,
-        backgroundImage: `radial-gradient(120% 85% at 25% 15%, hsl(${tone} 42% ${light + 14}%) 0%, transparent 65%)`,
-      }}
+      style={fondoHueco(seed)}
     >
       {/* Filete rojo arriba: es el mismo gesto que llevan las piezas
           destacadas de la web, y basta para que el bloque pertenezca a esta

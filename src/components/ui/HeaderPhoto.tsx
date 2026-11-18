@@ -1,8 +1,16 @@
 import Image from 'next/image';
 import type { CSSProperties } from 'react';
+import { fondoHueco } from './CoverPlaceholder';
 
 type Props = {
-  src: string;
+  /**
+   * La foto. Sin ella (`null`) el marco se pinta igual, relleno con los tonos
+   * de la casa: es un hueco preparado para cuando llegue la fotografía (ver
+   * `Hueco` en `content/media.ts`).
+   */
+  src: string | null;
+  /** Para que cada hueco vacío tenga siempre el mismo tono. */
+  seed?: string;
   /**
    * Vacío por defecto: al lado va el titular de la página y la foto lo
    * ilustra, no cuenta otra cosa. Mismo criterio que las fotos de servicio.
@@ -31,30 +39,46 @@ type Props = {
  * Va con `priority` porque está en la primera pantalla de cada página, y suele
  * ser lo más grande que se pinta en ella.
  */
-export default function HeaderPhoto({ src, alt = '', position, ratio = '4 / 3' }: Props) {
+export default function HeaderPhoto({
+  src,
+  seed = 'cabecera',
+  alt = '',
+  position,
+  ratio = '4 / 3',
+}: Props) {
+  const recorte =
+    'polygon(0 var(--cut), var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%)';
+
   return (
     <figure
       className="relative"
       style={{ '--cut': 'clamp(1.25rem, 3.2vw, 2.75rem)' } as CSSProperties}
+      aria-hidden={src ? undefined : true}
     >
-      <div
-        className="photo relative w-full bg-sand-deep"
-        style={{
-          aspectRatio: ratio,
-          clipPath:
-            'polygon(0 var(--cut), var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%)',
-        }}
-      >
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          priority
-          sizes="(max-width: 1024px) 100vw, 520px"
-          className="object-cover"
-          style={position ? { objectPosition: position } : undefined}
+      {src ? (
+        <div
+          className="photo relative w-full bg-sand-deep"
+          style={{ aspectRatio: ratio, clipPath: recorte }}
+        >
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 520px"
+            className="object-cover"
+            style={position ? { objectPosition: position } : undefined}
+          />
+        </div>
+      ) : (
+        // El hueco preparado: el mismo marco y la misma muesca, relleno con
+        // los tonos de la casa. Sin texto ni icono, que un «foto pendiente»
+        // publicado se lee como un error.
+        <div
+          className="relative w-full"
+          style={{ aspectRatio: ratio, clipPath: recorte, ...fondoHueco(seed) }}
         />
-      </div>
+      )}
 
       {/* La muesca roja, encima de la foto: rellena justo el triángulo que el
           recorte le quita. */}

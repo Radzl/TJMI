@@ -149,7 +149,7 @@ export default async function CookiesPage({ params }: Props) {
                     href={browser.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-brand-blue underline underline-offset-4 hover:text-brand-blue-dark"
+                    className="text-azul-texto underline underline-offset-4 hover:text-azul-texto-fuerte"
                   >
                     {browser.name}
                   </a>

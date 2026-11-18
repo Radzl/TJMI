@@ -120,7 +120,7 @@ export default function MapEmbed({ src, title, mapUrl, photo, fondo }: Props) {
           target="_blank"
           rel="noopener noreferrer"
           className={`text-sm underline underline-offset-4 ${
-            photo ? 'text-white/80 hover:text-white' : 'text-muted hover:text-brand-blue'
+            photo ? 'text-white/80 hover:text-white' : 'text-muted hover:text-azul-texto'
           }`}
         >
           {t('mapExternal')}

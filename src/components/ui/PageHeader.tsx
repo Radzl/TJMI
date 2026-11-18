@@ -316,7 +316,7 @@ export default async function PageHeader({
             >
               {facts.map((fact) => (
                 <div key={fact.label} className="bg-bone py-6 sm:px-6 sm:py-8 sm:first:pl-0 sm:last:pr-0">
-                  <p className="font-display text-[clamp(1.75rem,3.4vw,2.75rem)] leading-none tracking-tight text-brand-blue">
+                  <p className="font-display text-[clamp(1.75rem,3.4vw,2.75rem)] leading-none tracking-tight text-azul-texto">
                     {fact.value}
                   </p>
                   <p className="mt-3 text-xs uppercase tracking-[0.18em] text-muted">

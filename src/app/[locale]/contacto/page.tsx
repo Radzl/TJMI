@@ -42,7 +42,9 @@ export default async function ContactPage({ params }: Props) {
   const sites = tContact.raw('sites') as Site[];
 
   return (
-    <>
+    // Página oscura: el tema noche se aplica a todo el contenido. Ver
+    // `.tema-noche` en `globals.css`.
+    <div className="tema-noche" data-bg="night">
       <BusinessJsonLd locale={locale} />
 
       <PageHeader
@@ -54,6 +56,7 @@ export default async function ContactPage({ params }: Props) {
         visual={
           <HeaderPhoto
             src={HEADER_PHOTOS.contacto.src}
+            seed="contacto-cabecera"
             position={HEADER_PHOTOS.contacto.position}
           />
         }
@@ -88,7 +91,7 @@ export default async function ContactPage({ params }: Props) {
                 {tContact('directTitle')}
               </h2>
 
-              <ul className="mt-6 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
+              <ul className="mt-6 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
                 {/* **WhatsApp no repite el número, y eso era un fallo.** La
                     tarjeta enseñaba `sites[0].phone`, que es exactamente el
                     fijo de Castellón que aparece dos filas más abajo con su
@@ -124,14 +127,15 @@ export default async function ContactPage({ params }: Props) {
                   así que la mitad de abajo de esta columna no tenía nada.
 
                   Cuadrada y no apaisada: es lo que cabe en una columna
-                  estrecha sin quedarse en una tira. La de ahora es de banco
-                  y provisional; si se quita, el hueco lo pinta
-                  `CoverPlaceholder`. Ver `PAGE_PHOTOS`. */}
+                  estrecha sin quedarse en una tira. Hoy es un hueco preparado
+                  —el cliente pidió quitar los fotogramas del vídeo—: lo pinta
+                  `CoverPlaceholder` hasta que `PAGE_PHOTOS` tenga la ruta de
+                  la foto. */}
               <CoverPlaceholder
-                cover={PAGE_PHOTOS.contacto?.src}
+                cover={PAGE_PHOTOS.contacto.src ?? undefined}
                 seed="contacto"
                 className="mt-8 hidden aspect-square rounded-2xl lg:block"
-                sizes="(max-width: 1024px) 100vw, 40vw"
+                sizes="(max-width: 1024px) 100vw, 440px"
               />
             </aside>
           </div>
@@ -139,7 +143,7 @@ export default async function ContactPage({ params }: Props) {
       </section>
 
       <Sites />
-    </>
+    </div>
   );
 }
 
@@ -177,7 +181,7 @@ function Via({
         <span className="font-display text-xs uppercase tracking-widest text-muted">
           {kicker}
         </span>
-        <span className="font-display text-lg tracking-tight text-brand-blue transition-colors group-hover:text-brand-blue-dark">
+        <span className="font-display text-lg tracking-tight text-azul-texto transition-colors group-hover:text-azul-texto-fuerte">
           {value}
         </span>
         {note && <span className="mt-1 text-xs text-muted">{note}</span>}

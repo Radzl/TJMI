@@ -303,7 +303,7 @@ export default function ServiceDialog({
               {href && (
                 <Link
                   href={href}
-                  className="font-display text-sm uppercase tracking-widest text-brand-blue transition-colors hover:text-brand-red-ink"
+                  className="font-display text-sm uppercase tracking-widest text-azul-texto transition-colors hover:text-brand-red-ink"
                 >
                   {labels.page}
                 </Link>
@@ -311,7 +311,7 @@ export default function ServiceDialog({
               <button
                 type="button"
                 onClick={() => ref.current?.close()}
-                className="font-display text-sm uppercase tracking-widest text-muted transition-colors hover:text-brand-blue"
+                className="font-display text-sm uppercase tracking-widest text-muted transition-colors hover:text-azul-texto"
               >
                 {labels.close}
               </button>

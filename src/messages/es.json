@@ -303,32 +303,15 @@
     "sites": "Dos sedes: Almazora (Castellón) y Fuenlabrada (Madrid).",
     "mapTitle": "La ruta, cada día",
     "mapIntro": "Salimos de Almazora cada mañana y entregamos en Madrid al día siguiente. Sin transbordos y sin depender de nadie.",
-    "mapStops": [
-      {
-        "title": "Salida de Almazora",
-        "detail": "Cargado la tarde anterior en nuestra nave."
-      },
-      {
-        "title": "Recogidas en ruta",
-        "detail": "Más de 150 localidades de la provincia de Castellón."
-      },
-      {
-        "title": "Llegada a Fuenlabrada",
-        "detail": "420 km por la A-3, sin transbordos."
-      },
-      {
-        "title": "Entrega en destino",
-        "detail": "Madrid y provincias colindantes."
-      }
-    ],
-    "mapLegend": {
-      "pickup": "Recogida en la provincia de Castellón",
-      "delivery": "Entrega en Madrid y alrededores",
-      "sea": "Mar Mediterráneo"
-    },
     "railFrom": "Castellón",
     "railTo": "Madrid",
-    "coverageLink": "Ver la cobertura completa"
+    "coverageLink": "Ver la cobertura completa",
+    "network": {
+      "line": "Y desde las dos naves, a toda la península.",
+      "daily": "Ruta diaria Castellón ⇄ Madrid",
+      "rest": "Envíos al resto de la península",
+      "mapLabel": "Mapa de la península con la ruta diaria entre Almazora y Fuenlabrada y las rutas desde las dos naves a las capitales de provincia."
+    }
   },
   "cta": {
     "title": "Cuéntanos qué necesitas mover",
@@ -491,6 +474,7 @@
       ],
       "videoLabel": "Vídeo corporativo de Transportes José María Ibáñez",
       "videoPlay": "Reproducir el vídeo de la empresa",
+      "videoSound": "Ver con sonido",
       "sustainabilityBadge": "Instalación fotovoltaica",
       "sustainabilityTitle": "Apostamos por la energía solar",
       "sustainabilityText": "Contamos con una instalación fotovoltaica en nuestras instalaciones, un paso hacia una logística más sostenible.",
@@ -821,7 +805,7 @@
         {
           "heading": "Créditos de las fotografías",
           "paragraphs": [
-            "Las fotografías de los servicios, las de los artículos del blog y las de las páginas de preguntas frecuentes y de contacto son de banco de imágenes. Son provisionales: se irán sustituyendo por fotografías propias.",
+            "Las fotografías de los servicios, las de los artículos del blog y las de operaciones (muelles, almacén, palés y camiones) que ilustran la portada y las páginas de contacto y de preguntas frecuentes son de banco de imágenes. No muestran nuestras instalaciones ni a nuestro equipo. Son provisionales: se irán sustituyendo por fotografías propias.",
             "Casi todas proceden de Pexels y se usan bajo la Licencia Pexels, que permite el uso comercial gratuito y no exige atribución: https://www.pexels.com/es-es/license/. Las acreditamos de todas formas.",
             "La fotografía del servicio nacional e internacional es «Semi-trailer trucks, Rostock Port, 2019 (02)», de Bahnfrend, publicada en Wikimedia Commons con licencia Creative Commons Atribución-CompartirIgual 4.0 (https://creativecommons.org/licenses/by-sa/4.0/deed.es). Se muestra recortada. Original: https://commons.wikimedia.org/w/index.php?curid=89080611",
             "Las demás fotografías de la web son propias."
@@ -959,32 +943,38 @@
     "goTo": "Ir a la reseña {n}"
   },
   "overview": {
-    "title": "El camión sale igual",
-    "lead": "Con media caja o lleno hasta el techo, en agosto y en diciembre. Cuarenta años saliendo de Almazora cada día laborable.",
+    "title": "Elige por dónde empezar",
     "ctaLead": "¿Prefieres que te lo contemos nosotros?",
     "cta": "Pedir presupuesto",
-    "cards": {
+    "panels": {
       "services": {
-        "kicker": "Servicios",
-        "title": "Seis formas de mover tu mercancía",
-        "text": "De un palé suelto a un camión completo."
+        "name": "Servicios",
+        "text": "De un palé suelto a un camión completo.",
+        "cta": "Ver servicios"
+      },
+      "coverage": {
+        "name": "Cobertura",
+        "text": "Castellón ⇄ Madrid cada día, y desde las dos naves a toda la península.",
+        "cta": "Ver cobertura"
       },
       "about": {
-        "kicker": "Nosotros",
-        "figure": "+4.000 m²",
-        "label": "de almacén propio",
-        "text": "Dos naves, en Almazora y en Fuenlabrada, con placas solares en el tejado."
-      },
-      "faq": {
-        "kicker": "Preguntas frecuentes",
-        "label": "respuestas",
-        "text": "Mínimos de palés, azulejo de gran formato, refrigerado y lo que no hacemos."
+        "name": "Nosotros",
+        "text": "Cuarenta años y dos naves propias, en Almazora y en Fuenlabrada.",
+        "cta": "Conócenos"
       },
       "blog": {
-        "kicker": "Blog",
-        "label": "artículos",
-        "text": "Cómo preparar un palé, qué cubre el seguro y cuánto tarda de verdad un envío."
+        "name": "Blog",
+        "text": "Cómo preparar un palé, qué cubre el seguro y cuánto tarda de verdad un envío.",
+        "cta": "Leer el blog"
+      },
+      "faq": {
+        "name": "Preguntas",
+        "text": "Mínimos de palés, azulejo de gran formato y lo que no hacemos.",
+        "cta": "Ver respuestas"
       }
     }
+  },
+  "carga": {
+    "antetitulo": "Castellón ⇄ Madrid, cada día"
   }
 }

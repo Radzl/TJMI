@@ -37,7 +37,7 @@ export default function Footer() {
   const serviceItems = tServices.raw('items') as ServiceDetail[];
 
   return (
-    <footer className="relative z-10 border-t border-line bg-white">
+    <footer className="tema-noche relative z-10 border-t border-line bg-card">
       <Container className="grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1.2fr_1fr_1.3fr]">
         <div>
           <Wordmark />
@@ -53,7 +53,7 @@ export default function Footer() {
           <ul className="mt-5 flex flex-col gap-3 text-sm text-muted">
             {navLinks.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="hover:text-brand-blue">
+                <Link href={link.href} className="hover:text-azul-texto">
                   {tNav(link.key)}
                 </Link>
               </li>
@@ -75,7 +75,7 @@ export default function Footer() {
               <li key={service.slug}>
                 <Link
                   href={`/servicios/${service.slug}`}
-                  className="hover:text-brand-blue"
+                  className="hover:text-azul-texto"
                 >
                   {serviceItems[service.index].title}
                 </Link>
@@ -92,7 +92,7 @@ export default function Footer() {
             <li>
               <a
                 href={`mailto:${tContact('email')}`}
-                className="hover:text-brand-blue"
+                className="hover:text-azul-texto"
               >
                 {tContact('email')}
               </a>
@@ -102,7 +102,7 @@ export default function Footer() {
                 href={tContact('whatsappUrl')}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-brand-blue"
+                className="hover:text-azul-texto"
               >
                 WhatsApp
               </a>
@@ -122,7 +122,7 @@ export default function Footer() {
                 </span>
                 <a
                   href={`tel:${site.phoneHref}`}
-                  className="mt-1 block hover:text-brand-blue"
+                  className="mt-1 block hover:text-azul-texto"
                 >
                   {site.phone}
                 </a>
@@ -141,7 +141,7 @@ export default function Footer() {
           <ul className="flex flex-wrap gap-5">
             {legalLinks.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="hover:text-brand-blue">
+                <Link href={link.href} className="hover:text-azul-texto">
                   {t(link.key)}
                 </Link>
               </li>

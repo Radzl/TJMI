@@ -11,8 +11,8 @@ import ScrollChoreography from './ScrollChoreography';
  * Tope de espera antes de montar la escena, en milisegundos.
  *
  * Es el seguro de `requestIdleCallback`: en una pestaña que no se queda
- * quieta nunca puede no llegar jamás. Mismo criterio que el tope de 4 s del
- * `Preloader`, solo que más corto, porque aquí no se está esperando a que
+ * quieta nunca puede no llegar jamás. Mismo criterio que el tope de 6 s de
+ * `PantallaCarga`, solo que más corto, porque aquí no se está esperando a que
  * descargue nada: se está esperando un hueco que normalmente llega en el
  * primer cuadro libre.
  */
@@ -108,14 +108,12 @@ export default function ExperienceCanvas() {
   //     pantallas de intro vacía por esperar a que el hilo se calme.
   //  3. **Un tope de tiempo.** Si la pestaña no se queda quieta nunca,
   //     `requestIdleCallback` puede no llegar jamás. Mismo criterio que el
-  //     tope de 4 s del `Preloader`: un mecanismo que puede quedarse
-  //     esperando para siempre es peor que no tenerlo.
+  //     tope de `PantallaCarga`: un mecanismo que puede quedarse esperando
+  //     para siempre es peor que no tenerlo.
   //
-  // **Esto no cambia lo que ve el visitante**, y es lo que lo hace barato: el
-  // `Preloader` vive dentro de `Experience`, así que ya hoy aparece **después**
-  // del primer pintado —sobre 1,5 s con red normal, está medido en
-  // `CLAUDE.md`—. Lo que se mueve son unos centenares de milisegundos de algo
-  // que ya pasaba en ese orden.
+  // **Esto no cambia lo que ve el visitante**: mientras tanto la portada está
+  // tapada por `PantallaCarga`, que sale en el primer pintado y espera a que
+  // el 3D avise de que ha terminado de descargar (`AvisoCarga`).
   const [arrancado, setArrancado] = useState(false);
 
   useEffect(() => {

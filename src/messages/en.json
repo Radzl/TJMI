@@ -303,32 +303,15 @@
     "sites": "Two sites: Almazora (Castellón) and Fuenlabrada (Madrid).",
     "mapTitle": "The route, every day",
     "mapIntro": "We leave Almazora every morning and deliver in Madrid the next day. No transfers, no third parties.",
-    "mapStops": [
-      {
-        "title": "Departure from Almazora",
-        "detail": "Loaded at our depot the afternoon before."
-      },
-      {
-        "title": "Pick-ups along the way",
-        "detail": "More than 150 towns across the Castellón province."
-      },
-      {
-        "title": "Arrival in Fuenlabrada",
-        "detail": "420 km on the A-3, with no transfers."
-      },
-      {
-        "title": "Delivery at destination",
-        "detail": "Madrid and neighbouring provinces."
-      }
-    ],
-    "mapLegend": {
-      "pickup": "Collection across the province of Castellón",
-      "delivery": "Delivery in Madrid and surroundings",
-      "sea": "Mediterranean Sea"
-    },
     "railFrom": "Castellón",
     "railTo": "Madrid",
-    "coverageLink": "See the full coverage"
+    "coverageLink": "See the full coverage",
+    "network": {
+      "line": "And from our two warehouses, to the whole peninsula.",
+      "daily": "Daily Castellón ⇄ Madrid route",
+      "rest": "Shipments across the rest of the peninsula",
+      "mapLabel": "Map of the Iberian peninsula with the daily route between Almazora and Fuenlabrada and the routes from both warehouses to every provincial capital."
+    }
   },
   "cta": {
     "title": "Tell us what you need to move",
@@ -491,6 +474,7 @@
       ],
       "videoLabel": "Corporate video of Transportes José María Ibáñez",
       "videoPlay": "Play the company video",
+      "videoSound": "Watch with sound",
       "sustainabilityBadge": "Photovoltaic installation",
       "sustainabilityTitle": "We are committed to solar energy",
       "sustainabilityText": "We have a photovoltaic installation at our facilities, a step towards more sustainable logistics.",
@@ -821,7 +805,7 @@
         {
           "heading": "Photography credits",
           "paragraphs": [
-            "The photographs for the services, the blog articles and the FAQ and contact pages come from stock libraries. They are provisional and will be replaced with our own photographs.",
+            "The photographs for the services, the blog articles and the operations shots (loading docks, warehouse, pallets and trucks) on the home page and the contact and FAQ pages come from stock libraries. They do not show our premises or our team. They are provisional and will be replaced with our own photographs.",
             "Almost all of them come from Pexels and are used under the Pexels Licence, which allows free commercial use and does not require attribution: https://www.pexels.com/license/. We credit them anyway.",
             "The photograph for the national and international service is \"Semi-trailer trucks, Rostock Port, 2019 (02)\" by Bahnfrend, published on Wikimedia Commons under the Creative Commons Attribution-ShareAlike 4.0 licence (https://creativecommons.org/licenses/by-sa/4.0/). It is shown cropped. Original: https://commons.wikimedia.org/w/index.php?curid=89080611",
             "Every other photograph on this site is our own."
@@ -959,32 +943,38 @@
     "goTo": "Go to review {n}"
   },
   "overview": {
-    "title": "The truck always leaves",
-    "lead": "Half empty or full to the roof, in August and in December. Forty years pulling out of Almazora every working day.",
+    "title": "Choose where to start",
     "ctaLead": "Would you rather we told you ourselves?",
     "cta": "Request a quote",
-    "cards": {
+    "panels": {
       "services": {
-        "kicker": "Services",
-        "title": "Six ways to move your freight",
-        "text": "From a single pallet to a full truck."
+        "name": "Services",
+        "text": "From a single pallet to a full truck.",
+        "cta": "See services"
+      },
+      "coverage": {
+        "name": "Coverage",
+        "text": "Castellón ⇄ Madrid every day, and from our two warehouses to the whole peninsula.",
+        "cta": "See coverage"
       },
       "about": {
-        "kicker": "About us",
-        "figure": "+4,000 m²",
-        "label": "of warehouse of our own",
-        "text": "Two sites, in Almazora and Fuenlabrada, with solar panels on the roof."
-      },
-      "faq": {
-        "kicker": "FAQ",
-        "label": "answers",
-        "text": "Pallet minimums, large-format tiles, refrigerated loads and what we do not do."
+        "name": "About us",
+        "text": "Forty years and two warehouses of our own, in Almazora and Fuenlabrada.",
+        "cta": "Meet us"
       },
       "blog": {
-        "kicker": "Blog",
-        "label": "articles",
-        "text": "How to build a pallet, what insurance covers and how long a shipment really takes."
+        "name": "Blog",
+        "text": "How to build a pallet, what insurance covers and how long a shipment really takes.",
+        "cta": "Read the blog"
+      },
+      "faq": {
+        "name": "FAQ",
+        "text": "Pallet minimums, large-format tiles and what we do not do.",
+        "cta": "See answers"
       }
     }
+  },
+  "carga": {
+    "antetitulo": "Castellón ⇄ Madrid, every day"
   }
 }

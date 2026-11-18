@@ -8,9 +8,11 @@ import CookieConsent from '@/components/legal/CookieConsent';
 import Backdrop from '@/components/layout/Backdrop';
 import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
+import PantallaCarga from '@/components/layout/PantallaCarga';
 import SmoothScroll from '@/components/layout/SmoothScroll';
 import WhatsAppButton from '@/components/layout/WhatsAppButton';
 import { CONSENT_INLINE_SCRIPT } from '@/lib/consentCookie';
+import { TRANSICIONES_INLINE_SCRIPT } from '@/lib/transiciones';
 import { routing } from '@/i18n/routing';
 import { COMPANY_NAME, SITE_URL } from '@/lib/site';
 import '../globals.css';
@@ -156,6 +158,11 @@ export default async function LocaleLayout({
             cuesta microsegundos y abrir un contexto WebGL costó 1.277 ms
             medidos. */}
         <script dangerouslySetInnerHTML={{ __html: CONSENT_INLINE_SCRIPT }} />
+        {/* Las transiciones de página que el navegador cancela (pestaña
+            oculta, ventana que cambia de tamaño) dejan de anunciarse como
+            error. Tiene que estar antes de la primera transición; ver
+            `lib/transiciones.ts`. */}
+        <script dangerouslySetInnerHTML={{ __html: TRANSICIONES_INLINE_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col antialiased">
         <NextIntlClientProvider>
@@ -176,6 +183,11 @@ export default async function LocaleLayout({
           <Footer />
           <WhatsAppButton />
           <CookieConsent />
+          {/* La pantalla de carga de la portada. Va aquí, fuera de `<main>`,
+              para que su capa quede por encima de la barra de navegación, y
+              en el HTML del servidor para verse desde el primer pintado. Solo
+              sale en la portada; ver `PantallaCarga`. */}
+          <PantallaCarga />
         </NextIntlClientProvider>
       </body>
     </html>

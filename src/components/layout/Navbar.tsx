@@ -47,10 +47,8 @@ export default function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-[transform,background-color,border-color] duration-300 ${
-        scrolled
-          ? 'border-b border-line bg-bone'
-          : 'border-b border-transparent bg-transparent'
+      className={`tema-noche sticky top-0 z-50 bg-bone transition-[transform,background-color,border-color] duration-300 ${
+        scrolled ? 'border-b border-line' : 'border-b border-transparent'
       } ${hidden && !open ? '-translate-y-full' : 'translate-y-0'}`}
     >
       <Container className="flex h-20 items-center justify-between">
@@ -84,9 +82,9 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               aria-current={isCurrent(link.href) ? 'page' : undefined}
-              className={`relative font-display text-xs uppercase tracking-widest transition-colors after:absolute after:-bottom-2 after:left-0 after:h-px after:bg-brand-red after:transition-all after:duration-300 after:content-[''] hover:text-brand-blue ${
+              className={`relative font-display text-xs uppercase tracking-widest transition-colors after:absolute after:-bottom-2 after:left-0 after:h-px after:bg-brand-red after:transition-all after:duration-300 after:content-[''] hover:text-azul-texto ${
                 isCurrent(link.href)
-                  ? 'text-brand-blue after:w-full'
+                  ? 'text-azul-texto after:w-full'
                   : 'text-ink after:w-0 hover:after:w-full'
               }`}
             >
@@ -117,7 +115,7 @@ export default function Navbar() {
       </Container>
 
       {open && (
-        <div className="border-t border-line bg-white lg:hidden">
+        <div className="border-t border-line bg-card lg:hidden">
           <Container className="flex flex-col gap-6 py-8">
             <nav className="flex flex-col gap-5">
               {links.map((link) => (
@@ -127,7 +125,7 @@ export default function Navbar() {
                   onClick={() => setOpen(false)}
                   aria-current={isCurrent(link.href) ? 'page' : undefined}
                   className={`flex items-center gap-3 font-display text-sm uppercase tracking-widest ${
-                    isCurrent(link.href) ? 'text-brand-blue' : 'text-ink'
+                    isCurrent(link.href) ? 'text-azul-texto' : 'text-ink'
                   }`}
                 >
                   <span

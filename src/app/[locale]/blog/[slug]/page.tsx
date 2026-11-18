@@ -124,7 +124,7 @@ export default async function BlogPostPage({ params }: Props) {
         <Container>
           <Link
             href="/blog"
-            className="font-display text-xs uppercase tracking-widest text-muted hover:text-brand-blue"
+            className="font-display text-xs uppercase tracking-widest text-muted hover:text-azul-texto"
           >
             {t('back')}
           </Link>
@@ -221,7 +221,7 @@ export default async function BlogPostPage({ params }: Props) {
                         {dateFormat.format(new Date(other.date))}
                       </time>
                     </span>
-                    <span className="mt-auto pt-4 font-display text-lg uppercase leading-tight tracking-tight text-ink transition-colors group-hover:text-brand-blue">
+                    <span className="mt-auto pt-4 font-display text-lg uppercase leading-tight tracking-tight text-ink transition-colors group-hover:text-azul-texto">
                       {other.content[active].title}
                     </span>
                   </Link>

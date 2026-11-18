@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Cta from '@/components/sections/Cta';
-import RouteMap from '@/components/sections/RouteMap';
+import RedNacional from '@/components/sections/RedNacional';
 import Container from '@/components/ui/Container';
 import HeaderPhoto from '@/components/ui/HeaderPhoto';
 import { HEADER_PHOTOS } from '@/content/media';
@@ -56,7 +56,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  *
  * **De cosas ya publicadas, no de afirmaciones nuevas.** Los cuatro niveles
  * salen de `route.coverage`, los puntos de cada uno de los `includes` de los
- * servicios, y las paradas del mapa de `route.mapStops`. La única excepción
+ * servicios, y el mapa dibuja lo que la web ya dice: la ruta diaria y que se
+ * llega a toda la península (ver `lib/red.ts`). La única excepción
  * está marcada en `CLAUDE.md`: la lista de localidades del clúster azulejero,
  * que es consistente con el «+150 localidades» que la empresa ya publica —son
  * más que los 135 municipios de la provincia— pero que conviene que el
@@ -78,7 +79,6 @@ export default async function CoveragePage({ params }: Props) {
   setRequestLocale(locale);
 
   const t = await getTranslations('pages.coverage');
-  const tRoute = await getTranslations('route');
   const tContact = await getTranslations('contact');
 
   const areas = t.raw('areas') as Area[];
@@ -86,7 +86,9 @@ export default async function CoveragePage({ params }: Props) {
   const sedes = tContact.raw('sites') as Sede[];
 
   return (
-    <>
+    // Página oscura: el tema noche se aplica a todo el contenido. Ver
+    // `.tema-noche` en `globals.css`.
+    <div className="tema-noche" data-bg="night">
       <PageHeader
         title={t('title')}
         lead={t('titleLead')}
@@ -98,26 +100,13 @@ export default async function CoveragePage({ params }: Props) {
       />
 
       {/* **El mapa es el mismo de la portada, y se reutiliza a propósito.**
-          Es la pieza que explica el corredor sin una sola palabra de más, y
-          repetir el componente no es repetir contenido: lo que se posiciona
-          es el texto de alrededor, que aquí es otro. */}
-      <RouteMap
-        title={tRoute('mapTitle')}
-        intro={tRoute('mapIntro')}
-        origin={tRoute('origin')}
-        destination={tRoute('destination')}
-        // Con la unidad: aquí iba solo el número y el mapa de esta página
-        // ponía «420» a secas, mientras el de la portada decía «420 km».
-        distance={`${tRoute('odometer.value')} ${tRoute('odometer.unit')}`}
-        stops={
-          tRoute.raw('mapStops') as { title: string; detail: string }[]
-        }
-        legend={
-          tRoute.raw('mapLegend') as { pickup: string; delivery: string; sea: string }
-        }
-      />
+          Aquí va entero desde el principio y sin fijarse (`estatico`): en esta
+          página es un dato que se consulta, no un momento. Repetir el
+          componente no es repetir contenido: lo que se posiciona es el texto
+          de alrededor, que aquí es otro. */}
+      <RedNacional estatico />
 
-      <section data-bg="bone" className="relative z-10 bg-bone py-28">
+      <section data-bg="night" className="relative z-10 bg-bone py-28">
         <Container>
           <SectionHeading title={t('areasTitle')} lead={t('areasIntro')} />
 
@@ -127,7 +116,7 @@ export default async function CoveragePage({ params }: Props) {
               son el mismo servicio llegando más o menos lejos. */}
           <ul className="mt-16 grid gap-px border border-line bg-line lg:grid-cols-2">
             {areas.map((area) => (
-              <li key={area.name} className="bg-white p-8 lg:p-10">
+              <li key={area.name} className="bg-card p-8 lg:p-10">
                 <h3 className="font-display text-2xl uppercase leading-tight tracking-tight text-ink">
                   {area.name}
                 </h3>
@@ -154,7 +143,7 @@ export default async function CoveragePage({ params }: Props) {
         </Container>
       </section>
 
-      <section data-bg="bone" className="relative z-10 bg-bone pb-28">
+      <section data-bg="night" className="relative z-10 bg-bone pb-28">
         <Container>
           <SectionHeading title={t('townsTitle')} lead={t('townsIntro')} />
 
@@ -166,7 +155,7 @@ export default async function CoveragePage({ params }: Props) {
             {towns.map((town) => (
               <li
                 key={town}
-                className="rounded-full border border-line bg-white px-4 py-1.5 text-xs uppercase tracking-widest text-muted"
+                className="rounded-full border border-line bg-card px-4 py-1.5 text-xs uppercase tracking-widest text-muted"
               >
                 {town}
               </li>
@@ -179,7 +168,7 @@ export default async function CoveragePage({ params }: Props) {
         </Container>
       </section>
 
-      <section data-bg="bone" className="relative z-10 bg-bone pb-28">
+      <section data-bg="night" className="relative z-10 bg-bone pb-28">
         <Container>
           <SectionHeading title={t('sitesTitle')} lead={t('sitesIntro')} />
 
@@ -191,7 +180,7 @@ export default async function CoveragePage({ params }: Props) {
               enlace del pie. */}
           <ul className="mt-14 grid gap-px border-y border-line bg-line sm:grid-cols-2">
             {sedes.map((sede) => (
-              <li key={sede.city} className="bg-white px-6 py-10 lg:px-8">
+              <li key={sede.city} className="bg-card px-6 py-10 lg:px-8">
                 <h3 className="font-display text-xs uppercase tracking-[0.18em] text-brand-red-ink sm:tracking-[0.3em]">
                   {sede.city}
                 </h3>
@@ -203,7 +192,7 @@ export default async function CoveragePage({ params }: Props) {
                 </p>
                 <a
                   href={`tel:${sede.phoneHref}`}
-                  className="mt-5 inline-block font-display text-sm uppercase tracking-widest text-brand-blue transition-colors hover:text-brand-red-ink"
+                  className="mt-5 inline-block font-display text-sm uppercase tracking-widest text-azul-texto transition-colors hover:text-brand-red-ink"
                 >
                   {sede.phone}
                 </a>
@@ -214,6 +203,6 @@ export default async function CoveragePage({ params }: Props) {
       </section>
 
       <Cta />
-    </>
+    </div>
   );
 }

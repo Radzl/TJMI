@@ -34,7 +34,7 @@ type State = { caido: boolean };
  * 1. **Deja de pintar el 3D**, sin más.
  * 2. **Marca el documento con `data-sin-3d`**, y eso pone la página en el
  *    mismo estado en el que ya sabe funcionar cuando el sistema pide reducir
- *    movimiento: el hero y la carretera sueltan el `sticky` y dejan de medir
+ *    movimiento: el hero suelta el `sticky` y deja de medir
  *    pantallas de más, y la sección azul se pinta su propio fondo en vez de
  *    heredarlo del suelo de la escena.
  *

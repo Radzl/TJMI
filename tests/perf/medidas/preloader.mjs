@@ -27,7 +27,7 @@ const page = await ctx.newPage();
 await page.addInitScript(() => {
   window.__visto = null;
   const mirar = () => {
-    const pre = document.querySelector('[data-preloader]');
+    const pre = document.querySelector('.carga');
     // **Solo mientras TAPA de verdad.** En cuanto termina, el preloader se
     // queda con `pointer-events-none` para dejar pasar los clics, y entonces
     // `elementFromPoint` lo salta y devuelve lo de debajo: se mide el fundido

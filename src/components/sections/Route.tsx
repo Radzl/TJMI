@@ -22,7 +22,7 @@ export default function Route() {
   return (
     // Fondo propio y opaco: ya no hay 3D detrás, y así el texto en tinta nunca
     // puede quedarse sobre el azul noche de la sección anterior.
-    <section data-bg="bone" className="relative z-10 bg-bone py-28">
+    <section data-bg="night" className="tema-noche relative z-10 bg-bone py-28">
       <Container>
         <SectionHeading
           title={t('coverageTitle')}
@@ -41,7 +41,7 @@ export default function Route() {
           titular puede partirse en dos líneas sin pasar nada; «+4.000 m²»
           partido es un error de maquetación, así que lleva su propio `clamp`,
           ajustado para que la cifra más larga quepa en media columna de móvil. */}
-      <div className="mt-16 border-y border-line bg-white">
+      <div className="mt-16 border-y border-line bg-card">
         {/* `gap-px` sobre fondo gris dibuja los filetes entre celdas solo, sin
             tener que ir poniendo bordes a la primera, a la última y a las de
             la segunda fila cuando pasa de cuatro columnas a dos. */}
@@ -49,7 +49,7 @@ export default function Route() {
           {milestones.map((milestone) => (
             <div
               key={milestone.label}
-              className="flex flex-col-reverse gap-3 bg-white px-6 py-12 lg:px-8 lg:py-16"
+              className="flex flex-col-reverse gap-3 bg-card px-6 py-12 lg:px-8 lg:py-16"
             >
               <dt className="text-sm leading-snug text-muted">
                 {milestone.label}
@@ -57,7 +57,7 @@ export default function Route() {
               <dd>
                 <CountUp
                   value={milestone.value}
-                  className="font-display text-[clamp(2rem,4.2vw,3.25rem)] leading-none tracking-tight text-brand-blue tabular-nums"
+                  className="font-display text-[clamp(2rem,4.2vw,3.25rem)] leading-none tracking-tight text-azul-texto tabular-nums"
                 />
               </dd>
             </div>
@@ -95,12 +95,12 @@ export default function Route() {
             apilados dejaban dos líneas sueltas al pie de una sección que ya
             es larga. */}
         <div className="mt-12 flex flex-wrap items-baseline gap-x-6 gap-y-3">
-          <p className="font-display text-sm uppercase tracking-widest text-brand-blue">
+          <p className="font-display text-sm uppercase tracking-widest text-azul-texto">
             {t('sites')}
           </p>
           <Link
             href="/cobertura"
-            className="font-display text-sm uppercase tracking-widest text-brand-red-ink transition-colors hover:text-brand-blue"
+            className="font-display text-sm uppercase tracking-widest text-brand-red-ink transition-colors hover:text-azul-texto"
           >
             {t('coverageLink')}
           </Link>

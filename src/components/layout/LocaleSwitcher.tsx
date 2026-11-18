@@ -19,7 +19,7 @@ export default function LocaleSwitcher() {
             aria-current={locale === activeLocale ? 'true' : undefined}
             className={
               locale === activeLocale
-                ? 'font-display text-brand-blue'
+                ? 'font-display text-azul-texto'
                 : 'font-display text-muted hover:text-ink'
             }
           >

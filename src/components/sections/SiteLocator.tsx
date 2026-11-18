@@ -18,6 +18,12 @@ type Sede = 'castellon' | 'madrid';
  * Es un recorte del mismo lienzo de 1000 × 753 del mapa de la ruta, centrado en
  * la nave, y va con `slice`: llena el hueco tenga la forma que tenga (casi
  * cuadrado en el móvil, apaisado en escritorio) sin dejar bandas vacías.
+ *
+ * **Los colores salen de variables** (`--mapa-*` en `globals.css`) y no van
+ * escritos aquí: el mismo dibujo vive sobre crema y sobre azul noche, y en
+ * `.tema-noche` se redefinen con los tonos del mapa de la red. Van por `style`
+ * y no por atributo: `var()` dentro de un atributo de presentación de SVG no
+ * es fiable en todos los navegadores.
  */
 const SEDES: Record<
   Sede,
@@ -27,15 +33,15 @@ const SEDES: Record<
     provincia: ROUTE_MAP.castellon,
     punto: ROUTE_MAP.from,
     etiqueta: 'Almazora',
-    color: 'rgb(208 59 64 / 0.16)',
-    borde: '#b83035',
+    color: 'var(--mapa-prov-roja)',
+    borde: 'var(--mapa-borde-rojo)',
   },
   madrid: {
     provincia: ROUTE_MAP.madrid,
     punto: ROUTE_MAP.to,
     etiqueta: 'Fuenlabrada',
-    color: 'rgb(52 84 138 / 0.3)',
-    borde: '#34548a',
+    color: 'var(--mapa-prov-azul)',
+    borde: 'var(--mapa-borde-azul)',
   },
 };
 
@@ -60,17 +66,26 @@ export default function SiteLocator({ sede }: { sede: Sede }) {
       aria-hidden="true"
       className="absolute inset-0 h-full w-full"
     >
-      <rect x={x - 400} y={y - 400} width={800} height={800} fill="#f3eee4" />
-      <path d={ROUTE_MAP.portugal} fill="#efe9dd" stroke="#d6cdbb" strokeWidth={0.8} />
-      <path d={ROUTE_MAP.spain} fill="#e7dfcf" stroke="#d6cdbb" strokeWidth={0.8} strokeLinejoin="round" />
-      <path d={provincia} fill={color} stroke={borde} strokeWidth={0.9} strokeLinejoin="round" />
+      <rect x={x - 400} y={y - 400} width={800} height={800} style={{ fill: 'var(--mapa-mar)' }} />
+      <path
+        d={ROUTE_MAP.portugal}
+        style={{ fill: 'var(--mapa-vecino)', stroke: 'var(--mapa-costa)' }}
+        strokeWidth={0.8}
+      />
+      <path
+        d={ROUTE_MAP.spain}
+        style={{ fill: 'var(--mapa-tierra)', stroke: 'var(--mapa-costa)' }}
+        strokeWidth={0.8}
+        strokeLinejoin="round"
+      />
+      <path d={provincia} style={{ fill: color, stroke: borde }} strokeWidth={0.9} strokeLinejoin="round" />
 
       {/* El corredor sale de la nave: es lo que hace de ese punto una sede de
           la ruta y no una dirección cualquiera. */}
       <path
         d={ROUTE_MAP.corridor}
         fill="none"
-        stroke="#34548a"
+        style={{ stroke: 'var(--mapa-corredor)' }}
         strokeWidth={2.4}
         strokeLinecap="round"
         strokeLinejoin="round"

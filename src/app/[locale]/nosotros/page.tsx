@@ -5,7 +5,7 @@ import VideoFrame from '@/components/sections/VideoFrame';
 import Container from '@/components/ui/Container';
 import PageHeader, { type PageFact } from '@/components/ui/PageHeader';
 import RevealText from '@/components/ui/RevealText';
-import { VIDEO_POSTER } from '@/content/media';
+import { VIDEO_CON_AUDIO, VIDEO_POSTER } from '@/content/media';
 import { pageMetadata } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: string }> };
@@ -32,7 +32,9 @@ export default async function AboutPage({ params }: Props) {
   const paragraphs = t.raw('body') as string[];
 
   return (
-    <>
+    // Página oscura: el tema noche se aplica a todo el contenido. Ver
+    // `.tema-noche` en `globals.css`.
+    <div className="tema-noche" data-bg="night">
       {/* **Primero el titular, después el vídeo, y el vídeo en grande.** Hubo
           una temporada en que esta página abría con el vídeo a sangre y el
           titular encima, y se entraba a Nosotros sin saber que se había
@@ -62,6 +64,9 @@ export default async function AboutPage({ params }: Props) {
             src="/media/video-corporativo.mp4"
             poster={VIDEO_POSTER.src}
             label={t('videoLabel')}
+            // Sin audio en el archivo no hay botón de sonido: ver
+            // `VIDEO_CON_AUDIO`.
+            soundLabel={VIDEO_CON_AUDIO ? t('videoSound') : undefined}
           />
         }
       />
@@ -89,6 +94,6 @@ export default async function AboutPage({ params }: Props) {
       </section>
 
       <Cta />
-    </>
+    </div>
   );
 }

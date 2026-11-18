@@ -14,7 +14,7 @@ type Props = {
 type Step = { title: string; hint: string };
 
 const inputStyles =
-  'mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-muted/60 focus:border-brand-blue';
+  'mt-2 w-full rounded-xl border border-line bg-card px-4 py-3 text-base text-ink outline-none transition-colors placeholder:text-muted/60 focus:border-azul-texto';
 
 function Field({
   label,
@@ -227,7 +227,7 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
     <form
       onSubmit={handleFormSubmit}
       noValidate
-      className="rounded-2xl border border-line bg-white p-8 lg:p-10"
+      className="rounded-2xl border border-line bg-card p-8 lg:p-10"
     >
       {/* **El señuelo.** No se ve, no llega por tabulador y los lectores de
           pantalla lo ignoran, así que **una persona no puede rellenarlo**; un
@@ -261,7 +261,7 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
           que hace que la gente termine de rellenarlo. */}
       <div className="mt-8">
         <div className="flex items-baseline justify-between gap-4">
-          <span className="font-display text-xs uppercase tracking-widest text-brand-blue">
+          <span className="font-display text-xs uppercase tracking-widest text-azul-texto">
             {t('stepOf', { current: step + 1, total: STEP_FIELDS.length })}
           </span>
           <span className="text-xs text-muted">{steps[step].hint}</span>
@@ -412,7 +412,7 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
           <button
             type="button"
             onClick={() => setStep((current) => current - 1)}
-            className="inline-flex items-center justify-center rounded-full border border-line px-7 py-3 font-display text-sm uppercase tracking-widest text-ink transition-colors hover:border-brand-blue hover:text-brand-blue"
+            className="inline-flex items-center justify-center rounded-full border border-line px-7 py-3 font-display text-sm uppercase tracking-widest text-ink transition-colors hover:border-azul-texto hover:text-azul-texto"
           >
             {t('back')}
           </button>
@@ -459,14 +459,14 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
             <button
               type="button"
               onClick={handleSubmit(enviarPorWhatsapp)}
-              className="text-sm text-muted underline underline-offset-4 hover:text-brand-blue"
+              className="text-sm text-muted underline underline-offset-4 hover:text-azul-texto"
             >
               {t('submitWhatsapp')}
             </button>
             <button
               type="button"
               onClick={handleSubmit(sendByEmail)}
-              className="text-sm text-muted underline underline-offset-4 hover:text-brand-blue"
+              className="text-sm text-muted underline underline-offset-4 hover:text-azul-texto"
             >
               {t('submitEmail')}
             </button>
@@ -484,7 +484,7 @@ export default function QuoteForm({ whatsappUrl, email }: Props) {
           className={`mt-6 rounded-xl border px-5 py-4 text-sm leading-relaxed ${
             estado === 'limite'
               ? 'border-brand-red/30 bg-brand-red/5 text-ink'
-              : 'border-brand-blue/30 bg-brand-blue/5 text-ink'
+              : 'border-azul-texto/30 bg-brand-blue/5 text-ink'
           }`}
         >
           {estado === 'enviado' && t('sent')}

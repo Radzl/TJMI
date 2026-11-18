@@ -27,18 +27,20 @@ type Props = {
  * se pide a ScrollTrigger exactamente ese recorrido de scroll. Así la última
  * tarjeta queda a la vista justo cuando el bloque se suelta.
  *
- * Tres cosas además del desplazamiento, y las tres son por lo mismo: un
- * desfile sin referencias no se entiende, parece que la página se ha quedado
- * enganchada.
- *  - La **palabra gigante** se mueve menos que las tarjetas. Esa diferencia de
- *    velocidad es lo que da profundidad; quieta era un sello pegado al fondo.
- *  - La **barra de avance** dice cuánto queda. Sin ella el bloque fijo es un
- *    scroll que no responde.
- *  - El **contador** nombra en qué tarjeta vas.
+ * Un desfile sin referencias no se entiende: parece que la página se ha
+ * quedado enganchada. La referencia es **un riel con su tramo**, como una
+ * barra de desplazamiento: una línea fina de lado a lado y, encima, un tramo
+ * que mide **lo que se ve de la fila** y se desliza según avanza. Dice cuánto
+ * queda sin un solo número.
  *
- * La barra y el contador se escriben **directamente sobre el DOM** desde
- * `onUpdate`, no con estado de React: cambian en cada fotograma del scroll y
- * no deben provocar ni un render. Es la misma regla que sigue el 3D.
+ * Hubo un contador «01 / 06» y una barra que se llenaba, y se quitaron los dos
+ * a petición del cliente (2026-11-18): el número sobraba —estos servicios no
+ * van en orden, y por eso las tarjetas tampoco lo llevan— y una barra que se
+ * carga se lee como una descarga, no como una fila que se recorre.
+ *
+ * El tramo se escribe **directamente sobre el DOM** desde `onUpdate`, no con
+ * estado de React: cambia en cada fotograma del scroll y no debe provocar ni
+ * un render. Es la misma regla que sigue el 3D.
  *
  * Con movimiento reducido no se fija nada: la fila pasa a ser una rejilla
  * normal con las clases `motion-reduce:` y las tarjetas se leen en vertical.
@@ -51,8 +53,7 @@ export default function ServicesTrack({
 }: Props) {
   const pinRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLUListElement>(null);
-  const barRef = useRef<HTMLSpanElement>(null);
-  const countRef = useRef<HTMLSpanElement>(null);
+  const thumbRef = useRef<HTMLSpanElement>(null);
   const reducedMotion = useReducedMotion();
 
   // Qué servicio tiene el detalle abierto. Esto sí es estado de React y no un
@@ -70,7 +71,18 @@ export default function ServicesTrack({
     // Cuánto sobresale la fila por la derecha. Se recalcula en cada refresco
     // porque depende del ancho de la ventana.
     const overflow = () => Math.max(0, track.scrollWidth - pin.clientWidth);
-    const total = items.length;
+
+    // El tramo del riel: mide la fracción de fila que cabe en pantalla, con un
+    // mínimo para que en un móvil —donde se ve menos de una tarjeta— no se
+    // quede en una mota. Se desplaza en porcentaje de su propio ancho, así que
+    // `(1 / ancho − 1)` es justo lo que le queda de riel por recorrer.
+    const pintarTramo = (progress: number) => {
+      const thumb = thumbRef.current;
+      if (!thumb) return;
+      const visible = Math.min(1, Math.max(0.14, pin.clientWidth / Math.max(1, track.scrollWidth)));
+      thumb.style.width = `${visible * 100}%`;
+      thumb.style.transform = `translateX(${progress * (1 / visible - 1) * 100}%)`;
+    };
 
     // **El bloque se fija también en móvil.** Hubo una temporada en que por
     // debajo de 640 px esto pasaba a ser un carrusel de scroll nativo, por
@@ -100,23 +112,15 @@ export default function ServicesTrack({
           // Un punto de inercia: pegado al scroll 1:1 se siente brusco.
           scrub: 1,
           invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            const bar = barRef.current;
-            if (bar) bar.style.transform = `scaleX(${self.progress})`;
-
-            const count = countRef.current;
-            if (count) {
-              const index = Math.min(
-                total,
-                Math.floor(self.progress * total) + 1,
-              );
-              count.textContent = String(index).padStart(2, '0');
-            }
-          },
+          onUpdate: (self) => pintarTramo(self.progress),
+          // Al cambiar el tamaño de la ventana cambia cuánto se ve de la fila,
+          // o sea el ancho del tramo.
+          onRefresh: (self) => pintarTramo(self.progress),
         },
       });
 
       timeline.to(track, { x: () => -overflow(), ease: 'none' }, 0);
+      pintarTramo(timeline.scrollTrigger?.progress ?? 0);
 
       // `matchMedia` ya mata la timeline y su disparador; esto solo borra los
       // `transform` que dejó escritos, para que la fila no se quede desplazada
@@ -127,7 +131,7 @@ export default function ServicesTrack({
     });
 
     return () => media.revert();
-  }, [items.length, reducedMotion]);
+  }, [reducedMotion]);
 
   return (
     <div
@@ -156,7 +160,7 @@ export default function ServicesTrack({
         {items.map((item, index) => (
           <li
             key={item.title}
-            className="group relative w-[78vw] shrink-0 overflow-hidden rounded-2xl border border-line bg-white sm:w-[46vw] lg:w-[27vw] lg:max-w-[400px]"
+            className="group relative w-[78vw] shrink-0 overflow-hidden rounded-2xl border border-line bg-card sm:w-[46vw] lg:w-[27vw] lg:max-w-[400px]"
           >
             {/* Filete rojo que se dibuja de izquierda a derecha al pasar por
                 encima: el único premio que tiene la tarjeta, y basta. */}
@@ -205,8 +209,8 @@ export default function ServicesTrack({
                     `RouteSteps` sí llevan número: aquello sí es una secuencia
                     —no se entrega antes de recoger— y esto no.
 
-                    Quien quiera saber por dónde va tiene el contador y la barra
-                    de avance del pie, que para eso están. */}
+                    Quien quiera saber por dónde va tiene el riel del pie, que
+                    tampoco lleva números. */}
                 <h3 className="font-display text-display-sm uppercase text-ink">
                   {item.title}
                 </h3>
@@ -269,30 +273,19 @@ export default function ServicesTrack({
           reducido, que es cuando no hay desfile.
           El hueco de la derecha es para el botón flotante de WhatsApp, que
           vive en esa esquina y se comía el final de la barra. */}
-      <div className="pointer-events-none absolute inset-x-6 bottom-10 flex items-center gap-5 pr-16 motion-reduce:hidden lg:inset-x-10 lg:pr-20">
-        <p className="shrink-0 font-display text-xs uppercase tracking-[0.18em] sm:tracking-[0.3em] text-muted">
-          <span ref={countRef} className="tabular-nums text-ink">
-            01
-          </span>
-          <span className="text-line"> / </span>
-          <span className="tabular-nums">
-            {String(items.length).padStart(2, '0')}
-          </span>
-        </p>
+      <div className="pointer-events-none absolute inset-x-6 bottom-10 flex items-center gap-6 pr-16 motion-reduce:hidden lg:inset-x-10 lg:pr-20">
+        <p className="hidden shrink-0 text-xs text-muted sm:block">{hint}</p>
 
-        <p className="hidden shrink-0 font-display text-xs uppercase tracking-[0.18em] sm:tracking-[0.3em] text-muted sm:block">
-          {hint}
-        </p>
-
-        <span className="relative h-0.5 flex-1 rounded-full bg-line">
-          {/* El estado inicial va en `style` y no con `scale-x-0`: Tailwind v4
-              escribe esa clase en la propiedad `scale`, y un `transform` en
-              línea no la pisa, así que la barra se quedaba a cero para
-              siempre. */}
+        {/* El riel: un filete de lado a lado y, encima, el tramo que se
+            desliza. El tramo es más grueso que el filete y lo desborda por
+            arriba y por abajo, que es lo que lo hace leerse como «aquí
+            estás» y no como una raya más. Su ancho y su posición los escribe
+            `pintarTramo`; el ancho de partida es para que no salte al montar. */}
+        <span className="relative h-px flex-1 bg-line" aria-hidden="true">
           <span
-            ref={barRef}
-            style={{ transform: 'scaleX(0)' }}
-            className="absolute inset-0 origin-left rounded-full bg-brand-red"
+            ref={thumbRef}
+            style={{ width: '30%', transform: 'translateX(0%)' }}
+            className="absolute left-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-ink will-change-transform"
           />
         </span>
       </div>

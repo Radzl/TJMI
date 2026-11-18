@@ -11,7 +11,7 @@ Lee este archivo entero antes de tocar código. Es la fuente de verdad del proye
 
 ## Marca
 - Azul corporativo: `#34548a` · Rojo corporativo: `#d03b40`.
-- Mucho espacio en blanco. Azul y rojo solo como acentos, bordes y detalles, nunca como fondos masivos.
+- Mucho espacio en blanco. Azul y rojo solo como acentos, bordes y detalles, nunca como fondos masivos. **Cambiado por el cliente el 2026-11-18: el azul noche pasa a ser el fondo dominante**; ver «El azul noche pasa a mandar». El rojo sigue igual, solo como acento.
 - Sección "oscura" (la que sube desde abajo en la intro): usar un azul noche derivado del corporativo (p. ej. `#0f1a2e`), no negro puro.
 - Tipografía: sans geométrica robusta para titulares (condensada, mayúsculas), sans neutra para texto.
 
@@ -52,6 +52,30 @@ Se contaron los píxeles de siete páginas para saber qué colores usa la web **
 - `--color-sand` `#efe9dd` lo llena. **Admite todo el texto**: tinta 15,1:1, gris 5,00:1, rojo de texto 4,95:1.
 - `--color-sand-deep` `#ded5c2` va un punto más abajo y **no vale para texto pequeño** —el gris cae a 4,15:1—: es para rellenos, barras y huecos de foto. Si le pones texto encima, que sea tinta.
 
+### El azul noche pasa a mandar (2026-11-18)
+
+- **Lo decidió el cliente, y va contra la letra del brief**, que pedía «mucho espacio en blanco» y el azul «nunca como fondos masivos». El motivo: con la intro 3D dejando de ser crema, una web casi entera en crema perdía impacto. Se eligió **azul noche dominante** y, en la portada, **«oscura con respiros claros»**.
+- **Qué va en oscuro:** en la portada, el índice («Elige por dónde empezar»), Servicios, la banda de cifras y cobertura (`Route`), Dónde estamos (`Sites`), el cierre y el pie; la barra de navegación, siempre. Y las páginas interiores **Servicios, cada ficha de servicio, Nosotros, Contacto y Cobertura**.
+- **Qué se queda en crema, y es decisión:** en la portada, **las reseñas y la franja del blog** (son los dos respiros); y las páginas de **blog y artículos, preguntas frecuentes y legales**. Son las de leer, y para leer mucho rato el papel cansa menos que el oscuro.
+- **No es un segundo juego de componentes: es una clase que redefine los colores** (`.tema-noche` en `globals.css`). Como Tailwind v4 guarda cada color de `@theme` en una variable, basta con cambiar las variables dentro de la sección: `bg-bone` pasa a ser azul noche, `text-ink` crema claro, `text-muted` un gris azulado, `border-line` un blanco al 12 %. El mismo componente sirve en las dos pieles, y por eso las reseñas o la franja del blog pueden ir en crema sin tocarlas.
+- **Tres colores nuevos con nombre de trabajo y no de tono**, porque cambian de valor según el tema:
+  - `card` — el fondo de una tarjeta: blanco sobre crema, `#16253f` sobre azul noche. Sustituye a `bg-white` en las tarjetas; **donde un blanco tiene que ser blanco siempre** (los botones claros sobre oscuro, el modal de servicios, el banner de cookies) se quedó `bg-white`.
+  - `azul-texto` y `azul-texto-fuerte` — el azul de un texto o un borde. Sobre crema es el azul de marca; sobre azul noche el de marca da poco contraste y se aclara a `#93b2e6`. **Si escribes un texto azul, usa estos, no `text-brand-blue`**: ese ya no se usa para texto en ningún sitio.
+- **El rojo de texto también cambia en oscuro** (`brand-red-ink` a `#e56b6f`), por lo mismo que el rojo suave de `RouteSteps`: el rojo de texto sobre crema no llega a 4,5 sobre azul noche.
+- **Contrastes, medidos sobre los tres fondos oscuros** (la sección, la tarjeta y la arena):
+
+  | | sección | tarjeta | arena |
+  | --- | --- | --- | --- |
+  | tinta | 15,2 | 13,4 | 12,5 |
+  | gris | 8,2 | 7,2 | 6,8 |
+  | azul de texto | 8,1 | 7,1 | 6,7 |
+  | rojo de texto | 5,5 | 4,9 | 4,6 |
+
+- **Cada sección oscura lleva además `data-bg="night"`**, o `Backdrop` pintaría crema detrás mientras la sección cruza el centro de la pantalla y se vería un parpadeo en los bordes. Las páginas interiores oscuras van envueltas en un `<div className="tema-noche" data-bg="night">`.
+- **El mapa dibujado de las sedes (`SiteLocator`) cambia de piel con variables propias** (`--mapa-*`), con los mismos tonos que el mapa de la red. Van por `style` y no por atributo de SVG: `var()` en un atributo de presentación no es fiable.
+- **Comprobado**: `check:repaso` en las 32 páginas, `check:seo`, `check:errores` y `check:3d`, que solo movió las dos tomas del arranque, y solo por la barra de navegación, que ahora es oscura desde el primer pintado.
+- **Lo que queda escrito más abajo sobre «Servicios iba en azul noche, y ahora va en crema» es historia**: volvió a azul noche con esta decisión.
+
 #### Lo que queda pendiente del color
 
 #### El rojo, vuelto a medir página por página
@@ -86,9 +110,9 @@ La regla que lo ordena todo es suya: **lo que el brief fija, manda**. Lo que el 
 - **Titulares en mayúsculas condensadas: los pide el brief** (`## Marca`), así que se quedan y no se discuten.
 - **Numeración `01` / `02` / `03` en las cabeceras: fuera.** Numerar afirma que hay una secuencia, y Servicios, Cobertura y Sedes no son pasos de nada: se leen en cualquier orden. Un marcador numérico solo se gana el sitio cuando el contenido va de verdad en orden.
 - **Antetítulos en versales con prosa ancha: fuera.** Una etiqueta encima de un encabezado que repite el encabezado es ruido con aspecto de jerarquía. Donde el texto sí decía algo (el del hero: «Transporte nacional e internacional») se queda el texto y se va el disfraz: caja baja, tipografía de texto, sin filete.
-- **Flecha `→` pegada al texto de enlaces y botones: fuera.** «Ver detalle» ya dice que se abre algo. (En `RouteMap` sí se queda: ahí la flecha señala una dirección de verdad, Castellón → Madrid.)
+- **Flecha `→` pegada al texto de enlaces y botones: fuera.** «Ver detalle» ya dice que se abre algo. (En los textos del mapa de la red sí se queda la flecha doble `⇄`: ahí señala una dirección de verdad, Castellón ⇄ Madrid.)
 - **Cadenas unidas con `·`: fuera.** Los horarios además mezclaban `·` y `|` para el mismo trabajo; ahora van en prosa llana.
-- **Una sola entrada orquestada en toda la página, y es la intro 3D.** Por eso la cabecera de sección ya no entra línea a línea: repetida en todas las secciones, una misma entrada deja de ser un momento y pasa a ser un tic.
+- **Una sola entrada orquestada en toda la página, y es la intro 3D.** Por eso la cabecera de sección ya no entra línea a línea: repetida en todas las secciones, una misma entrada deja de ser un momento y pasa a ser un tic. **La excepción es «Elige por dónde empezar»** (2026-11-18), y la pidió el cliente: es la sección que releva a la intro, y entraba como un bloque opaco cortando el camión. Su entrada es la continuación de la intro, no una segunda; ver «Cómo entra» en «El índice de la casa».
 
 **Las dos tipografías se eligieron a propósito, no por defecto.** Estaban en Oswald e Inter, que están entre las más usadas de Google Fonts y se reconocen al instante en cualquier web.
 
@@ -120,7 +144,8 @@ Decisiones cerradas:
 - Los modelos 3D salen de **stock gratuito** (CC0/CC-BY, créditos en el aviso legal). Si el resultado no da el nivel, se valorará comprar modelos.
 - Los modelos se **retexturizan**: se quitan los logos del fabricante, se ajustan los colores a la marca y se pega el logo de TJMI.
 - Trato al cliente: **tuteo** en todos los textos.
-- **La intro 3D son 4 pantallas**: terminal, carga, sección azul noche y carretera. Cuando el camión termina el recorrido se acaba el 3D y empieza la web normal. Nada de globo terráqueo ni de escenas marítimas, TJMI no transporta por barco.
+- **La intro 3D son 3 pantallas**: terminal, carga y sección azul noche. **Fueron 4, con la carretera en cenital como cuarta, y el cliente la quitó el 2026-11-17** porque se veía poco profesional: se leía como un circuito de juguete y solo contaba una ruta. En su sitio va **el mapa de la red** (`MapaRed`), en plano y no en 3D. Ver «El mapa de la red». Cuando el camión sale sobre el azul noche se acaba el 3D. Nada de globo terráqueo ni de escenas marítimas, TJMI no transporta por barco.
+- **Todo lo que este archivo cuenta de la carretera —cenital, asfalto, naves de los extremos, hitos, quitamiedos, cartel, sombras— es historia**: la escena y sus archivos (`Road.tsx`, `Facility.tsx`, `roadSign.ts`, `lib/route.ts`, `RoadIntro.tsx`, `RouteOdometer`, `RouteProgress`) están borrados. Se deja escrito porque las lecciones de medición siguen valiendo.
 - El giro a **vista cenital** ocurre en la escena de la carretera, y no mira a plomo: va inclinada unos 16° para que el camión tenga volumen.
 - La carretera es **3D**, una cinta que se dibuja según avanza el camión, con una **nave de salida y una nave de llegada** en los extremos. El trazado es una curva libre, no el mapa de España.
 - El fondo de la página lo controla `Backdrop` con `data-bg` por sección: los cambios de color son fundidos, nunca un bloque opaco entrando.
@@ -131,7 +156,7 @@ Decisiones cerradas:
 - El patio se llena con torres de contenedores (`PILE_ROWS`, una rejilla de `slot` × `row`). Dos reglas al tocarlo: nada por encima de `x ≈ -19`, o asomaría por la izquierda en la vista de perfil; y como mucho dos filas de fondo, porque cuanto más atrás está algo más sube en pantalla y acaba detrás del titular.
 - **Las farolas van en la carretera, no en el patio** (`Road.tsx`). En el arranque, con la grúa cargando, estorbaban. Se colocan sobre la propia curva, así que siguen el trazado solas si se cambia, y **se encienden según se dibuja el asfalto**, no antes.
 - El recorrido de la carretera ocupa la mitad de la sección (`ROAD_RUN` en `lib/route.ts`) y `RoadIntro` mide **480 svh** (subió desde 360 para que el camión avance más despacio: se alarga la sección en vez de tocar `ROAD_RUN`, así no hay que recolocar el fundido final ni la salida del texto): son 420 km y con un tramo corto se despachaban en dos golpes de rueda. Si tocas `ROAD_RUN`, mueve también el fundido final (`closing` en `Scene.tsx`) y la salida del texto en `RoadIntro`, que van **detrás** de la llegada.
-- El bloque de texto de `RoadIntro` lleva un **velo crema en degradado** que se desvanece hacia la derecha. El trazado pasa por detrás y sobre el asfalto negro el texto en tinta no se lee; en móvil el texto ocupa casi todo el ancho, así que apartar la carretera no es opción. No lo quites sin resolver antes esa lectura.
+- *(Historia, la carretera ya no está:)* el bloque de texto de `RoadIntro` llevaba un velo para leerse sobre el asfalto.
 - El fondo del patio (`TerminalYard.tsx`) son suelo y vallado, y **no es decoración**: sin nada fijo detrás, el camión avanzando ocho metros no se lee como que avanza porque no hay contra qué medirlo.
 - Ese vallado viene **en dos piezas**. La lejana (x < −19) se ve siempre. La cercana, la que cruza por detrás del camión, solo se enciende con `quarter < 0.45`: en tres cuartos pasaría por detrás del titular en escritorio, y ahí todavía queda fuera de plano por la derecha, así que encenderla no se nota.
 - El suelo del patio llevó un tiempo material **sin luz y con `toneMapped={false}`**, porque cualquier crema se saturaba a blanco. Era un parche y ya no está: la causa era el mapeo de tonos y la escala de las luces, las dos arregladas (ver «Iluminación del 3D»). Hoy es un plano normal que recibe luz y sombra como todo lo demás.
@@ -195,7 +220,7 @@ Decisiones cerradas:
 | 2 | Carga completa | La grúa suelta el lote, la lona se cierra y la máquina sale de plano. La tractora arranca. Leve desaturación. | — |
 | 3 | En ruta | La sección azul noche sube desde abajo y el camión queda "posado" sobre ella. Después la cámara gira de vista lateral a **cenital** y el camión cruza la pantalla hacia abajo por el lado derecho, con el logo en el techo del contenedor. Titular con efecto ScrambleText. | "Cada día, de Castellón a Madrid." / subtítulo + botón "Sobre nosotros" |
 | 4 | Servicios | Ya sin 3D. Sección fijada (pin) con scroll horizontal. Palabra gigante "SERVICIOS" en contorno. Tarjetas de servicio entrando en horizontal. | Servicios reales de TJMI (ver `messages/es.json`) |
-| 5 | La ruta (dentro de la intro) | Cámara cenital inclinada. La carretera se dibuja según avanza el camión, que sale de una nave y entra en otra, con las ruedas girando y rodadas sobre el asfalto. Cuentakilómetros atado al avance. | "Fiabilidad en cada kilómetro." + 420 km |
+| 5 | La red (después de la intro, sin 3D) | **Fue la carretera en cenital; ahora es un mapa plano de la península.** La sección se queda fija: se dibuja la ruta diaria Almazora → Fuenlabrada con el cuentakilómetros, se marcan las dos provincias y se abren las rutas desde las dos naves a toda la península. | "Fiabilidad en cada kilómetro." + 420 km |
 | 6 | CTA | Formulario de presupuesto y WhatsApp. | Formulario + WhatsApp |
 
 ## La portada (decisiones de contenido)
@@ -218,7 +243,7 @@ Decisiones cerradas:
 ## Las reseñas (`Reviews.tsx` y `content/reviews.ts`)
 
 - **En toda la web no había ni una prueba social**: ni un logo de cliente, ni un testimonio, ni un «trabajamos para». Para una empresa que recoge en más de 150 fábricas de azulejo, lo que dicen esos clientes es **el único argumento que no se firma a sí misma**: todo lo demás de la página lo dice la propia casa.
-- **Dónde va es parte de la decisión:** entre las sedes y el cierre. El orden queda «aquí estamos — esto dicen de nosotros — cuéntanos qué necesitas», o sea la prueba **justo antes de pedir algo**, que es cuando sirve. Más arriba, entre los servicios, sería una interrupción; detrás del cierre, no la lee nadie.
+- **Dónde va, y lo decidió el cliente:** **antes de «Dónde estamos»** (2026-11-18), justo detrás de la banda de cifras. El orden queda «lo que decimos nosotros (las cifras) — lo que dicen nuestros clientes — dónde estamos — antes de mandar un palé — cuéntanos qué necesitas». Estuvo entre las sedes y el cierre, con el razonamiento de poner la prueba justo antes de pedir algo; el cliente la quiere más arriba. Mientras no haya reseñas de verdad, en producción las cifras pasan directamente a las sedes.
 
 ### De rejilla a carrusel
 
@@ -253,22 +278,42 @@ Decisiones cerradas:
 - **Traerlas por la API desde el navegador convierte a Google en un tercero**, así que caerían en el mismo consentimiento que los mapas y **la mayoría no las vería** —que es justo lo contrario de para lo que está la sección—.
 - Lo que no tiene ese problema es traerlas **en el servidor** y guardarlas en `content/reviews.ts`: se actualizan solas y el visitante no habla con Google. Es más trabajo y es el camino que no mete a nadie en un lío.
 
-## La pantalla de carga es el trayecto (`Preloader.tsx`)
+## La pantalla de carga (`PantallaCarga.tsx`)
 
-- **Es lo único que va antes del 3D, y durante un tiempo fue un logo, una rayita de 160 px y un porcentaje.** O sea lo primero que ve todo el mundo, gastado en nada. Y el sitio es gratis: no cuesta ni un píxel de scroll, al revés que cualquier cosa que se meta encima del hero —que empujaría la intro, que es lo único que esta web tiene y la competencia no—.
-- **Ahora la barra es el trayecto**: una línea de Almazora a Fuenlabrada con un punto que avanza y el contador en **kilómetros** en vez de en por ciento. Cuando el punto llega a Madrid, se abre la escena.
-- **Y no es un adorno suelto: es la misma pieza que hay dentro.** Los dos extremos, el filete, el punto y la cifra son los de `RouteProgress` y `RouteOdometer`, con los mismos textos de `messages` y los mismos 420 km. Quien espera dos segundos aquí reconoce la pieza cuatro pantallas más abajo, cuando el camión la recorre de verdad.
-- El ancho de la línea es **fijo y no un porcentaje de la pantalla**: fluido, en un monitor grande cruzaba medio escritorio y el punto tardaba una eternidad en moverse de forma visible.
-- El tramo hecho y el punto van con `transition` y no con un bucle: el progreso llega a saltos —un GLB entero de golpe— y sin suavizar el punto daba brincos.
-- **No se toca el tope de seguridad de 4 s**: si un archivo se atasca, esto se va igual. Una pantalla de carga que puede quedarse para siempre es peor que no tenerla.
-- **Cómo mirarla, que cuesta más de lo que parece.** Se va en un par de segundos, así que hay que cazarla:
-  - **Frenar la red es contraproducente.** Es lo primero que uno hace y es justo lo que impide verla: el trozo de JavaScript que la monta tarda entonces más que la ventana de captura y la pantalla **ni siquiera llega a existir**. Sondeando el DOM cada 50 ms durante nueve segundos con la red a 90 kB/s, no aparece nunca.
-  - Lo que funciona es **congelarla**: poner `done` a `false` y el progreso a un valor fijo, capturar, y revertir.
-  - Y con la red normal aparece sobre los **1,5 s** y dura un par de segundos, que es la ventana real.
-- **El logo salía dos veces durante la carga, y ya no.** El navbar se pintaba por encima de la pantalla de carga. La sospecha que había escrita era la correcta —«no es el valor, es que uno de los dos está en otro contexto de apilado»— y era exactamente eso: este componente se renderiza desde `Experience`, que vive dentro de `<main class="relative z-10">`, y **un `z-index` solo compite con sus hermanos**. El `z-[100]` del preloader competía *dentro* de ese `main`, y el `main` entero (z-10) queda por debajo del navbar (z-50).
-- Por eso subirle el número al preloader no habría hecho nada, y bajarle el del navbar habría arrastrado el menú de móvil, el botón de WhatsApp y el banner de cookies. Lo que lo arregla es **sacarlo a `document.body` con un portal**, igual que `ServiceDialog`, y por el mismo motivo: una capa que tapa la página no puede depender del apilado del bloque que la contiene.
-- **Comprobado antes y después con la misma prueba** (`tests/perf/medidas/preloader.mjs`), que no mira el código sino que le pregunta al navegador qué elemento hay en el punto donde está el logo del navbar: antes el padre era `main` y encima salía el navbar; ahora el padre es `body` y encima sale la pantalla de carga.
-- **Y esa prueba tiene una trampa que ya se pisó una vez:** hay que mirar **solo mientras el preloader tapa de verdad**. En cuanto termina se queda con `pointer-events-none` para dejar pasar los clics, y entonces `elementFromPoint` lo salta y devuelve lo de debajo. Midiendo sin esa condición salía «el navbar gana» incluso con el arreglo puesto — y la captura de pantalla enseñaba justo lo contrario.
+- **Está copiada en ritmo de una web de referencia que eligió el cliente** (2026-11-17), «tanto los efectos como la duración». Se midió aquella fotograma a fotograma, leyendo cada 40 ms la opacidad y la transformación de sus piezas (`tests/visual/salida/cargador-ajeno.mjs`, herramienta de trabajo), y esta reproduce su secuencia con lo nuestro:
+
+  | | referencia | nuestra |
+  | --- | --- | --- |
+  | entra el antetítulo (sube 10 px) | 0 – 0,4 s | 0 – 0,4 s |
+  | entra la marca (sube 16 px) | 0,1 – 0,7 s | 0,1 – 0,7 s |
+  | la barra se llena | 0,6 – 2,1 s | 0,6 – 2,35 s |
+  | salen los textos hacia arriba | + 0,4 s | + 0,4 s |
+  | la cortina entera sube | + 0,85 s | + 0,85 s |
+
+  En producción se quita a los **3,7 s**; la de referencia, a los 3,3.
+- **Lo nuestro**: antetítulo «Castellón ⇄ Madrid, cada día» (`carga.antetitulo` en `messages`), el escudo con «Transportes José María Ibáñez», y la barra son **las dos rayas de la puerta de la tractora**, roja fina encima y azul más gruesa debajo.
+- **La barra corre por tiempo hasta el 90 % y ahí espera al 3D**: el cliente pidió que la portada aparezca con todo cargado. En cuanto el 3D avisa de que ha descargado —y no antes de que acabe la primera fase, para no romper el ritmo— se completa **desde donde esté** y sale. Si la escena no puede montarse (sin WebGL, o se cae) se va igual, porque lo marca `data-sin-3d`. Tope de seguridad: **6 s** desde que empieza a cargar la página.
+- **El 3D avisa a través de `lib/carga.ts`**: `AvisoCarga`, dentro de `Experience`, lee `useProgress` de drei y lo escribe ahí; la pantalla de carga escucha. No puede leer drei directamente: lo metería en el primer paquete de JavaScript.
+
+### Por qué la anterior se cambió entera
+
+- **Aparecía tarde.** Vivía dentro de `Experience`, que se monta cuando el navegador queda libre, así que salía sobre 1,5 s **después** de pintarse la portada: primero se veía la página sin 3D y después se tapaba. Ahora va en el HTML del servidor, montada en el layout, y **se ve desde el primer pintado**.
+- **No tenía ritmo propio**: era una barra atada solo al porcentaje de descarga. (Era el trayecto Almazora → Fuenlabrada con un contador de kilómetros; esa idea ahora la cuenta el mapa de la red.)
+
+### Las decisiones técnicas, y por qué
+
+- **Las animaciones son de CSS y solo mueven `transform` y `opacity`** (bloque `.carga` en `globals.css`). El navegador las hace fuera del hilo principal, así que **no tartamudean aunque el 3D se esté evaluando a la vez**, que es justo lo que pasa en estos segundos. El JavaScript solo decide cuándo salir: lee dónde va la barra, la completa con la Web Animations API y pone `data-sale`.
+- **Va fuera de `<main>`**, en el layout, por la lección de la anterior: un `z-index` solo compite con sus hermanos, y dentro de `<main class="relative z-10">` la barra de navegación le quedaba por encima. Solo se pinta en la portada (lo decide con `usePathname`) y **solo la primera vez en cada visita**: al volver a la portada navegando, el 3D ya está en caché.
+- **Lleva `view-transition-name: carga`, y es obligatorio.** Al cargar la portada React lanza una transición de vista —el 3D terminando de montarse cuenta como cambio de página para `<ViewTransition>`— y durante ella el navegador pinta una foto del contenido **por encima de todo**: el titular del hero asomaba a través de la pantalla de carga. Se vio en las capturas a los 0,9 s y se confirmó contando las llamadas a `startViewTransition` (`tests/visual/salida/vt-carga.mjs`): **una sola, a los 0,84 s, y solo en la portada**. Con nombre propio se pinta en su capa, encima, y no se anima.
+- **Bloquea el scroll mientras está** (`lockScroll`): si alguien bajara por detrás, la cortina se levantaría a mitad de la intro.
+- **Redes de seguridad**: sin JavaScript la quita el CSS a los 9 s (`carga-tope`); con movimiento reducido no sale (`display: none`), porque esa visita no carga el 3D.
+- **El LCP no empeora**: medido con la CPU a 1/4 sobre producción, el primer pintado sigue a **0,39 s**.
+
+### Cómo comprobarla
+
+- `tests/visual/salida/cargador-propio.mjs` (herramienta de trabajo) graba la línea de tiempo y hace capturas cada 100–300 ms, igual que la de la referencia. Es lo que destapó la foto del titular asomando.
+- `check:3d` **espera a que se quite** antes de capturar (`.carga` desmontada); si no, todas las tomas saldrían distintas sin serlo.
+- `tests/perf/medidas/preloader.mjs` mira ahora `.carga`.
 
 ## Las fotos de las sedes y el mapa (`Sites.tsx`, `MapEmbed.tsx`)
 
@@ -284,7 +329,7 @@ Decisiones cerradas:
 - **Las tarjetas del desfile de servicios llevan sus tres datos** (`highlights`, los mismos de la fila de `/servicios`): eran foto, nombre y una línea, y es la pieza que más tiempo se queda delante, porque el desfile la fija. Cada dato es una cifra, una medida o un límite, en versales pequeñas y separados por filete, como una ficha técnica.
 - **Una franja con los tres últimos artículos del blog** (`LatestPosts.tsx`), entre las sedes y el cierre. El índice de arriba decía «10 artículos» y la portada no enseñaba ninguno, ahora que todos tienen foto. Van ordenados por fecha, sin lista a mano, y el titular dice para qué sirven («Antes de mandar un palé»), no «Del blog». Va justo antes de pedir presupuesto porque contesta las dudas de ese momento: medidas, plazos, seguro y precio.
 - **Los mapas de las sedes**: ver «Las fotos de las sedes y el mapa».
-- **El mapa de la ruta con geografía de verdad**: ver la cabecera de `RouteMap.tsx` y `scripts/gen-mapa.mjs`.
+- **El mapa con geografía de verdad**: hoy es el mapa de la red (`MapaRed.tsx`), que sustituyó al mapa pequeño de la ruta y a la carretera en 3D. Ver «El mapa de la red».
 
 ## El índice de la casa (`Overview.tsx`)
 
@@ -334,7 +379,48 @@ Decisiones cerradas:
 
 - **1,04 pantallas en escritorio y 2,28 en móvil**, medido a 1280×900 y a 390×844. El resumen de servicios anterior costaba 0,9 en escritorio y ~1,2 en móvil: lo que ha subido es el precio de que cada destino cuente algo y de que haya una foto.
 - **El CTA va discreto y es decisión.** Una línea de texto al pie —«¿Prefieres que te lo contemos nosotros?» + presupuesto + teléfono—, no un botón macizo. El navbar ya lleva el botón y vuelve en cuanto subes, y la portada cierra con una sección entera dedicada a pedirlo: un tercer botón a tamaño completo aquí sería la página apretando en el primer compás, que es justo cuando todavía no se ha ganado nada. El teléfono va **al lado y no debajo**: quien no quiere rellenar nada quiere llamar.
-- **Lo que queda pendiente de esta misma línea:** `RoadIntro` mide 480 svh y ocupa 4,8 pantallas, el bloque más largo de la portada. Bajarlo a ~360 devolvería 1,2 pantallas y no obliga a tocar nada más —ese alto se subió precisamente para no tener que mover `ROAD_RUN`—. No se ha hecho porque cambia el ritmo de la escena, que está afinado.
+- ~~`RoadIntro` mide 480 svh y ocupa 4,8 pantallas.~~ **Resuelto**: la carretera se quitó y el mapa que la sustituye ocupa 2,5.
+
+### De mosaico a paneles que se abren (2026-11-17)
+
+- **Todo lo de arriba sobre el mosaico es historia.** El cliente vio con razón que mezclaba cosas que no venían a cuento —placas solares, recuentos, una frase sobre agosto— en el sitio donde tenía que decirse qué hay en la web. Ahora son **cinco paneles, uno por sección** (Servicios, Cobertura, Nosotros, Blog y Preguntas), cada uno con su foto, una línea y a dónde lleva, y al pie el botón de presupuesto y el teléfono. Lo eligió el cliente entre tres propuestas.
+- **El titular es «Elige por dónde empezar»**, que señaliza. Es justo lo que este archivo desaconsejaba arriba, y es decisión del cliente: pidió que esto presente las secciones «muy sencillo».
+- **Las dos frases pendientes de confirmar se fueron con el mosaico**: «no paramos en agosto» y «con media caja igual que llena» ya no están en ningún sitio de la web, ni en `messages`. Comprobado buscándolas. Ver «Tres frases que hay que confirmar».
+- **En escritorio la sección se queda fija** (`lg:min-h-[240svh]`) y el scroll abre los paneles por turnos, de izquierda a derecha. **El ratón y el foco mandan sobre el scroll**: al pasar por un panel se abre ese y se cierra el del scroll. En móvil se apilan todos abiertos y no se fija nada. Con movimiento reducido, la fila se queda con el primero abierto.
+- **Casi todo es CSS, y todo cuelga de una variable** (`--abierto` en `globals.css`, bloque `.paneles`). El JavaScript (`IndicePaneles.tsx`) solo decide **cuál toca por scroll** y lo escribe como atributo `data-activo`, sin estado de React. El ratón va con `:has()`, sin JavaScript. Ancho, sombra, lomo vertical, texto y foto se calculan de `--abierto`.
+- **El cuerpo del panel tiene un ancho mínimo** (24rem): si siguiera el ancho del panel, el texto se recolocaría en cada fotograma de la animación. Lo que sobra lo recorta el panel.
+- **La clase `.photo` va en un envoltorio interior** y no en `.panel-foto`: `.photo` fija `position: relative` más abajo en `globals.css` y anulaba el `absolute` del panel.
+- **Las fotos son de la casa menos la del blog, y ninguna se repite en la portada** (`INDEX_PHOTOS` en `content/media.ts`). Servicios lleva un fotograma del vídeo (el patio con dos camiones) porque el camión cargando ya es la foto grande de Servicios más abajo. Y la del blog es la portada del **cuarto** artículo más reciente, porque los tres últimos ya salen en «Antes de mandar un palé».
+- **Lo que cuesta**: 2,4 pantallas en escritorio, contra 1,04 del mosaico. Comprobado que no descoloca la intro: `InRoute` arranca en su `top top` y `check:3d` sigue verde.
+
+#### Cómo entra (2026-11-18)
+
+- **El fallo, que señaló el cliente («entra muy de golpe y encima»):** la sección subía como un bloque crema opaco por encima del primer plano del camión. Como el crema es el mismo que el fondo, el corte caía en una línea invisible y el camión se borraba de golpe, con el titular plantado encima del rótulo. Además incumplía la regla de la casa: los cambios de fondo son fundidos, nunca un bloque opaco entrando.
+- **Ahora entra atada al scroll y en orden**, todo en `IndicePaneles.tsx`:
+  1. **El borde está fundido** (`.indice-fondo` en `globals.css`): el fondo pasa de transparente a crema a lo largo de `--fundido`, que empieza en el 40 % de la pantalla y se cierra mientras el borde sube hasta algo más de media pantalla. El camión se disuelve en el papel de abajo arriba, sin ninguna línea.
+  2. **Solo entonces entra el titular**, cuando detrás ya es crema entero. Entraba a la vez que el fundido y quedaba escrito encima del rótulo a medio disolver; se vio en las capturas.
+  3. **Los paneles se descubren de abajo arriba, en cascada**, mientras suben 48 px, y al final entra la línea del presupuesto. Todo acaba cuando la sección llega arriba, que es cuando el scroll empieza a abrir paneles.
+- **En móvil** el fundido y el titular van igual; el primer panel va atado al titular (con su propio disparador llegaba antes que él) y los demás entran cada uno al llegar a la parte baja de la pantalla.
+- **Dos trampas pisadas, por si se toca:**
+  - **En una cascada atada al scroll, `fromTo` solo coloca en su sitio de partida al primer elemento**: los otros cuatro paneles seguían visibles hasta su turno. Por eso los paneles se colocan con `gsap.set` y se animan con `to`.
+  - **Pero la variable CSS `--fundido` necesita `fromTo` con `immediateRender`**: con `set` + `to` no guardaba su valor de partida y el borde salía opaco desde el primer píxel. Se cazó leyendo `--fundido` a media entrada: valía 0 cuando tenía que valer 145 px.
+- El recorte de los paneles va unos píxeles **por fuera** de la caja (`inset(-8px … round 22px)`) para no comerse el contorno del foco, y todo en píxeles: GSAP no interpola bien un recorte entre `%` y `px`.
+- **Sin JavaScript o con movimiento reducido no pasa nada**: `--fundido` vale 0 en el CSS (fondo opaco) y el contenido está visible desde el principio. `check:repaso` lo confirma en su pasada con movimiento reducido, y `check:3d` sigue a menos del 1 %.
+
+#### El panel de Nosotros lleva un clip, y los que no tienen foto, un hueco
+
+- **Nosotros reproduce diez segundos del vídeo de la casa en bucle** (`INDEX_VIDEO`, `public/media/nosotros-clip.mp4`), lo pidió el cliente. Son cinco planos clave montados: la fachada con el rótulo, el equipo en la oficina, un conductor con el chaleco en la ventanilla, los camiones maniobrando en el patio y el semirremolque rotulado pasando. **Cada tramo cae entero dentro de un plano del original**: los cortes se midieron (`tests/visual/salida/cortes-video.mjs`), así que no hay fogonazos.
+- **Se montó sin ffmpeg**, con el Chrome instalado: `montar-clip.mjs` reproduce cada tramo en un lienzo y lo graba con `MediaRecorder` en MP4 H.264 (Chrome 157 lo admite). 848 × 480, 1,3 Mbps, **1,1 MB**, 10,1 s. Comprobado: dura lo que debe, se puede saltar y no tiene ni un fotograma negro en las uniones.
+- **No viaja con la portada**: va sin `src` en el HTML y lo pone un `IntersectionObserver` cuando la sección se acerca; se pausa al salir. Medido: al cargar no se pide, y la portada sigue en 1.798 KB en móvil y 2.022 en escritorio. Con movimiento reducido se queda en su primer fotograma.
+- **Servicios y Preguntas llevan fotos de banco de operaciones**: llevaban fotogramas del vídeo y el cliente los quitó. Ver «Los huecos de foto».
+
+#### Nosotros sale de la fila: banda panorámica debajo (2026-11-18)
+
+- **Lo pidió el cliente:** es un vídeo, no una foto, y metido como un panel más se abría y se cerraba como los otros y casi no se veía. Ahora los **cuatro paneles** (Servicios, Cobertura, Blog, Preguntas) van arriba, en la zona fija que el scroll abre por turnos, y **debajo, separado, el vídeo a todo el ancho del bloque** en 21:9, con «Nosotros», su línea y el enlace encima sobre un degradado desde la izquierda.
+- **La zona fija mide 200svh** (eran 240 con cinco paneles), para que cada panel dure lo mismo de scroll. El disparador de abrir paneles mide **solo esa zona** (`zona` en `IndicePaneles`), no la sección entera: la banda y el pie van debajo, en flujo normal.
+- **En móvil el texto va debajo del vídeo**, sobre azul noche, y no encima: en una banda de 200 px de alto el texto superpuesto ocupaba casi todo y se leía mal sobre el cielo claro del clip.
+- La banda y el pie entran cada uno al llegar a la pantalla (la banda se descubre como los paneles; el pie se funde).
+- **Trampa repetida:** `.photo` fija `position: relative` y anuló el `absolute` del envoltorio del vídeo, así que la banda salía en azul liso **con el vídeo reproduciéndose**. Va en un envoltorio interior, como en los paneles.
 
 ## El recorrido del camión en `InRoute` (escena 3)
 
@@ -492,6 +578,38 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
   demás, y a la altura de siempre su borde cruzaba la última línea del
   párrafo del hero.
 - **En escritorio no cambia nada**: allí el camión entero ya cabe grande.
+
+### En el móvil, el párrafo del hero entra con la carga (2026-11-17)
+
+- **El fallo, medido sobre capturas a 390 × 844:** en un teléfono el texto va
+  **encima** de la escena, no al lado, y durante la maniobra en tres cuartos
+  (de 0,15 a 0,40 del hero) las torres de contenedores suben hasta el
+  párrafo «Transporte terrestre de mercancía paletizada…» y se le meten
+  debajo. El titular no llega a tocarse: queda por encima.
+- **Lo pidió el cliente:** que ese párrafo aparezca cuando la carretilla mete
+  el palé en el camión, y antes no. Entra en **0,55 → 0,63**
+  (`PARTITURA.hero.subtituloMovil`) y acaba de aparecer justo cuando empieza
+  `loteEntra` (0,63 → 0,78), que ahora también vive en la partitura y es el
+  que usa `insert` en `Scene.tsx`. A 0,55 la cámara ya lleva un rato de
+  perfil y debajo del texto solo queda la nave.
+- **Solo por debajo de 768 px** (`ANCHO_MOVIL`, el mismo corte que
+  `isNarrow` en la escena). En tableta y escritorio el párrafo está desde el
+  principio, comprobado.
+- **Se apaga con la opacidad y no se quita**: sigue ocupando su sitio, así
+  que el titular no se mueve cuando aparece.
+- **Sin 3D se ve siempre.** Con movimiento reducido `ScrollFade` no se monta;
+  sin WebGL o con la escena caída lo arregla `sin3d:opacity-100!`, cuyo
+  `!important` gana a la opacidad que escribe el disparador. Comprobado en los
+  dos casos.
+- Para esto `ScrollFade` tiene ahora una prop **`media`** (monta el
+  disparador con `gsap.matchMedia`, así que se rehace al girar el teléfono) y
+  **pinta su estado al montarse**: ScrollTrigger solo llama a `onUpdate`
+  cuando el progreso cambia, y arriba del todo no cambia, así que un bloque
+  que tiene que *entrar* se quedaba visible hasta el primer scroll. Con los
+  dos usos que había, que solo salen, no se notaba.
+- En `check:3d` cambió **solo** `patio-reposo-movil`, y el mapa de
+  diferencias era el párrafo y nada más. Las otras nueve tomas se devolvieron
+  a su referencia, como pide la nota de `--update`.
 
 ### El arranque, cerrado sobre la carretilla
 
@@ -681,7 +799,26 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - **Ensanchar el encuadre no deja la carretera cortada**, y es porque lo que cuelga de ese número se recoloca solo: el adelanto de la cámara va en fracción de la altura del encuadre (`ROAD_LEAD`) y el asfalto dibujado por delante se calcula de ahí (`aheadFraction` en `Road.tsx`).
 - Y **cuánto asfalto va dibujado por delante se calcula, no es un número fijo** (`Road.tsx`). Es el mismo problema por el otro lado: el adelanto que le hace falta al móvil llenaba de negro la pantalla en escritorio y tapaba el texto. Se saca de la profundidad del encuadre dividida por el largo de la curva. Por eso `roadFrameWidth` vive en `lib/route.ts` y no en `Scene.tsx`: lo necesitan la cámara y el trazado, y si se desincronizan se nota enseguida.
 - **El asfalto recibe luz** (`meshStandardMaterial` en `Road.tsx`). Era un negro plano y en la cenital ocupa media pantalla: se leía como una cinta recortada y no como una carretera. Iluminado coge el gradiente de la luz principal, así que tiene cara clara y cara en sombra según gira el trazado. El color **subió** de `#11151c` a `#23262c` porque ahora la luz lo multiplica: con el valor de antes, iluminado, seguía siendo casi negro.
-### Lo que hace que el asfalto parezca una carretera (`Road.tsx`)
+> **Desde aquí hasta «Detalles de acabado», casi todo es historia de la carretera en cenital, que se quitó el 2026-11-17** (ver «El mapa de la red»). Lo que sigue valiendo para el resto de la escena —la niebla por vista, la profundidad del patio, el parallax falso, la luz rasante, la viñeta— está mezclado con ello y se deja tal cual; lo que habla de asfalto, naves de los extremos, hitos, quitamiedos, cartel, inclinación en curvas, `ROAD_*` o `RoadIntro` describe código que ya no existe.
+
+## El mapa de la red (`MapaRed.tsx`, `lib/red.ts`)
+
+- **Sustituye a la carretera en 3D y al mapa pequeño «La ruta, cada día»**, y es decisión del cliente: la carretera le parecía poco profesional y contaba una sola ruta, cuando la empresa llega a toda España. Dos mapas en la misma portada contaban lo mismo dos veces, así que ahora hay uno.
+- **Lo que enseña, también decidido por el cliente**: solo la península (sin Baleares, Canarias ni Ceuta); las dos sedes con su provincia marcada; la **ruta diaria Castellón ⇄ Madrid en rojo, que manda**; y desde cada nave, rutas a las capitales de provincia. **Lo internacional existe pero no sale en el mapa.** **No se elige nada**: el cliente descartó expresamente que fuera un selector de provincias.
+- **Cada capital cuelga de la sede que le queda más cerca**, que es como lo describió el cliente: «rutas de Madrid o de Castellón a toda España». No afirma plazos ni frecuencias: solo dibuja lo que la web ya publica, «cobertura en toda España».
+- **No descarga nada.** El contorno, las dos provincias y el corredor ya estaban en `routeMapPaths.ts` (Natural Earth). `lib/red.ts` recorta lo que sobra y sitúa las ciudades con **la misma proyección** que `scripts/gen-mapa.mjs`. Esa proyección está copiada, no importada, y `PROYECCION_CUADRA` comprueba que Almazora caiga donde el guion la puso: si se cambia el encuadre allí, hay que cambiarlo aquí.
+- **Tres actos atados al scroll, con la sección fija** (250 svh, frente a los 480 de la carretera): la ruta diaria se dibuja con el cuentakilómetros de 0 a 420; se marcan las dos provincias; y la red se abre desde las dos naves a la vez, de la ciudad más cercana a la más lejana. El último décimo es de reposo.
+- **El 3D acaba en `InRoute`** con un telón azul noche pegado a la cámara (`coverIn` en `Scene.tsx`). El mapa va sobre ese mismo azul, así que el relevo no tiene costura. `useIntroVisible` deja de dibujar el lienzo en cuanto `InRoute` sale de pantalla, porque el mapa no lleva `data-scene`.
+- **Las ramas son arcos muy suaves** (un 12 % de la distancia): rectas parecían un esquema de cables, y con más curva, rutas de avión.
+- **Al pasar el ratón por una ciudad se enciende su ruta y sale el nombre**, con CSS puro (`group-hover`). El círculo transparente grande es la zona que recoge el ratón: el punto visible es demasiado pequeño para acertarle.
+- **Francia y el norte de África van con un fundido hacia los bordes** (una máscara radial). Sin él se cortaban contra el borde del dibujo y se veía un rectángulo en las esquinas.
+- **El marcado sale completo; lo apaga el JavaScript.** Sin JS, con movimiento reducido o en `/cobertura` (`estatico`) el mapa sale entero desde el principio. Nada de estado de React: el disparador escribe estilos directamente.
+- **En móvil el mapa va a sangre**: con el margen del contenedor se quedaba en un sello. Comprobado que no desborda (`scrollWidth` = ancho de la pantalla) y `check:repaso` lo confirma en las 32 páginas.
+- **En `/cobertura` es el mismo componente, en modo `estatico`.** Allí es un dato que se consulta, no un momento.
+- Lo que se fue con la carretera: `RoadIntro.tsx`, `RouteMap.tsx`, `RouteMapSection.tsx`, `Road.tsx`, `Facility.tsx`, `roadSign.ts`, `RouteOdometer.tsx`, `RouteProgress.tsx`, `lib/route.ts`, las constantes `ROAD_*`, `ARRIVAL_*`, `FOG_ROAD`, `LEAVE_WIDEN` y `TRUCK_BANK` de `medidas.ts`, `PARTITURA.carretera`, los textos `route.mapStops` y `route.mapLegend`, y las tres tomas de carretera de `check:3d` con su buscador de kilómetros.
+- **Comprobado**: `check:3d` da por debajo del 1 % en las diez tomas que quedan, o sea que el patio, la carga, el primer plano y la salida del camión no se han movido. El peso de la portada queda en 1.795 KB en móvil y 2.018 en escritorio, prácticamente lo mismo que antes.
+
+### Lo que hace que el asfalto parezca una carretera (`Road.tsx`, ya borrado)
 
 - **La calzada era una cinta negra con una discontinua en medio y se acababa contra el crema con un corte seco.** Eso es lo que más la delataba vista desde arriba: no tenía ni borde ni carril. Ahora lleva tres capas más, y las tres salen del mismo generador de cintas (`ribbon`), que admite un desplazamiento lateral para que cualquier cosa pegada al borde **siga la curva sola** si mañana se cambia el trazado.
 - **Arcén.** Una cinta 1,6 m más ancha por cada lado, por debajo del asfalto. Le da canto a la calzada y, lo que más importa, mete un valor intermedio: sin él, el salto de (35,38,44) a (247,243,236) era el contraste más duro de toda la escena. Va en un gris **cálido** (`#c4bbab`) y recibe luz como el asfalto; todo lo gris frío de esta escena se ha leído siempre como «día lluvioso».
@@ -975,7 +1112,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 
 ## Sistema de diseño de la página (detalles que no son adorno)
 
-- **Las tarjetas de servicio no llevan número**, y antes llevaban **dos**: un fantasma grande en la esquina y uno rojo pequeño sobre el titular, con la misma cifra. Lo repetido era un descuido; que no vaya ninguno es una decisión, y es la misma regla de siempre: los seis servicios no son pasos de nada —se contrata grupaje **o** camión completo, no uno detrás de otro—. Los pasos de `RouteSteps` sí llevan número porque aquello sí es una secuencia. Para saber por dónde vas están el contador y la barra del pie.
+- **Las tarjetas de servicio no llevan número**, y antes llevaban **dos**: un fantasma grande en la esquina y uno rojo pequeño sobre el titular, con la misma cifra. Lo repetido era un descuido; que no vaya ninguno es una decisión, y es la misma regla de siempre: los seis servicios no son pasos de nada —se contrata grupaje **o** camión completo, no uno detrás de otro—. Los pasos de `RouteSteps` sí llevan número porque aquello sí es una secuencia. Para saber por dónde vas está el riel del pie, que tampoco lleva números.
 - El recuento «06 · Servicios» del pie de Servicios **se quitó**: era una etiqueta en versales con prosa ancha y un punto medio de separador, los tres recursos de plantilla a la vez, y no decía nada que no dijeran las seis tarjetas.
 - **Cabeceras de sección** (`SectionHeading.tsx`): el titular, y nada más. Llevó número, filete rojo y antetítulo, y los tres se quitaron por el criterio de diseño (ver esa sección): el número afirmaba una secuencia que no existe, el antetítulo repetía el titular y el filete acompañaba a los dos. Lo que queda es el titular haciendo el trabajo con tamaño y condensación, que es para lo que se eligió una condensada robusta. **No le vuelvas a poner número**: si una lista sí va en orden, el número va en la lista, como en `RouteSteps`.
 - El antetítulo **no puede repetir el titular**. Ya pasó con "Dónde estamos / Dónde estamos" y con "Cobertura / Rutas y cobertura": se lee como un error, no como jerarquía.
@@ -1018,7 +1155,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - **Revelado común de las fotos** (`.photo` en `globals.css`). Las fotos de la casa vienen de días y sitios distintos: unas frías, otras doradas, unas contrastadas y otras planas. Juntas se nota que es un montaje. Esto les pasa a todas el mismo revelado —menos saturación, luces hacia el papel, sombras y matiz hacia el azul noche— y dejan de ser fotos sueltas. Va en CSS y no tocando los archivos: se quita en una línea si algún día llegan ya tratadas. **`isolation: isolate` es obligatorio**, o las capas de mezcla se comen también lo que haya detrás de la foto.
 - **Hubo un raíl de ruta** en el margen izquierdo de la portada (`RouteRail.tsx`), un hilo fijo que recorría Castellón ⇄ Madrid contando kilómetros. Se quitó: acompañaba la página entera, también las secciones que no tienen nada que ver con el viaje, y ahí dejaba de significar nada. El componente está borrado; si alguna vez vuelve, que sea solo durante la intro.
 - **El progreso global del store llevaba roto desde el principio** y nadie lo había notado porque nadie lo leía. El disparador maestro usaba `document.documentElement`, y como **el que hace scroll es el propio `html`, su altura medida es la de la ventana**: el disparador salía de largo cero y `progress` se quedaba en 0 para siempre. Va con `document.body`, que sí mide el alto del contenido.
-- **Hubo palabras gigantes en contorno** detrás de Servicios y del CTA (`GiantWord.tsx`, ya borrado). Se fueron las dos. La de Servicios era además la que daba el relieve del desfile, porque se movía menos que las tarjetas, y aun así sobra: esta página gasta toda su audacia en un sitio, la intro 3D, y una palabra de 22vw detrás de las tarjetas es una segunda apuesta por lo mismo que encima compite con el titular de la sección. Lo que dice cuánto falta son la barra de avance y el contador, que es su trabajo y lo hacen mejor.
+- **Hubo palabras gigantes en contorno** detrás de Servicios y del CTA (`GiantWord.tsx`, ya borrado). Se fueron las dos. La de Servicios era además la que daba el relieve del desfile, porque se movía menos que las tarjetas, y aun así sobra: esta página gasta toda su audacia en un sitio, la intro 3D, y una palabra de 22vw detrás de las tarjetas es una segunda apuesta por lo mismo que encima compite con el titular de la sección. Lo que dice cuánto falta es el riel del pie, que es su trabajo y lo hacen mejor.
 - El titular de `InRoute` va a **tamaño cartel** con medida fluida. Es el centro emocional de la portada y pedía peso.
 - **Una sola escala de titulares** (`--text-display-xl/lg/md/sm` en `@theme`). Antes cada sección se montaba su propio salto —`text-4xl sm:text-5xl lg:text-6xl` aquí, un `clamp` a mano allá— así que no había dos titulares que midieran lo mismo y la página se leía como maquetada a trozos. Si añades un titular, sale de la escala; si la escala no te vale, cámbiala, no la esquives.
 - Van en `clamp` y **no por puntos de corte**: un titular en versalitas condensadas que salta de golpe entre 768 y 769 px canta mucho, y entre medias siempre hay un ancho en el que queda ridículo o se desborda.
@@ -1046,7 +1183,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - **Dónde se parte lo dice cada página, no se adivina**: `titleLead` en `messages.pages.*` y `headingLead` en cada servicio. Partir por la primera preposición daría bien «TRANSPORTE NACIONAL E INTERNACIONAL / desde Castellón» y mal «CAMIÓN / completo de…». Si `lead` no es el principio exacto del titular —una traducción que no encaje—, el titular sale entero como antes y no se rompe nada. Si `lead` es el titular entero («PIDE PRESUPUESTO»), va todo en grande.
 - **El cuerpo del titular se ajusta para que su palabra más larga quepa en la columna** (`cabe` y `ANCHO_LETRA` en `PageHeader.tsx`). Con la foto al lado el titular tiene media columna, y una palabra larga a cuerpo cartel no se puede partir: «PRESUPUESTO» se metía por debajo de la foto y «RECOGEMOS» la rozaba. El cuerpo es el menor entre el de la escala y el que hace que la palabra más ancha ocupe `100cqi` (la columna se mide con `@container`). La tabla de anchos por letra **está medida en el navegador** y da 5,913 em para «PRESUPUESTO» cuando mide 5,885 de verdad. **Si se cambia de familia o de `--display-width`, hay que volver a medirla.**
 - **Las rayas de la tractora sustituyen al filete rojo**: roja fina encima y azul más gruesa debajo, las mismas del zócalo del vídeo. Un filete rojo lo pone cualquiera; las rayas son de esta casa.
-- **La pieza de la derecha (`visual`) es una foto de la casa, ninguna de banco** (`HEADER_PHOTOS` en `content/media.ts`): el camión cargando en Servicios, la tractora en Cobertura, y en Contacto y Preguntas **fotogramas del vídeo corporativo** (la oficina con el camión de juguete en la mesa, y un conductor con el chaleco de la empresa en la ventanilla). El vídeo mide 848 × 480: en el hueco de escritorio va bien y en una pantalla de alta densidad se nota algo blando. Cuando llegue el original en 1080p, se vuelven a sacar de ahí.
+- **La pieza de la derecha (`visual`) es una foto de la casa, ninguna de banco** (`HEADER_PHOTOS` en `content/media.ts`): el camión cargando en Servicios y la tractora en Cobertura. **Contacto y Preguntas llevan un hueco preparado**: el mismo marco en chaflán, relleno con los azules de la casa, hasta que llegue la foto (2026-11-18). Llevaron fotogramas del vídeo corporativo y el cliente pidió quitarlos; ver «Los huecos preparados».
 - **La foto lleva el mismo recorte en chaflán que el vídeo** (`HeaderPhoto.tsx`), con la muesca roja. Es la forma de la casa y por eso se repite.
 - **En el blog, la pieza de la derecha es el artículo más reciente**, y por eso ese artículo **sale del listado** de debajo: la misma portada dos veces en la misma pantalla se lee como que no hay más fotos.
 - **En Contacto la foto no sale en móvil** (`visualEnMovil={false}`). Allí el trabajo de la página es el formulario, y en una sola columna la foto lo empujaba media pantalla más abajo.
@@ -1055,9 +1192,11 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - **El azul noche no va plano** (`.bg-night-depth` en `globals.css`). Un fondo oscuro de un solo color se lee como «pintado»: no tiene ni un punto de luz, así que no parece un sitio, parece un rectángulo. Lleva una mancha de luz muy suave en el centro.
 - **Los cuatro bordes de ese degradado acaban en `--color-night` exacto, y eso no es acabado, es lo que lo hace posible.** El fondo de la página lo pinta `Backdrop` con ese mismo azul y la sección de arriba trae el suelo del 3D: si el degradado no cerrara justo en ese color, se vería la costura por los dos lados. Y va a `alpha 0` del mismo color, no a `transparent`: varios navegadores interpolan `transparent` pasando por el negro y dejan un halo sucio en el borde.
 - **Las tarjetas del desfile son más claras que la sección.** Fueron azul sobre azul con un filete, y costaba separarlas porque el filete hacía el trabajo que tenía que hacer el fondo; después fueron blanco al 5,5 % sobre azul noche, y hoy son **blancas sobre crema con un filete**. La regla que sobrevive a los tres cambios es la misma: **lo que separa la tarjeta del fondo es el fondo, no el borde**.
-- **Se quitó la retícula de filetes verticales** que había detrás del desfile. Estaba para dar al oscuro una estructura contra la que leer el movimiento, pero a ese contraste no llegaba a leerse como retícula: se leía como rayas sueltas en el fondo. Lo que sostiene el desfile son la barra de avance y el contador.
+- **Se quitó la retícula de filetes verticales** que había detrás del desfile. Estaba para dar al oscuro una estructura contra la que leer el movimiento, pero a ese contraste no llegaba a leerse como retícula: se leía como rayas sueltas en el fondo. Lo que sostiene el desfile es el riel del pie.
 
 ### Servicios iba en azul noche, y ahora va en crema
+
+> **Historia (2026-11-18):** Servicios volvió a azul noche cuando el cliente eligió el azul noche como color dominante. Ver «El azul noche pasa a mandar». Lo de abajo se deja porque explica por qué las fotos de Servicios no llevan velo.
 
 - **El motivo es del brief, no de gusto.** Dice «mucho espacio en blanco, azul y rojo solo como acentos, bordes y detalles, **nunca como fondos masivos**», y autoriza **una** sección oscura: «la que sube desde abajo en la intro». Servicios era una segunda, a toda altura, y el cierre una tercera.
 - **Y dejaba la portada en zigzag**: oscuro en `InRoute`, claro en `RoadIntro`, oscuro en Servicios, claro en Cobertura y Sedes, oscuro en el cierre. Ahora la página va clara de principio a fin y los dos oscuros que quedan son los dos extremos —el momento de la intro y el cierre—, que es un arco y no un parpadeo.
@@ -1069,18 +1208,16 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 ## Servicios (`Services.tsx` y `ServicesTrack.tsx`)
 
 - El bloque destacado no es una tarjeta más: es el servicio de la casa. Lleva filete rojo arriba, la foto sangrando por el borde y un **degradado hacia el panel de texto**. Sin el degradado la foto entra de golpe y el bloque se parte en dos mitades que no se hablan.
-- El desfile horizontal lleva **dos referencias**, y las dos son por lo mismo: un bloque fijo sin ellas no se lee como desfile, se lee como que la página se ha quedado enganchada.
-  - La **barra de avance** dice cuánto queda.
-  - El **contador** nombra en qué tarjeta vas.
-  - (Hubo una tercera, la palabra gigante del fondo, que daba relieve moviéndose menos que las tarjetas. Se quitó; ver la sección de criterio de diseño.)
+- El desfile horizontal lleva **una referencia, el riel del pie**, y es por lo mismo de siempre: un bloque fijo sin ella no se lee como desfile, se lee como que la página se ha quedado enganchada. (Fueron una barra de avance, un contador y una palabra gigante de fondo; las tres se quitaron. Ver abajo.)
 - **El bloque se fija también en móvil.** Hubo una temporada en que por debajo de 640 px esto pasaba a ser un carrusel de scroll nativo, por aquello de no secuestrar el gesto vertical. Se descartó: el desfile es el momento de esta sección y en el teléfono es justo donde más falta hace que algo ocurra al bajar; un carrusel al lado se queda en una fila de tarjetas que hay que descubrir.
-- Lo que sí hay que cuidar al fijar en una pantalla pequeña son **la barra de avance y el contador**, y por eso ya no se ocultan en móvil: es ahí donde de verdad se necesitan, porque un bloque clavado sin referencias se lee como que la página se ha colgado. Solo desaparecen con movimiento reducido.
+- **El contador «01 / 06» y la barra que se llenaba se quitaron** (2026-11-18), a petición del cliente: el número sobraba —estos servicios no van en orden, y por eso las tarjetas tampoco lo llevan— y una barra que se carga se lee como una descarga, no como una fila que se recorre. **Ahora es un riel**: un filete de lado a lado y, encima, un tramo oscuro de 3 px que mide **lo que se ve de la fila** y se desliza según avanza, como una barra de desplazamiento. Dice cuánto queda sin un solo número. El ancho del tramo tiene un mínimo del 14 %, para que en un móvil —donde se ve menos de una tarjeta— no se quede en una mota, y se recalcula al cambiar el tamaño de la ventana (`onRefresh`). Medido a 1280: el tramo ocupa el 56 % del riel.
+- Lo que sí hay que cuidar al fijar en una pantalla pequeña es **ese riel**, y por eso no se oculta en móvil: es ahí donde de verdad se necesita, porque un bloque clavado sin referencias se lee como que la página se ha colgado. Solo desaparece con movimiento reducido.
 - **La fila no puede ser desplazable por su cuenta.** Quien la mueve es la timeline; si además llevara `overflow-x-auto`, el dedo la movería por un lado y el scroll por otro, y las dos cosas se pelearían por la misma posición.
 - Se sigue montando con **`gsap.matchMedia`** aunque ya no haya corte por ancho: así se rehace solo al girar la pantalla o cambiar de tamaño, que es cuando cambia cuánto sobresale la fila.
 - El pin le suma a la portada **unos 1.900 px de scroll en móvil**. Es el precio del efecto y está contado.
-- La barra y el contador se escriben **directamente sobre el DOM** desde `onUpdate`, no con estado de React: cambian en cada fotograma del scroll y no deben provocar ni un render. Misma regla que el 3D.
-- **Cuidado con `scale-x-*` de Tailwind v4 si vas a animar por JS.** Esa clase escribe la propiedad CSS `scale`, no `transform`, así que un `transform: scaleX(...)` en línea **no la pisa**: el elemento se queda a cero para siempre y no da ningún error. Por eso la barra arranca con `style={{ transform: 'scaleX(0)' }}` y no con la clase.
-- La fila de avance deja hueco a la derecha (`pr-16`): ahí vive el botón flotante de WhatsApp y se comía el final de la barra.
+- El tramo del riel se escribe **directamente sobre el DOM** desde `onUpdate`, no con estado de React: cambia en cada fotograma del scroll y no debe provocar ni un render. Misma regla que el 3D.
+- **Cuidado con `scale-x-*` y `translate-*` de Tailwind v4 si vas a animar por JS.** Esas clases escriben las propiedades CSS `scale` y `translate`, no `transform`, así que un `transform` en línea **no las pisa**: se suman sin dar ningún error. La barra antigua se quedó a cero para siempre por esto. El tramo del riel lo aprovecha a propósito: el centrado vertical va con la clase (`-translate-y-1/2`) y el avance con `transform` en línea, y no se pelean.
+- La fila del riel deja hueco a la derecha (`pr-16`): ahí vive el botón flotante de WhatsApp y se comía el final.
 - **El texto largo de cada servicio vive en `messages`, no en los componentes** (`services.items[i].long`, `.includes`, `.bestFor`). Lo usan dos sitios: el modal de la portada y las fichas de `/servicios`. Es el mismo contenido en los dos, así que si cambia un servicio se toca un único sitio y se arreglan los dos. Las etiquetas («Qué incluye», «Cuándo te interesa»…) van en `services.detail`.
 - **En la portada el detalle se abre en modal** (`ServiceDialog.tsx`), y es por el sitio donde está: ahí lo que manda es el desfile horizontal, y nadie va a pararse a leer cuatro párrafos dentro de una tarjeta que se mueve. El modal saca el texto del desfile sin sacarte a ti de la portada.
 - Ese modal va con **`<dialog>` nativo y `showModal()`**, no con un div y un overlay montado a mano. Así vienen de serie el foco atrapado dentro, el Escape, el resto de la página marcada como inerte para los lectores de pantalla y la capa de fondo (`::backdrop`). Y, lo que aquí importa más: un diálogo modal se pinta en la **capa superior** del navegador, así que se salta el `overflow` del carrusel de móvil y los `transform` del bloque fijo de escritorio. Montado a mano habría que pelearse con los dos.
@@ -1132,7 +1269,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 
 ### Las decisiones de maquetación
 
-- **El mapa de la ruta es el mismo componente de la portada** (`RouteMap`). Repetir el componente no es repetir contenido: lo que posiciona es el texto de alrededor, que aquí es otro, y esa pieza explica el corredor sin una palabra de más.
+- **El mapa es el mismo componente de la portada** (`RedNacional estatico`, que monta `MapaRed`), entero desde el principio y sin fijarse. Repetir el componente no es repetir contenido: lo que posiciona es el texto de alrededor, que aquí es otro.
 - **Los cuatro ámbitos van en rejilla pegada con filete**, como la banda de cifras y las sedes, y no en tarjetas con marco: cuatro tarjetas convertirían cuatro ámbitos en cuatro productos, y no lo son —son el mismo servicio llegando más o menos lejos—.
 - **Las localidades van como etiquetas**, el mismo recurso que las del bloque destacado de Servicios. Son nombres sueltos, no frases: en columna darían una lista de doce renglones de dos palabras.
 - **Aquí no va `Sites`**, aunque haya un bloque de sedes. Aquel componente monta el hueco del mapa, que arrastra el consentimiento de cookies y un bloque alto por sede. En esta página las naves son un dato de cobertura —de dónde sale y dónde llega—, no una invitación a visitarlas: para eso está `/contacto`.
@@ -1191,14 +1328,16 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
   - **La muesca de arriba va en rojo macizo**, rellenando exactamente el triángulo que el recorte le quita al vídeo. Es el único sitio de la página donde el rojo aparece en bloque, que es como la marca lo quiere: en acento y pequeño.
   - **Abajo, un zócalo azul noche con las dos rayas de la casa**, roja fina sobre azul gruesa, las mismas de la puerta de la tractora (`public/media/camion-02.jpg`). El corte de abajo a la derecha **atraviesa ese zócalo**, y eso es lo que ata los dos cortes: se ve que la diagonal corta algo, así que se lee como decisión y no como un borde raro.
 - El tamaño del chaflán va en una variable (`--cut`) con `clamp`, y **no por puntos de corte**: 72 px fijos son un detalle en escritorio y se comen la esquina entera en un móvil de 390. La usan el recorte del marco y el triángulo rojo; si se desincronizan, se ve el escalón.
-- **Va mudo siempre y no hay botón para activarlo.** Arranca mudo por obligación —ningún navegador deja reproducir solo con sonido—, pero que se quede así es decisión.
-  - **Consecuencia a tener presente:** en el vídeo habla alguien a cámara y no hay forma de oírlo. Si ese audio llega a importar, lo que toca es llevarlo a un reproductor con controles, no devolver un botón flotante.
+- **Arranca mudo por obligación** —ningún navegador deja reproducir solo con sonido— **y hay un «Ver con sonido» hecho, pero apagado** (2026-11-18).
+  - **Cómo es:** va en el zócalo azul, a la derecha y fuera del chaflán, no flotando encima del plano. Al pulsarlo el fondo pasa a ser un reproductor: vuelve al principio, suena, deja de repetirse, enseña los controles del navegador y se lleva el foco al vídeo. Desde ahí manda quien lo ve: ya no se reanuda solo al volver a la pestaña ni al entrar en pantalla, porque eso le pisaría la pausa. Es lo que esta nota pedía —«llevarlo a un reproductor con controles, no devolver un botón flotante»—.
+  - **Por qué no sale: el archivo no tiene sonido.** `video-corporativo.mp4` solo trae pista de imagen; comprobado leyendo el archivo (hay manejador de vídeo y ninguno de audio) y reproduciéndolo: el navegador decodifica **cero bytes de audio**. Seguramente se le quitó al comprimirlo. Un botón que promete sonido y da silencio es peor que ninguno.
+  - **Se enciende con una línea:** `VIDEO_CON_AUDIO` en `content/media.ts`, a `true`, el día que llegue el original con audio (el mismo que hay que pedir en 1080p). El texto ya está en `messages` (`about.videoSound`).
 - **No hay pie de vídeo.** Decía «Vídeo corporativo de la empresa.» y explicar que eso es un vídeo no le dice nada a nadie. El `videoLabel` sigue como `aria-label` del elemento, que es donde hace falta de verdad.
 - **Cuidado al comprobar la reproducción desde un panel de navegador oculto:** el observador informa de área cero y pausa el vídeo, que es exactamente lo que debe hacer. Parece una regresión y no lo es. Para verificarlo de verdad hay que abrirlo en una ventana visible (o con `playwright-core`, como hace `check:3d`). Ya me ha engañado una vez.
 - El vídeo se **reanuda solo** al volver a la pestaña: el navegador lo suspende al perder visibilidad y no lo recupera por su cuenta. Y se pausa al salir de pantalla, pero **solo si la ventana tiene tamaño**: con la ventana minimizada o tapada el navegador informa de área cero, así que "nada intersecta", y sin esa comprobación el vídeo se quedaba congelado para siempre. Ya pasó.
 - `RevealText` usa **IntersectionObserver y no ScrollTrigger** a propósito: encima hay un vídeo que cambia la altura de la página al cargar, y un disparador calculado antes de eso deja el texto invisible para siempre. Ya pasó, y sigue valiendo aunque el vídeo ya no ocupe la pantalla entera.
 - **Formulario de presupuesto en tres pasos** (`QuoteForm.tsx`): qué mueves → de dónde a dónde → cómo te llamamos, con barra de avance. Los campos que no están en pantalla siguen registrados, así que al volver atrás no se pierde nada. El submit está interceptado para que Intro en un paso intermedio avance en vez de enviar. **Ya envía de verdad**: ver «El formulario de presupuesto envía de verdad».
-- **Mapa de la ruta** (`RouteMap.tsx`): la geografía es de verdad —Natural Earth, dominio público—, generada por `scripts/gen-mapa.mjs` en `routeMapPaths.ts` y simplificada para que pese poco. Fue un trazado hecho a mano con unos pocos puntos de costa; ya no.
+- **Mapa de la red** (`MapaRed.tsx`): la geografía es de verdad —Natural Earth, dominio público—, generada por `scripts/gen-mapa.mjs` en `routeMapPaths.ts` y recortada a la península en `lib/red.ts`. Ver «El mapa de la red».
 - **Los hitos de esa ruta van sin hora, y no se pueden volver a poner.** Llevaban una cada uno (06:00, 09:00, 14:00, «24 h») y ninguna era real: estaban para que la lista pareciera un horario. Una hora concreta en una web de transporte es un compromiso, y publicar uno que no se cumple es peor que no publicar ninguno. Lo cierto —el orden de los pasos y que se entrega al día siguiente— ya lo cuentan el propio orden de la lista y el texto de entrada. Se quitaron también de `messages`, no solo de la vista, justo para que no vuelvan solas.
 
 ## El formulario de presupuesto envía de verdad
@@ -1285,7 +1424,25 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 ## Los huecos de foto de las páginas interiores
 
 - **`/faq` y `/contacto` eran tipografía sobre crema de arriba abajo.** La portada va cargadísima —intro 3D, mosaico, desfile, banda de cifras— y las interiores van desnudas: ese salto entre unas y otras se nota, parecen dos sitios distintos.
-- Los dos huecos se declararon **vacíos a propósito** (`PAGE_PHOTOS` en `content/media.ts`), con su `brief`, su ancho y su proporción al lado. **Hoy están llenos, con fotos de banco provisionales**: ver «Las fotos de banco». El `brief` sigue ahí, que es el encargo para las de verdad, y el día que lleguen esto es cambiar el `src`. Si se quita una, el hueco lo vuelve a pintar `CoverPlaceholder`.
+- Los dos huecos se declararon **vacíos a propósito** (`PAGE_PHOTOS` en `content/media.ts`), con su `brief`, su ancho y su proporción al lado. Llevaron fotos de banco y después, un solo día, fotogramas del vídeo corporativo. **Hoy están preparados y vacíos** (2026-11-18): el cliente pidió quitar los fotogramas y dejar el sitio listo para una fotografía, pero no esas. Los pinta `CoverPlaceholder` con la proporción que tendrán, y el día que llegue la foto es una línea: su ruta en `src`.
+
+### Los huecos preparados, en general (`Hueco` en `content/media.ts`)
+
+- **Un hueco preparado es una entrada del manifiesto con `src: null`**: conserva su medida (`needs`), su proporción y su encargo (`brief`), pero no tiene archivo. Mientras esté así se pinta un bloque en los azules de la casa con una luz suave (`fondoHueco` en `CoverPlaceholder.tsx`), **el mismo en toda la web**: el blog, las cabeceras (`HeaderPhoto`, con su chaflán y su muesca roja) y los paneles del índice. Sin texto ni icono, que un «foto pendiente» publicado se lee como un error.
+- `check:fotos` busca `src: '…'` entre comillas, así que un hueco vacío no se comprueba —no hay archivo que medir— y vuelve a comprobarse solo en cuanto tenga ruta.
+- **Esos seis huecos ya no están vacíos**: las cabeceras de `/contacto` y `/faq`, las fotos de abajo de esas dos páginas y los paneles de Servicios y Preguntas del índice. Llevaron fotogramas del vídeo, el cliente los quitó (los archivos se borraron, los dos que estaban en git con `git rm`) y el mismo día (2026-11-18) pidió **fotos de banco de operaciones, sin caras**, elegidas por mí. Son de Pexels:
+  | hueco | foto (id de Pexels) |
+  | --- | --- |
+  | cabecera de Contacto | camión entrando en un muelle cubierto (37389217) |
+  | cabecera de Preguntas | pasillo de almacén con estanterías de madera (4170172) |
+  | abajo de Preguntas (2,4:1) | patio de palés visto desde arriba (9552902) |
+  | abajo de Contacto (cuadrada) | palés apilados, azules y de madera (34908275) |
+  | panel de Servicios | semirremolques blancos vistos desde arriba (2800121) |
+  | panel de Preguntas | carretilla azul (14688876) |
+- **Se descartaron tres por llevar la marca de otra empresa**, y conviene saberlo porque en la hoja de contactos no se ve: lonas rotuladas de otra transportista, pegatinas de una empresa de alquiler de camiones y el logo de una tienda en línea en los remolques. En la web de una transportista una flota ajena se lee como la competencia. **Hay que mirarlas a tamaño completo**, no en miniatura.
+- Pexels sigue bloqueando su buscador a los guiones, pero **desde el navegador integrado se consulta sin problema**: se leen los identificadores de la página de resultados y se bajan con `scripts/fotos/traer.mjs`, que las enseña ya recortadas a su hueco. Openverse es mucho más lento (baja las miniaturas de una en una) y para esto dio poco.
+- El aviso legal lo dice ahora explícitamente: son de banco y **no muestran nuestras instalaciones ni a nuestro equipo**.
+- **Los fotogramas se sacaban con `tests/visual/salida/fotograma.mjs`** y se recortaban con `recorte-px.mjs` (herramientas de trabajo). Siguen ahí por si sirven para otra cosa, pero **para estos huecos el cliente no los quiere**: no volver a ponerlos.
 - **Dónde va cada una es parte de la decisión:**
   - En `/faq`, **detrás de las respuestas y no delante**. Quien entra aquí viene a leer; una imagen antes de la primera pregunta se interpone. Al final hace de bisagra hacia el cierre: se acaban las respuestas, se ve a quien las da, y entonces se pide presupuesto. Apaisada y ancha.
   - En `/contacto`, **debajo de las vías**, donde sobraban trescientos píxeles de columna vacía: el formulario de al lado es alto y la lista de vías es corta. Cuadrada, que es lo que cabe en una columna estrecha sin quedarse en una tira. Solo en escritorio: en móvil esa columna va debajo y no hay hueco que llenar.
@@ -1294,9 +1451,11 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 ## Las fotos de banco (`scripts/fotos/`)
 
 Doce huecos llevaban meses vacíos —las diez portadas del blog, `/faq` y
-`/contacto`— esperando fotos del cliente que no han llegado. Hoy los ocupan
-fotos de banco **provisionales**. Esto es lo que hay que saber antes de
-tocarlas.
+`/contacto`— esperando fotos del cliente que no han llegado. Se llenaron con
+fotos de banco **provisionales**. **`/faq` y `/contacto` ya no las llevan**:
+desde el 2026-11-18 son huecos preparados a la espera de foto (ver «Los huecos
+de foto de las páginas interiores»), así que hoy son de banco las diez del blog y
+las seis de servicio. Esto es lo que hay que saber antes de tocarlas.
 
 ### De dónde salen y por qué se pueden usar
 
@@ -1335,8 +1494,8 @@ tocarlas.
 - Una foto de banco en `/faq` **ilustra** —«hay gente trabajando aquí»—. Una
   foto de banco en el hueco de las sedes **afirmaría** —«esta es nuestra nave
   de Almazora»—, y eso es mentir aunque nadie lo escriba debajo.
-- Por eso **`SITE_PHOTOS` sigue vacía** y las otras doce no. Es la misma regla
-  que deja `content/reviews.ts` sin reseñas de ejemplo. Si alguna de estas doce
+- Por eso **`SITE_PHOTOS` sigue vacía** y las de banco no. Es la misma regla
+  que deja `content/reviews.ts` sin reseñas de ejemplo. Si alguna foto de banco
   pasa algún día a llevar un pie que diga que es la casa, deja de valer.
 
 ### Las tres herramientas, y los fallos que las hicieron falta
@@ -1515,10 +1674,11 @@ Todo lo de aquí sale de medir una **compilación de producción** servida con
   falta: sin la segunda, quien baje el dedo enseguida entra en cuatro
   pantallas de intro vacía; sin la tercera, una pestaña que no se queda quieta
   nunca podría no montar la escena jamás.
-- **No cambia lo que ve el visitante**, y es lo que lo hace barato: el
-  `Preloader` vive **dentro** de `Experience`, así que ya hoy aparecía después
-  del primer pintado —sobre 1,5 s con red normal—. Lo que se mueve son unos
-  centenares de milisegundos de algo que ya pasaba en ese orden.
+- **No cambia lo que ve el visitante**: mientras tanto la portada está tapada
+  por `PantallaCarga`, que sale en el primer pintado y espera a que el 3D
+  avise de que ha descargado. (Cuando esto se escribió, la pantalla de carga
+  anterior vivía dentro de `Experience` y salía tarde; ver «La pantalla de
+  carga».)
 - Resultado medido: evaluación de JavaScript **8.812 → 6.466 ms**, hilo
   bloqueado **2.760 → 1.540 ms**, Speed Index 4,5 → 3,8 s. Y el arnés visual a
   **0,00 % en las quince tomas**.
@@ -1789,7 +1949,8 @@ Medidos con píxeles dan 16,7:1 y 5,04:1.
 
 ## Regresión visual de la intro 3D (`npm run check:3d`)
 
-- **Qué problema resuelve.** La intro está gobernada por constantes que dependen unas de otras —el alcance de la niebla por vista, el adelanto de la cámara cenital, el encuadre de la carretera, el reparto del scroll— y tocar una mueve otras. El fallo **no rompe nada**: compila, pasa el lint y el build, y simplemente se ve mal tres pantallazos más abajo. Esto recorre la portada parándose en 12 puntos fijos, captura, y compara contra referencias versionadas en `tests/visual/baseline/`.
+- **Qué problema resuelve.** La intro está gobernada por constantes que dependen unas de otras —el alcance de la niebla por vista, el encuadre del primer plano, el reparto del scroll— y tocar una mueve otras. El fallo **no rompe nada**: compila, pasa el lint y el build, y simplemente se ve mal tres pantallazos más abajo. Esto recorre la portada parándose en **10 puntos fijos** (8 en escritorio y 2 en móvil), captura, y compara contra referencias versionadas en `tests/visual/baseline/`.
+- **Eran 15 tomas y las cinco de la carretera se fueron con ella** (2026-11-17), junto con el buscador de kilómetros (`seekKm`) y su umbral propio (`FAIL_SOUGHT`). Lo que este apartado cuenta de esas tomas es historia; la toma `azul-noche` es ahora el último fotograma de la intro.
 - **Necesita el servidor levantado** (`npx next dev --webpack`). Si no hay nadie escuchando, lo dice y sale.
 - Para aceptar un cambio como bueno: `npm run check:3d -- --update`. **Mira las capturas nuevas antes de hacer commit**: una referencia mala da por bueno un fallo para siempre.
 - Las referencias **se versionan**; `tests/visual/salida/` (capturas del fallo y mapas de diferencias) va en `.gitignore`.
@@ -1858,6 +2019,17 @@ Igual que con `check:3d`, se saboteó a propósito: un `@media (prefers-reduced-
   - El estado de WebGL tiene **tres valores, no dos**: en el servidor no se puede saber si hay WebGL, así que el valor de partida es `null` («todavía no se sabe»). Puesto a `false`, el primer render del navegador marcaba como «sin 3D» **todas** las visitas y nadie lo volvía a quitar.
 - **`error.tsx` y `global-error.tsx` son dos cosas distintas.** El primero atiende lo que falla dentro de una página y mantiene navbar, pie e idioma, con tres salidas: reintentar (`reset()`, que recompone sin recargar ni perder el scroll), inicio y contacto. El segundo sustituye al documento entero cuando se cae el propio `layout`: trae su `<html>` y su `<body>`, no tiene traducciones ni garantía de estilos, y por eso va con colores a mano y en los dos idiomas. No es una página de la web: es la nota que queda cuando la web no está, y su único trabajo es dejar un teléfono a la vista.
 - **El error no se enseña, se registra.** El mensaje técnico no le dice nada a quien está delante y a veces filtra rutas internas. Va a la consola con su `digest`.
+
+### Las transiciones de página canceladas salían como error (`lib/transiciones.ts`, 2026-11-18)
+
+- **El síntoma, que vio el cliente:** «Recoverable InvalidStateError: Transition was aborted because of invalid state. Document hidden» y «… Viewport size changed». Salía al cambiar de pestaña o de tamaño de ventana en plena transición, o sea a cualquier visitante de móvil que haga scroll mientras navega (la barra de direcciones cambia el tamaño).
+- **No rompía nada:** Chrome cancela la transición y React remata la actualización por su rama de error, así que la página cambia igual, sin el fundido. Era un aviso falso.
+- **La causa es un desajuste entre React y Chrome.** React ya calla esa cancelación, pero solo si el mensaje coincide **letra por letra** con los que tiene apuntados (`customizeViewTransitionError`). Chrome cambió el texto y ahora pega la causa al final, así que ya no coincide. El Chrome de las pruebas (157) aún da el mensaje viejo; por eso en el arnés no salía y en el navegador del cliente sí.
+- **Y un segundo caso del mismo tipo, que salió al buscar el primero:** si la página tarda más de 4 s en cambiar durante una transición, `ready` se rechaza con `TimeoutError`, y React lo anuncia siempre. En la portada pasa de verdad: la transición de los 0,84 s coincide con el montaje del 3D, y con el hilo ocupado se pasa de 4 s. En desarrollo salía casi en cada carga.
+- **El arreglo** es un script en la cabecera que envuelve `document.startViewTransition` y, si `ready` se rechaza por cualquiera de los dos motivos, lo vuelve a rechazar con el texto exacto que React reconoce. No esconde la transición ni otros errores: un `AbortError` sigue saliendo.
+- **Comprobado con `npm run check:errores`** (`tests/perf/medidas/errores.mjs`): siete escenarios de visitante —cambiar el tamaño al cargar y al navegar, ocultar la pestaña, clics seguidos con atrás y adelante, el modal de servicios, las flechas de reseñas y una transición que caduca—. Con `--sin-arreglo` salen tres errores; con el arreglo, ninguno. La prueba **se hace pasar por un Chrome nuevo** pegando la causa al mensaje, porque si no, no reproduciría lo que ve el cliente.
+- **De paso salió un fallo de verdad en `ReviewsTrack`:** los clics de los puntos y las flechas se enganchaban en cada montaje y la limpieza no los quitaba. En desarrollo, donde React monta dos veces, cada flecha avanzaba **dos** tarjetas. Ahora se quitan, y el `ResizeObserver` pinta en el fotograma siguiente para no provocar el aviso de «ResizeObserver loop». El escenario de las flechas comprueba que avanzan exactamente una tarjeta.
+- Se repasaron además todas las promesas y escuchadores de la web: los `play()` de vídeo, las animaciones de la pantalla de carga y `document.fonts.ready` ya recogían su error, y todos los demás componentes quitan sus escuchadores al desmontarse.
 
 ### Y ahora el servidor se entera (`lib/avisar.ts`, `/api/aviso`)
 
@@ -2059,9 +2231,9 @@ Al volver no hay salto porque el `delta` del fotograma ya estaba acotado a
 - `dpr={[1, 1.5]}`, sombras baratas (`ContactShadows` o sombras horneadas), postprocesado mínimo.
 - **Hay una sola definición de «esta página va sin 3D», y es la variante `sin3d:`** (`@custom-variant` en `globals.css`). Responde a **tres** disparadores y los tres piden lo mismo de la maquetación: movimiento reducido, que el navegador no abra WebGL, y que la escena se caiga montándose. Lo que hace: Hero y RoadIntro sueltan el `sticky` y dejan de medir pantallas que ya no enseñan nada, e InRoute se pinta su propio fondo azul noche porque ya no tiene detrás el suelo 3D que se lo daba. **Si añades una sección que dependa del 3D para su fondo o su altura, dale su `sin3d:`** — y no solo `motion-reduce:`, que cubre un caso de tres.
 - `motion-reduce:` sigue usándose donde el asunto es el **movimiento** y no el 3D: el desfile de servicios.
-- Los componentes animados (`ScrollFade`, `RevealHeading`, `RouteOdometer`, `RouteProgress`, `CountUp`) ya salen por `prefersReducedMotion()` dejando su estado final en el HTML. Mantén ese patrón: nunca escondas algo en el marcado y lo enseñes solo por animación.
+- Los componentes animados (`ScrollFade`, `RevealHeading`, `CountUp`, `MapaRed`, `IndicePaneles`) ya salen por `prefersReducedMotion()` dejando su estado final en el HTML. Mantén ese patrón: nunca escondas algo en el marcado y lo enseñes solo por animación.
 - Móvil: misma historia, escena simplificada (menos objetos, sin postprocesado). Probar en móvil real antes de cerrar cada fase.
-- Preloader con progreso real (`useProgress` de drei) y máximo ~2 s percibidos.
+- Pantalla de carga que espera al 3D de verdad (`useProgress` de drei, a través de `AvisoCarga`), con el ritmo de la referencia del cliente: unos 3,5 s en total y tope de 6. Ver «La pantalla de carga».
 - Lighthouse objetivo: Performance ≥ 80 en móvil, Accesibilidad ≥ 95.
 - Todo el texto importante existe en HTML (SEO), nunca solo dentro del Canvas.
 
@@ -2096,7 +2268,7 @@ Esto se auditó midiendo el HTML que de verdad se sirve en las 32 páginas (16 r
 - **Y no había ni una imagen social en toda la web**, así que cada enlace salía como un renglón gris. Para una empresa cuyo cliente pide y pasa presupuestos por WhatsApp, eso es tirar el canal.
 - Otros tres de la misma cabecera: **`og:locale` decía `es`**, que es inválido —Open Graph pide `idioma_TERRITORIO`, o sea `es_ES`—; faltaban **`og:url`** y **`og:type`**; y la tarjeta de Twitter iba en `summary`, el recuadro pequeño.
 - **Se arregla en un sitio, no pidiéndole a cada página que se acuerde.** `pageMetadata()` en `lib/seo.ts` compone título, descripción, canonical, hreflang, Open Graph y tarjeta a la vez, y las doce páginas lo usan. Así es imposible que una vuelva a quedarse sin la mitad.
-- La imagen por defecto es `camion-01.jpg` (1500 × 843), que es el camión de verdad. **Las fichas de servicio no llevan la suya**, y el motivo que había ya no vale: eran tres fotos verticales y de menos de 500 px, y las seis de ahora son apaisadas y dan la talla. **Está pendiente**: ponerle a cada ficha su foto como imagen social es una línea en `pageMetadata` por página.
+- La imagen por defecto es `camion-01.jpg` (1500 × 843), que es el camión de verdad. **Las seis fichas de servicio llevan la suya** (2026-11-18): la misma foto que las encabeza, así que mandar por WhatsApp la página de grupaje ya no se ve igual que mandar la portada. Estuvo sin poner porque tres de las fotos de entonces eran verticales y de menos de 500 px; las de ahora son apaisadas y de 1.600 px o más. **El ancho y el alto se leen del propio archivo** (`lib/medidaFoto.ts`, el mismo lector de cabecera que `check:fotos`) al generar la página, para que no se queden viejos si se cambia la foto. Comprobado sobre el HTML de producción: `og:image` con su foto y sus medidas en las tres fichas que se miraron.
 
 ### La marca va en el título mientras quepa
 
@@ -2126,7 +2298,7 @@ Esto se auditó midiendo el HTML que de verdad se sirve en las 32 páginas (16 r
 
 1. **Dar de alta la ficha de Google Business** y enlazarla desde `sameAs`. Para un negocio local es lo que más mueve, y no es código.
 2. **Coordenadas (`geo`) y `priceRange`** en `business.ts`, cuando se puedan dar sin inventarlos.
-3. **Fotos apaisadas a 1200 × 630** para las tarjetas sociales de las seis fichas de servicio.
+3. ~~Fotos apaisadas a 1200 × 630 para las tarjetas sociales de las seis fichas de servicio.~~ **Hechas con la foto de cada ficha**, que ya es apaisada (1,5–1,8:1) y de 1.600 px o más. Cuando lleguen las fotos de servicio de la casa, se cambian en `content/media.ts` y la tarjeta cambia sola.
 4. ~~Las portadas de los artículos.~~ **Hechas**, con fotos de banco provisionales: los diez se comparten ya con su propia imagen. Ver «Las fotos de banco».
 5. **Rendimiento de la portada**, que es factor de posicionamiento: la intro 3D es lo más caro de la web y está medida en «Rendimiento del 3D».
 
@@ -2228,19 +2400,19 @@ hay que mirar al retomar el proyecto.
 | --- | --- |
 | **Las seis fotos de servicio, las de verdad** | hoy son de banco y provisionales (las anteriores llevaban marca de agua o eran generadas). Dan la talla, pero no son la casa: el `brief` de cada una en `content/media.ts` es el encargo |
 | **Foto de las dos sedes** | el hueco está hecho y **sigue vacío a propósito**: es el único donde una foto de banco afirmaría que esa es nuestra nave. Quien no acepta cookies ve el mapa en blanco |
-| **El vídeo de Nosotros en 1080p** | la copia que hay tiene 848 px de ancho |
+| **Seis fotos propias para Contacto, Preguntas y el índice** | hoy llevan fotos de banco de operaciones, sin caras (2026-11-18). El `brief` de cada una en `content/media.ts` dice qué foto propia iría; cambiarla es una línea |
+| **El vídeo de Nosotros en 1080p y con sonido** | la copia que hay tiene 848 px de ancho y **no lleva pista de audio**: por eso el botón «Ver con sonido» está hecho pero apagado (`VIDEO_CON_AUDIO`). De ese mismo original sale el clip del panel de Nosotros del índice, que ganaría nitidez |
 | **Datos societarios** | las páginas legales tienen huecos `[PENDIENTE: ...]` reales |
 
-**Doce huecos que estaban en esta lista ya no lo están**, y conviene saber en
-qué sentido: las diez portadas del blog, `/faq` y `/contacto` llevan **fotos
-de banco provisionales** (ver «Las fotos de banco»). No es que el encargo esté
-hecho —el `brief` de cada una sigue escrito y esperando la foto de verdad—, es
-que mientras tanto la web no enseña bloques de color ni se comparte treinta
-veces con la misma imagen.
+**Las diez portadas del blog ya no están en esta lista**, y conviene saber en
+qué sentido: llevan **fotos de banco provisionales** (ver «Las fotos de
+banco»). No es que el encargo esté hecho —el `brief` de cada una sigue escrito
+y esperando la foto de verdad—, es que mientras tanto la web no enseña bloques
+de color ni se comparte treinta veces con la misma imagen.
 
-Las **apaisadas 1200 × 630** para las tarjetas sociales de las seis fichas de
-servicio siguen pendientes, y eso es parte del mismo encargo: cuando lleguen
-las fotos de servicio buenas, esas valen para las dos cosas.
+Las tarjetas sociales de las seis fichas de servicio **ya llevan la foto de
+cada ficha**. Cuando lleguen las fotos de servicio de la casa, valen para las
+dos cosas sin tocar nada más.
 
 `check:fotos` **ya bloquea en la CI**: el `continue-on-error` se quitó cuando
 pasaron las veinte.
@@ -2258,12 +2430,12 @@ pasaron las veinte.
 
 Las tres están en la web y **solo el cliente sabe si son ciertas**:
 
-1. Que **no paran en agosto** (`Overview`). Es la que más fácil se cae: media provincia cierra.
-2. Que la ruta sale **con media caja igual que llena** (`Overview`). Dicha en un solo sitio a propósito, para que el día que haya que tocarla sea un sitio y no dos.
+1. ~~Que **no paran en agosto**.~~ Ya no se publica: se fue con el mosaico del índice (2026-11-17). Si el cliente lo confirma, es un buen dato para recuperar.
+2. ~~Que la ruta sale **con media caja igual que llena**.~~ Igual: ya no se publica.
 3. **La lista de doce localidades de `/cobertura`.** Es consistente con el «+150 localidades» que la web ya publica —son más que los 135 municipios de la provincia— pero es el texto de esta web que más fácil puede estar mal.
 
 ### Lo que queda de código, y por qué no se ha hecho
 
 - **Diferir GSAP.** Son 132 KB y la tarea más larga de la carga (2.050 ms). Lo importan **catorce** módulos repartidos por toda la página, así que no es un cambio: es un refactor de catorce archivos **sin cobertura automática en trece de ellos**. Este proyecto pide cambios pequeños y verificables, y ese no lo es.
-- **`RoadIntro` ocupa 4,8 pantallas.** Bajarlo a ~3,6 devolvería más de una pantalla entera y no obliga a tocar nada más. No se ha hecho porque cambia el ritmo de la escena, que está afinado y es el único momento que esta web se permite.
-- **Sombras en la carretera.** Intentado, medido y no conseguido; está escrito dónde seguir mirando.
+- ~~`RoadIntro` ocupa 4,8 pantallas.~~ Resuelto al quitar la carretera.
+- ~~Sombras en la carretera.~~ Ya no aplica: la carretera se quitó.

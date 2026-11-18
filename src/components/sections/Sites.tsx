@@ -20,7 +20,7 @@ export default function Sites() {
   const sites = t.raw('sites') as Site[];
 
   return (
-    <section data-bg="bone" className="relative z-10 bg-bone pb-28">
+    <section data-bg="night" className="tema-noche relative z-10 bg-bone pb-28">
       <Container>
         <SectionHeading
           title={t('sitesTitle')}
@@ -76,7 +76,7 @@ export default function Sites() {
                 <div className="mt-8 flex flex-wrap items-center gap-6">
                   <a
                     href={`tel:${site.phoneHref}`}
-                    className="font-display text-2xl tracking-tight text-brand-blue transition-colors hover:text-brand-blue-dark"
+                    className="font-display text-2xl tracking-tight text-azul-texto transition-colors hover:text-azul-texto-fuerte"
                   >
                     {site.phone}
                   </a>
@@ -84,7 +84,7 @@ export default function Sites() {
                     href={site.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2 text-sm text-muted underline underline-offset-4 transition-colors hover:text-brand-blue"
+                    className="group inline-flex items-center gap-2 text-sm text-muted underline underline-offset-4 transition-colors hover:text-azul-texto"
                   >
                     {t('mapLink')}
                   </a>

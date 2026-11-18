@@ -5,7 +5,7 @@ import { Canvas } from '@react-three/fiber';
 import { NoToneMapping } from 'three';
 import { lazy, Suspense, useState } from 'react';
 import { ANCHO_MOVIL } from '@/lib/pantalla';
-import Preloader from './Preloader';
+import AvisoCarga from './AvisoCarga';
 import Scene from './Scene';
 import { useIntroVisible } from './useIntroVisible';
 
@@ -54,7 +54,9 @@ export default function Experience() {
 
   return (
     <>
-      <Preloader />
+      {/* La pantalla de carga vive en el layout, para salir en el primer
+          pintado; desde aquí solo se le avisa de cómo va la descarga. */}
+      <AvisoCarga />
       <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
         {/* `percentage` es el filtrado PCF. Ojo al tocarlo: tanto `soft` como
             `shadows` a secas piden PCFSoftShadowMap, que Three ya ha

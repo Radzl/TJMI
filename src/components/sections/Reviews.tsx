@@ -178,7 +178,7 @@ export default function Reviews() {
                         />
                       ) : (
                         <span
-                          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 font-display text-sm tracking-tight text-brand-blue"
+                          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 font-display text-sm tracking-tight text-azul-texto"
                           aria-hidden="true"
                         >
                           {iniciales(review.author)}
@@ -219,7 +219,7 @@ export default function Reviews() {
               href={GOOGLE_PROFILE}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-display text-sm uppercase tracking-widest text-brand-red-ink transition-colors hover:text-brand-blue"
+              className="font-display text-sm uppercase tracking-widest text-brand-red-ink transition-colors hover:text-azul-texto"
             >
               {t('all')}
             </a>

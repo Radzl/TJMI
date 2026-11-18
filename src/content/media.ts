@@ -33,6 +33,19 @@ export type Photo = {
 };
 
 /**
+ * Un hueco de foto que puede estar **preparado y vacío**: con su medida y su
+ * encargo, pero sin archivo todavía (`src: null`). Mientras esté vacío se
+ * pinta un bloque en los tonos de la casa (`fondoHueco` en
+ * `CoverPlaceholder.tsx`); el día que llegue la foto, se pone su ruta aquí y
+ * aparece sola.
+ *
+ * `npm run check:fotos` busca `src: '…'` entre comillas, así que un hueco
+ * vacío no se comprueba —no hay archivo que medir— y vuelve a comprobarse en
+ * cuanto tenga ruta.
+ */
+export type Hueco = Omit<Photo, 'src'> & { src: string | null; position?: string };
+
+/**
  * Las seis de servicio, en el mismo orden que los textos de `messages`.
  *
  * **Las seis son de banco y son provisionales**, igual que las del blog. Las
@@ -114,6 +127,20 @@ export const FEATURED_PHOTO: Photo = {
     'El camión de la casa cargando azulejo en fábrica, con la lona abierta y la carretilla entrando. Es la foto que más se ve de toda la web.',
 };
 
+/**
+ * **Si el vídeo corporativo que se sirve lleva sonido.** Hoy no: el archivo de
+ * `public/media/video-corporativo.mp4` solo tiene pista de imagen —comprobado
+ * leyendo el propio archivo: hay manejador de vídeo y ninguno de sonido, y al
+ * reproducirlo el navegador decodifica cero bytes de audio—. Seguramente se le
+ * quitó al comprimirlo.
+ *
+ * Con esto en `false` no sale el botón «Ver con sonido» de Nosotros, que está
+ * hecho y probado: prometería sonido y daría silencio. **El día que llegue el
+ * original con audio** (el mismo que hay que pedir en 1080p), se cambia el
+ * archivo y esto a `true`, y nada más.
+ */
+export const VIDEO_CON_AUDIO = false;
+
 /** Fotograma de arranque del vídeo corporativo. */
 export const VIDEO_POSTER: Photo = {
   src: '/media/camion-01.jpg',
@@ -156,37 +183,33 @@ export const SITE_PHOTO_BRIEF = {
  * cifras— y las interiores iban desnudas, y ese salto entre unas y otras se
  * nota: parecen dos sitios distintos.
  *
- * **Las dos de ahora son de banco y son provisionales** (Pexels, licencia de
- * uso comercial sin atribución obligatoria; el crédito va igualmente en el
- * aviso legal). Se eligieron contra el `brief` de cada una y mirándolas **ya
- * recortadas al hueco**, que es donde se cae una foto que en el banco se veía
- * bien: la de `/faq` se recorta a 2,4:1 y la de `/contacto` a cuadrada.
+ * **Hoy llevan fotos de banco de operaciones, sin caras** (Pexels, 2026-11-18),
+ * igual que las cabeceras de estas dos páginas y los paneles de Servicios y
+ * Preguntas del índice. Lo eligió el cliente: fotos de banco, nunca fotogramas
+ * del vídeo, y solo operaciones —palés, muelles, almacén, camiones— para que
+ * nadie pueda tomarlas por el equipo o la nave de la casa. La de `/faq` es un
+ * patio de palés visto desde arriba; la de `/contacto`, palés apilados.
  *
- * **Lo que una foto de banco puede hacer aquí y en las sedes no**: estas dos
- * ilustran —«hay gente trabajando», «alguien coge el teléfono»— y aquello
- * afirmaría —«esta es nuestra nave de Almazora»—. Por eso `SITE_PHOTOS` sigue
- * vacía y estas no. Si alguna de estas dos pasa a llevar un pie que diga que
- * es la casa, deja de valer.
+ * **Se descartaron las que llevaban la marca de otra empresa** —lonas
+ * rotuladas, pegatinas de una empresa de alquiler, el logo de una tienda en
+ * línea en los remolques—: en la web de una transportista, una flota ajena
+ * se lee como la competencia. Se miraron a tamaño completo, que es donde se ve.
  *
- * **El `brief` se queda aunque ya haya foto**: sigue siendo el encargo para
- * cuando el cliente mande la suya, y ese día esto es cambiar el `src`. Hubo
- * una constante aparte (`PAGE_PHOTO_BRIEF`) y se fundió aquí por dos motivos:
- * no la importaba nadie, y con el encargo en un sitio y la foto en otro los
- * `needs` y los `ratio` estaban duplicados y podían separarse sin que nadie se
- * enterara. Además `npm run check:fotos` lee este archivo a mano buscando
- * `src` + `needs` + `ratio` **en líneas seguidas**: repartido entre dos
- * constantes no las veía, así que las dos nuevas no se comprobaban.
+ * El `brief` sigue siendo el encargo para las fotos propias; el día que
+ * lleguen, es cambiar la ruta en `src`. Los `needs` son el hueco medido en
+ * escritorio (el de `/faq` mide 1.072 × 447 y el de `/contacto` 400 × 400) con
+ * margen para pantallas de doble densidad.
  */
-export const PAGE_PHOTOS: Record<'faq' | 'contacto', Photo | null> = {
+export const PAGE_PHOTOS: Record<'faq' | 'contacto', Hueco> = {
   faq: {
-    src: '/media/faq.jpg',
+    src: '/media/paginas/faq.jpg',
     needs: 1150,
     ratio: 2.4,
     brief:
-      'El puesto de tráfico: alguien al teléfono con los albaranes delante y las pantallas detrás. Apaisada y ancha. Es quien contesta estas preguntas, y que se le vea trabajando es lo que convierte una lista de respuestas en una conversación con alguien.',
+      'El puesto de tráfico: alguien al teléfono con los albaranes delante y las pantallas detrás. Apaisada y ancha (2,4:1). Es quien contesta estas preguntas, y que se le vea trabajando es lo que convierte una lista de respuestas en una conversación con alguien.',
   },
   contacto: {
-    src: '/media/contacto.jpg',
+    src: '/media/paginas/contacto.jpg',
     needs: 700,
     ratio: 1,
     brief:
@@ -229,26 +252,19 @@ export const BLOG_COVER = {
  * de banco dice «esto podría ser cualquier transportista».
  *
  * - Servicios y Cobertura llevan las dos fotos del cliente que ya había.
- * - Contacto y Preguntas llevan **fotogramas del vídeo corporativo**: la
- *   oficina con el camión de juguete en la mesa, y un conductor con el chaleco
- *   de la empresa en la ventanilla de recepción. El vídeo mide 848 × 480, así
- *   que es su techo de resolución: en el hueco de escritorio (unos 480 px) va
- *   bien, en una pantalla de alta densidad se nota algo blando. Cuando llegue
- *   el original en 1080p, se vuelven a sacar de ahí con
- *   `tests/visual/salida/fotograma.mjs` (herramienta de trabajo, fuera de git).
+ * - **Contacto y Preguntas llevan fotos de banco de operaciones** (Pexels,
+ *   2026-11-18): un camión entrando en un muelle cubierto y un pasillo de
+ *   almacén. Llevaron fotogramas del vídeo y el cliente los quitó; ver
+ *   `PAGE_PHOTOS`. Si se vacían (`src: null`), `HeaderPhoto` pinta el mismo
+ *   marco relleno con los tonos de la casa.
  *
  * `needs` es el hueco de escritorio (media columna del `Container`) con algo
  * de margen; en móvil la foto va a lo ancho y mide menos. `ratio` es el del
  * recorte de la cabecera (4:3).
  *
- * `position` mueve el encuadre cuando el sujeto no está centrado: en la de la
- * oficina el camión de juguete está pegado al borde derecho y un recorte
- * centrado se lo comía.
+ * `position` mueve el encuadre cuando el sujeto no está centrado.
  */
-export const HEADER_PHOTOS: Record<
-  'servicios' | 'cobertura' | 'contacto' | 'faq',
-  Photo & { position?: string }
-> = {
+export const HEADER_PHOTOS: Record<'servicios' | 'cobertura' | 'contacto' | 'faq', Hueco> = {
   servicios: {
     src: '/media/camion-02.jpg',
     needs: 520,
@@ -262,25 +278,85 @@ export const HEADER_PHOTOS: Record<
     brief: 'La tractora con su semirremolque, que es lo que recorre la ruta cada día. Ya es la foto buena.',
   },
   contacto: {
-    src: '/media/paginas/contacto-oficina.jpg',
+    src: '/media/paginas/contacto-cabecera.jpg',
     needs: 520,
     ratio: 1.33,
-    position: '70% 50%',
-    brief: 'Fotograma del vídeo: la oficina, alguien al teléfono y el camión de juguete en la mesa. Sacarlo del original en 1080p cuando llegue.',
+    brief: 'La oficina por dentro, con alguien al teléfono. Es la cara de «pide presupuesto»: tiene que decir que al otro lado hay una persona.',
   },
   faq: {
-    src: '/media/paginas/faq-recepcion.jpg',
+    src: '/media/paginas/faq-cabecera.jpg',
     needs: 520,
     ratio: 1.33,
-    brief: 'Fotograma del vídeo: un conductor con el chaleco de la casa preguntando en la ventanilla de recepción. Sacarlo del original en 1080p cuando llegue.',
+    brief: 'Alguien de la casa atendiendo: en la ventanilla de recepción, con un conductor, o en el puesto de tráfico. Es quien contesta estas preguntas.',
   },
+};
+
+/**
+ * Las fotos del índice en paneles de la portada (`IndicePaneles`).
+ *
+ * **Servicios y Preguntas llevan fotos de banco de operaciones** (Pexels,
+ * 2026-11-18): semirremolques blancos vistos desde arriba y una carretilla
+ * azul. Llevaron fotogramas del vídeo y el cliente los quitó; ver
+ * `PAGE_PHOTOS`. Ninguna foto de aquí debe repetir una que ya salga en la
+ * portada: el camión cargando ya es la foto grande de Servicios más abajo.
+ *
+ * **Nosotros no lleva foto: lleva el clip del vídeo** (`INDEX_VIDEO`). La del
+ * blog es la portada de un artículo que **no** está entre los tres últimos,
+ * porque esos tres ya salen al final de la página; la elige `Overview`.
+ *
+ * `needs` es el panel abierto en escritorio (algo menos de media fila) y
+ * `ratio` su forma, casi cuadrada. En móvil son tarjetas apaisadas y miden
+ * menos.
+ */
+export const INDEX_PHOTOS: Record<'servicios' | 'cobertura' | 'faq', Hueco> = {
+  servicios: {
+    src: '/media/indice/servicios.jpg',
+    needs: 560,
+    ratio: 1.1,
+    brief: 'Los camiones de la casa en el patio de Almazora, maniobrando o cargando. Que no sea la del camión con la lona abierta: esa ya es la foto grande de Servicios.',
+  },
+  cobertura: {
+    src: '/media/camion-01.jpg',
+    needs: 560,
+    ratio: 1.1,
+    position: '30% 50%',
+    brief: 'La tractora con su semirremolque, que es lo que recorre la ruta cada día.',
+  },
+  faq: {
+    src: '/media/indice/preguntas.jpg',
+    needs: 560,
+    ratio: 1.1,
+    brief: 'Alguien de la casa atendiendo: al teléfono, en la ventanilla o en el puesto de tráfico. Distinta de la cabecera de /faq.',
+  },
+};
+
+/**
+ * El clip en bucle del panel «Nosotros» del índice, en lugar de una foto.
+ *
+ * **Son diez segundos montados del vídeo corporativo**, con los planos que
+ * cuentan la casa: la fachada con el rótulo, el equipo en la oficina, un
+ * conductor con el chaleco en la ventanilla, los camiones maniobrando en el
+ * patio y el semirremolque rotulado pasando. Cada tramo cae entero dentro de
+ * un plano del original —los cortes se midieron—, así que no hay ningún
+ * fogonazo de un plano que empieza y se corta.
+ *
+ * Lo monta `tests/visual/salida/montar-clip.mjs` (herramienta de trabajo) con
+ * el Chrome instalado: sin ffmpeg ni dependencias. MP4 H.264 a 848 × 480 y
+ * 1,3 Mbps: **1,1 MB**. No viaja con la portada: `IndicePaneles` no lo pide
+ * hasta que la sección se acerca a la pantalla. Cuando llegue el original en
+ * 1080p, se vuelve a montar de ahí con los mismos tramos.
+ */
+export const INDEX_VIDEO = {
+  src: '/media/nosotros-clip.mp4',
 };
 
 export const ALL_PHOTOS: Photo[] = [
   ...SERVICE_PHOTOS,
   FEATURED_PHOTO,
   VIDEO_POSTER,
-  ...Object.values(HEADER_PHOTOS),
+  ...[...Object.values(HEADER_PHOTOS), ...Object.values(INDEX_PHOTOS)].filter(
+    (hueco): hueco is Photo => hueco.src !== null,
+  ),
 ];
 
 /** Solo las rutas, que es lo que piden los componentes. */

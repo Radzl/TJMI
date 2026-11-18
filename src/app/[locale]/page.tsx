@@ -6,10 +6,9 @@ import Hero from '@/components/sections/Hero';
 import Overview from '@/components/sections/Overview';
 import InRoute from '@/components/sections/InRoute';
 import LatestPosts from '@/components/sections/LatestPosts';
-import RoadIntro from '@/components/sections/RoadIntro';
+import RedNacional from '@/components/sections/RedNacional';
 import Reviews from '@/components/sections/Reviews';
 import Route from '@/components/sections/Route';
-import RouteMapSection from '@/components/sections/RouteMapSection';
 import Services from '@/components/sections/Services';
 import Sites from '@/components/sections/Sites';
 import { pageMetadata } from '@/lib/seo';
@@ -39,15 +38,15 @@ export default async function HomePage({ params }: Props) {
     <>
       <BusinessJsonLd locale={locale} />
 
-      {/* Intro animada: termina cuando el camión acaba el recorrido. */}
+      {/* Intro animada: termina cuando el camión sale sobre el azul noche. */}
       <ExperienceCanvas />
       <Hero />
       {/* **El índice de la casa va aquí, y el sitio es parte de la decisión.**
           La intro se llevaba el 59 % de la portada —medido: el primer servicio
           no se nombraba hasta la pantalla 11,4 de 19,4— y en B2B la mitad de
           las visitas no pasan del 50-60 % de scroll. Esto lo mueve a la 4,2, y
-          además enseña que detrás de la intro hay nosotros, blog, calculadora
-          y preguntas, que desde la portada no se intuía.
+          además enseña que detrás de la intro hay servicios, cobertura,
+          nosotros, blog y preguntas, que desde la portada no se intuía.
 
           Encaja con el guion en vez de pelearse con él: el camión acaba de
           cargarse, hay un compás, y después arranca. Y no descoloca ninguna
@@ -55,22 +54,34 @@ export default async function HomePage({ params }: Props) {
           sección no lo lleva. */}
       <Overview />
       <InRoute />
-      <RoadIntro />
+
+      {/* **El 3D acaba en `InRoute`**: el camión sale sobre el azul noche y
+          la intro se cierra fundiendo a ese mismo azul. Aquí iba la carretera
+          en cenital, y se quitó porque se leía como un circuito de juguete y
+          solo contaba una ruta. El mapa de la red cuenta la ruta diaria **y**
+          que se llega a toda la península, sobre el mismo azul, así que el
+          relevo no se nota. Ver la cabecera de `MapaRed`.
+
+          Sustituye también al mapa pequeño que había más abajo («La ruta,
+          cada día»): dos mapas en la misma portada contaban lo mismo dos
+          veces. */}
+      <RedNacional />
 
       {/* A partir de aquí, página normal sin 3D. */}
       <Services />
       <Route />
-      <RouteMapSection />
+      {/* **Las reseñas van antes de las sedes**, y lo pidió el cliente
+          (2026-11-18). Estuvieron detrás, justo antes del cierre; ahora la
+          prueba social sigue a las cifras de la casa —lo que decimos nosotros
+          y, a continuación, lo que dicen nuestros clientes— y después viene
+          dónde estamos. Mientras no haya reseñas de verdad no se pinta nada
+          en producción, así que allí las cifras pasan directamente a las
+          sedes. */}
+      <Reviews />
       <Sites />
       {/* Los tres últimos artículos: lo que conviene saber, justo antes de
           pedir presupuesto. Ver la cabecera de `LatestPosts`. */}
       <LatestPosts />
-      {/* **La prueba social cae justo antes de pedir algo**, que es cuando
-          sirve: «aquí estamos — esto dicen de nosotros — cuéntanos qué
-          necesitas». Más arriba, entre los servicios, sería una interrupción;
-          más abajo del cierre, no la lee nadie. Mientras no haya reseñas de
-          verdad no se pinta nada en producción. */}
-      <Reviews />
       <Cta />
     </>
   );

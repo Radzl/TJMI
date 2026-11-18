@@ -75,7 +75,7 @@ export default async function BlogPage({ params }: Props) {
           {tBlog('readTime', { minutes: destacado.minutes })}
         </span>
       </p>
-      <h2 className="mt-3 font-display text-2xl uppercase leading-tight tracking-tight text-ink transition-colors group-hover:text-brand-blue sm:text-3xl">
+      <h2 className="mt-3 font-display text-2xl uppercase leading-tight tracking-tight text-ink transition-colors group-hover:text-azul-texto sm:text-3xl">
         {destacado.content[active].title}
       </h2>
     </Link>
@@ -134,7 +134,7 @@ export default async function BlogPage({ params }: Props) {
                     />
 
                     <div className="md:col-span-5">
-                      <h2 className="font-display text-2xl uppercase leading-tight tracking-tight text-ink transition-colors group-hover:text-brand-blue sm:text-3xl">
+                      <h2 className="font-display text-2xl uppercase leading-tight tracking-tight text-ink transition-colors group-hover:text-azul-texto sm:text-3xl">
                         {content.title}
                       </h2>
                       <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
@@ -153,7 +153,7 @@ export default async function BlogPage({ params }: Props) {
                           marca es la acción, que es entrar a leer. En reposo
                           mide 0 y no ocupa sitio, así que la maquetación no
                           se mueve. */}
-                      <span className="mt-5 inline-flex flex-col items-start gap-1.5 font-display text-xs uppercase tracking-widest text-brand-blue">
+                      <span className="mt-5 inline-flex flex-col items-start gap-1.5 font-display text-xs uppercase tracking-widest text-azul-texto">
                         {tBlog('readMore')}
                         <span
                           aria-hidden="true"

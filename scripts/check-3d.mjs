@@ -3,8 +3,8 @@
 // # Qué problema resuelve
 //
 // La intro está gobernada por un puñado de constantes que dependen unas de
-// otras: el alcance de la niebla por vista, el adelanto de la cámara cenital,
-// el encuadre de la carretera, el reparto del scroll entre escenas. Tocar una
+// otras: el alcance de la niebla por vista, el encuadre del primer plano, el
+// reparto del scroll entre escenas. Tocar una
 // mueve otras, y el fallo **no rompe nada**: compila, pasa el lint y el build,
 // y simplemente se ve mal tres pantallazos más abajo. Hasta ahora eso se
 // cazaba a ojo, mirando capturas de una en una, y a ojo se escapan cosas.
@@ -98,28 +98,16 @@ const SHOTS = [
   { id: 'camion-saliendo', scene: 3, at: 0.52, label: 'Saliendo por la derecha' },
   { id: 'azul-noche', scene: 3, at: 0.78, label: 'El azul noche ya lo llena todo' },
 
-  // Estas tres van **por kilómetro y no por fracción**, y es la parte que más
-  // costó acertar. Ver `seekKm()` más abajo para el porqué: resumido, no
-  // existe ninguna fracción de la sección que signifique «llegando».
-  { id: 'carretera-arranque', scene: 5, km: 25, label: 'Saliendo de la nave' },
-  { id: 'carretera-medio', scene: 5, km: 210, label: 'Carretera a media ruta' },
-  // **Esta vuelve a ir por fracción, y el motivo es que ya significa algo.**
-  // Se pasó a kilómetros porque la escena no terminaba dentro de su sección:
-  // al 100 % el camión iba por el km 350 y no había fracción que dijese
-  // «llegando». Ahora la escena acaba justo donde su bloque fijo se suelta,
-  // así que 0,85 **es** la llegada. Y por kilómetros ya no se puede pedir: el
-  // cuentakilómetros se clava en 420 antes de que la cámara se pose sobre la
-  // nave, así que cualquier objetivo cercano cae en una meseta y la búsqueda
-  // no tiene dónde agarrarse.
-  { id: 'carretera-llegada', scene: 5, at: 0.85, label: 'Llegando a la nave de destino' },
+  // Hubo tres tomas más, de la carretera en cenital (escena 5), que se
+  // buscaban por kilómetro. La escena se quitó y con ella las tomas y el
+  // buscador: la intro acaba en `InRoute`, y la toma `azul-noche` es su
+  // último fotograma.
 ];
 
-/** En móvil solo las que de verdad cambian: el encuadre y la carretera. */
+/** En móvil solo las que de verdad cambian: el encuadre del patio. */
 const MOBILE_SHOTS = new Set([
   'patio-reposo',
   'primer-plano',
-  'carretera-medio',
-  'carretera-llegada',
 ]);
 
 /**
@@ -132,22 +120,6 @@ const MOBILE_SHOTS = new Set([
  */
 const SETTLE = 0.08;
 const FAIL = 1;
-
-/**
- * Umbral para las tomas que se **buscan** por kilómetro.
- *
- * Es más ancho y tiene un motivo medido, no es manga ancha: esas tomas no
- * caen en un píxel fijo, caen donde el buscador consigue parar, y el
- * cuentakilómetros solo tiene resolución de kilómetro entero. Dos pasadas
- * pueden marcar 213 km y estar separadas por unos píxeles de scroll, que
- * desplazan **toda** la cinta de asfalto. En móvil, con el plano más cerrado,
- * eso llegó a dar un 7 % sin que nada hubiera cambiado.
- *
- * Sigue detectando de sobra: la prueba de sabotaje (`ROAD_LEAD = 0`) da entre
- * el 7,5 % y el 23 % en estas mismas tomas, así que queda un factor de 3 a 9
- * por encima del umbral.
- */
-const FAIL_SOUGHT = 2.5;
 
 /** Cuánto se espera como mucho a que una toma se quede quieta. */
 const SETTLE_TRIES = 14;
@@ -193,76 +165,10 @@ function compare(aBuffer, bBuffer, { wantDiff = false } = {}) {
  * si una toma necesita siempre el máximo, es que no llega a asentarse y el
  * punto de parada está mal elegido.
  */
-/** Los kilómetros que marca ahora mismo el cuentakilómetros. */
-async function readKm(page) {
-  return page.evaluate(() => {
-    const section = document.querySelector('[data-scene="5"]');
-    if (!section) return null;
-    // En el DOM la cifra y la unidad son dos elementos, así que `textContent`
-    // los pega sin espacio: «231km». De ahí el `\s*`.
-    const match = section.textContent.match(/(\d[\d.]*)\s*km/i);
-    return match ? Number(match[1]) : null;
-  });
-}
-
-/**
- * Busca el punto de scroll en el que el camión va por el kilómetro pedido.
- *
- * **Las tomas de carretera se piden por kilómetro y no por fracción de la
- * sección, y esto costó dos intentos aprenderlo.** La fracción parece la
- * medida natural y no lo es: la carretera no empieza hasta el 42 % de la
- * escena y **tampoco termina dentro de ella** —al 100 % del recorrido de la
- * sección el camión va por el kilómetro 350 de 420—, así que no hay fracción
- * que signifique «llegando». Pedir «el kilómetro 395» sí significa siempre lo
- * mismo, y sigue significándolo si mañana cambia el reparto del scroll.
- *
- * El avance es monótono y casi lineal, así que se busca por aproximaciones:
- * se mide cuántos kilómetros avanza un píxel y se corrige. Tres pasadas
- * bastan; más sería gastar segundos en afinar algo que ya cae dentro del
- * margen.
- */
-async function seekKm(page, wanted, geom) {
-  const SETTLE_READ = 1100;
-  const TOLERANCE = 1.5;
-
-  // Dos sondeos para saber el ritmo: cuántos kilómetros por píxel de scroll.
-  const probeA = Math.round(geom.top + geom.height * 0.55);
-  const probeB = Math.round(geom.top + geom.height * 0.75);
-
-  await page.evaluate((y) => window.scrollTo(0, y), probeA);
-  await sleep(SETTLE_READ * 2);
-  const kmA = await readKm(page);
-
-  await page.evaluate((y) => window.scrollTo(0, y), probeB);
-  await sleep(SETTLE_READ * 2);
-  const kmB = await readKm(page);
-
-  const rate = (kmB - kmA) / (probeB - probeA);
-  if (!Number.isFinite(rate) || rate <= 0) {
-    throw new Error(
-      'No consigo leer el cuentakilómetros para situar las tomas de carretera.',
-    );
-  }
-
-  let y = Math.round(probeB + (wanted - kmB) / rate);
-  for (let pass = 0; pass < 6; pass++) {
-    await page.evaluate((v) => window.scrollTo(0, v), y);
-    await sleep(SETTLE_READ * 2);
-    const km = await readKm(page);
-    if (km === null) break;
-    if (Math.abs(km - wanted) <= TOLERANCE) break;
-    y = Math.round(y + (wanted - km) / rate);
-  }
-
-  return y;
-}
-
-async function capture(page, shot, geom) {
+async function capture(page, shot) {
   let target;
 
-  if (shot.km !== undefined) {
-    target = await seekKm(page, shot.km, geom.scene5);
-  } else {
+  {
     target = await page.evaluate((s) => {
       const section = document.querySelector(`[data-scene="${s.scene}"]`);
       if (!section) return null;
@@ -303,23 +209,6 @@ async function capture(page, shot, geom) {
     target,
     restless: true,
   };
-
-  // **Dónde ha caído de verdad**, leído del cuentakilómetros de la página.
-  //
-  // Esto no es adorno, es la lección de un fallo real: la toma «a media ruta»
-  // capturaba el kilómetro 5, porque la carretera no ocupa toda su sección y
-  // una fracción ingenua cae en el giro de cámara. La captura parecía
-  // correcta y medía otra cosa, que es la forma más tonta de que una suite de
-  // regresión dé por bueno un fallo durante meses. Con el número en el
-  // informe, ese error se ve en la primera pasada.
-  result.km = await page.evaluate(() => {
-    const section = document.querySelector('[data-scene="5"]');
-    if (!section) return null;
-    // En el DOM la cifra y la unidad son dos elementos, así que `textContent`
-    // los pega sin espacio: «231km». De ahí el `\s*`.
-    const match = section.textContent.match(/(\d[\d.]*)\s*km/i);
-    return match ? match[1] : null;
-  });
 
   return result;
 }
@@ -409,28 +298,13 @@ async function main() {
           await page.reload({ waitUntil: 'load' });
         }
       }
+      // La pantalla de carga tapa la portada hasta que el 3D ha descargado
+      // (`PantallaCarga`). Se espera a que se quite del todo: capturar con ella
+      // delante daría un fallo en todas las tomas que no lo es.
+      await page
+        .waitForSelector('.carga', { state: 'detached', timeout: 15_000 })
+        .catch(() => {});
       await sleep(3500);
-
-      // Dónde vive la escena de carretera. Se mide una vez por pantalla y se
-      // reparte a las tomas, en vez de volver a consultarlo en cada una.
-      const geom = {
-        // **El tramo del disparador, no el de la sección.** No son el mismo:
-        // la escena empieza una pantalla antes de su sección (`top bottom`) y
-        // acaba una pantalla antes de su final (`bottom bottom`). `seekKm`
-        // sondea dos puntos para saber cuántos kilómetros avanza por píxel, y
-        // con el tramo de la sección el segundo sondeo caía **pasada la
-        // llegada**, donde el cuentakilómetros ya está clavado en 420: el
-        // ritmo salía mal y la búsqueda se iba al kilómetro 0.
-        scene5: await page.evaluate(() => {
-          const section = document.querySelector('[data-scene="5"]');
-          return section
-            ? {
-                top: section.offsetTop - window.innerHeight,
-                height: section.offsetHeight,
-              }
-            : null;
-        }),
-      };
 
       const shots = SHOTS.filter(
         (s) => viewport.name === 'pc' || MOBILE_SHOTS.has(s.id),
@@ -439,7 +313,7 @@ async function main() {
       for (const shot of shots) {
         const name = `${shot.id}-${viewport.name}.png`;
         const baselinePath = path.join(BASELINE_DIR, name);
-        const { frame, attempts, restless, km } = await capture(page, shot, geom);
+        const { frame, attempts, restless } = await capture(page, shot);
 
         if (UPDATE || !existsSync(baselinePath)) {
           await writeFile(baselinePath, frame);
@@ -450,7 +324,6 @@ async function main() {
             status: UPDATE ? 'actualizada' : 'nueva',
             attempts,
             restless,
-            km,
           });
           continue;
         }
@@ -460,7 +333,7 @@ async function main() {
           wantDiff: true,
         });
 
-        const limit = shot.km !== undefined ? FAIL_SOUGHT : FAIL;
+        const limit = FAIL;
         if (ratio >= limit) {
           await writeFile(path.join(OUTPUT_DIR, `actual-${name}`), frame);
           if (diff) {
@@ -480,7 +353,6 @@ async function main() {
           sizeChanged,
           attempts,
           restless,
-          km,
         });
       }
 
@@ -511,9 +383,8 @@ function report(results) {
         : r.sizeChanged
           ? 'cambia de tamaño'
           : `${r.ratio.toFixed(2)} % distinto`;
-    const where = r.km ? `${r.km} km · ` : '';
     console.log(
-      `  ${mark} ${pad(r.name, 34)} ${pad(amount, 20)} ${where}${r.label}`,
+      `  ${mark} ${pad(r.name, 34)} ${pad(amount, 20)} ${r.label}`,
     );
   }
   console.log('');

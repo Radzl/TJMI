@@ -7,8 +7,8 @@ import type { Group } from 'three';
 /**
  * El patio de la terminal: suelo y vallado.
  *
- * Aquí no hay farolas a propósito. Estorbaban en el arranque, con la grúa
- * cargando, y su sitio natural es la carretera: allí están, en `Road.tsx`.
+ * Aquí no hay farolas a propósito: estorbaban en el arranque, con la máquina
+ * cargando. (Vivieron en la carretera en 3D, que ya no existe.)
  *
  * No es decoración gratuita. Sin nada fijo al fondo, el camión avanzando ocho
  * metros no se lee como que avanza, porque no hay contra qué medirlo. Estos
