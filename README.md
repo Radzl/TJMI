@@ -4,11 +4,6 @@ Web corporativa para una empresa de transporte por carretera de Castellón, con 
 
 *Corporate website for a Spanish road-freight company, with a scroll-driven 3D intro. Built with Next.js, React Three Fiber and GSAP.*
 
-<p>
-  <img src="tests/visual/baseline/patio-reposo-pc.png" width="49%" alt="Portada: el patio de la empresa en 3D con el titular «De Castellón a Madrid en 24 horas»">
-  <img src="tests/visual/baseline/lona-abierta-pc.png" width="49%" alt="La carretilla carga los palés en el camión mientras se hace scroll">
-</p>
-
 ## Qué hace
 
 - **Intro 3D ligada al scroll.** El camión entra en el patio de la sede, una carretilla carga los palés de azulejo y el camión sale hacia la ruta Castellón ⇄ Madrid. Cada momento de la escena corresponde a un punto del scroll.
