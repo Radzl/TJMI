@@ -53,3 +53,8 @@ tests/visual/salida/
 # no existe, y el siguiente que quisiera repetir una medida tendría que
 # volver a escribirlo.
 tests/perf/informes/
+
+# Notas privadas para la IA y archivos solo locales
+CLAUDE.local.md
+.claude/
+prototipos/
