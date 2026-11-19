@@ -40,8 +40,13 @@ export default async function LatestPosts() {
   if (!posts.length) return null;
 
   return (
-    <section data-bg="bone" className="relative z-10 bg-bone py-24 lg:py-32">
-      <Container>
+    <section data-bg="bone" className="relative z-10 bg-bone">
+      {/* Crema entre dos secciones oscuras, y el paso es un **cambio de color
+          seco, sin difuminado**: lo pidió el cliente (2026-11-18). Hubo una
+          franja que fundía un color en el otro (`.costura`) y se leía como
+          una mancha gris; se quitó. El aire de arriba y abajo lo pone el
+          propio relleno, para que el titular no quede pegado al corte. */}
+      <Container className="py-24 lg:py-32">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <SectionHeading title={t('latestTitle')} lead={t('latestIntro')} />
           <Link

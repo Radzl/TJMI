@@ -35,26 +35,63 @@
 /** Un compás: desde qué fracción hasta qué fracción de su escena. */
 export type Compas = readonly [desde: number, hasta: number];
 
+/**
+ * **Cuánto tarda la intro en alcanzar al scroll, en segundos** (el `scrub` de
+ * GSAP). Lo usan el 3D (`ScrollChoreography`) y sus textos (`ScrollFade`), y
+ * tiene que ser el mismo en los dos o el texto y la escena se desincronizan.
+ *
+ * **Fue 1 y pasó a 2** (2026-11-18): el cliente veía que «a veces va muy
+ * rápido». Con 1, un golpe de rueda despachaba la entrada entera del camión en
+ * un segundo; con 2, la escena se desliza hasta su sitio y frena sola, y nada
+ * salta aunque se baje de golpe. El precio es que va algo más por detrás del
+ * dedo, que en una escena con peso se lee como peso y no como retraso.
+ */
+export const SCRUB_INTRO = 2;
+
+/**
+ * **La parte del hero que se lleva la entrada del camión** (D3, 2026-11-18).
+ *
+ * El camión ya no espera aparcado: entra desde el fondo del patio, gira y se
+ * cuadra delante de la nave, y solo entonces empieza la carga. Ese acto va
+ * **delante** de todo lo que había, y para que la carga no fuera más deprisa
+ * el hero creció de 420 a 500svh (el cliente pidió alargarlo un poco). Su
+ * disparador mide 400svh, de los que la entrada se lleva 80: el 20 %.
+ *
+ * Todo lo demás del hero sigue con sus números de siempre, desplazados detrás
+ * de la entrada con `trasEntrada`. Así un compás que antes era «0,84 del
+ * hero» se sigue leyendo igual en el código, y cae en el mismo momento de la
+ * carga aunque el hero ahora empiece antes.
+ */
+export const ENTRADA = 0.2;
+
+/** Lleva un compás de la carga (escrito como antes, de 0 a 1) a su sitio en
+ *  el hero de ahora, detrás de la entrada del camión. */
+export function trasEntrada(desde: number, hasta: number): Compas {
+  return [ENTRADA + desde * (1 - ENTRADA), ENTRADA + hasta * (1 - ENTRADA)];
+}
+
 export const PARTITURA = {
-  /** Escena 1, el hero: la carga del camión. */
+  /** Escena 1, el hero: la entrada del camión y su carga. */
   hero: {
+    /** El camión entra en el patio y se cuadra delante de la nave. */
+    entrada: [0, ENTRADA],
     /**
      * El primer plano del camión: la cámara se cierra sobre él cuando la
      * carretilla ya se va. Es el único rato en que el camión está solo.
      */
-    primerPlano: [0.84, 1],
+    primerPlano: trasEntrada(0.84, 1),
     /**
      * El texto del hero se aparta para dejar ver ese primer plano. Arranca a
      * la vez que el plano y acaba un poco antes, para que el camión llegue a
      * verse entero sin nada encima.
      */
-    textoSale: [0.84, 0.98],
+    textoSale: trasEntrada(0.84, 0.98),
     /**
      * El lote entra en el semirremolque deslizando por el costado (`insert`
      * en `Scene.tsx`). Antes de esto se coloca detrás de la cola, ya a la
      * altura del piso.
      */
-    loteEntra: [0.63, 0.78],
+    loteEntra: trasEntrada(0.63, 0.78),
     /**
      * **Solo en móvil**: el párrafo del hero aparece cuando el lote está a
      * punto de entrar, y antes no. En una pantalla estrecha el texto va
@@ -64,7 +101,7 @@ export const PARTITURA = {
      * texto solo queda la nave, así que el párrafo entra ahí sin pisar nada y
      * acaba de aparecer justo cuando el lote empieza a entrar.
      */
-    subtituloMovil: [0.55, 0.63],
+    subtituloMovil: trasEntrada(0.55, 0.63),
   },
   /** Escena 3, en ruta: el camión se va y sube el azul noche. */
   enRuta: {

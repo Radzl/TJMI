@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, type ReactNode } from 'react';
 import { gsap, ScrollTrigger, prefersReducedMotion } from '@/lib/gsap';
-import { tramoDeEscena } from '@/lib/partitura';
+import { SCRUB_INTRO, tramoDeEscena } from '@/lib/partitura';
 import { range } from '@/lib/utils';
 
 type Props = {
@@ -72,7 +72,7 @@ export default function ScrollFade({
         trigger: section,
         start: start ?? tramo.start,
         end: end ?? tramo.end,
-        scrub: 1,
+        scrub: SCRUB_INTRO,
         onUpdate: (self) => pintar(self.progress),
       });
       // **Se pinta ya, sin esperar al primer scroll.** ScrollTrigger solo

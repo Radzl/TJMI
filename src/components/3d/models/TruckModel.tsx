@@ -8,14 +8,14 @@ import {
   curtainPlain,
   curtainSection,
 } from './curtainSkin';
-import { useMemo, type RefObject } from 'react';
+import { useMemo, type ReactNode, type RefObject } from 'react';
 import {
   Box3,
   DoubleSide,
+  Group,
   Mesh,
   MeshStandardMaterial,
   Vector3,
-  type Group,
   type Object3D,
 } from 'three';
 
@@ -55,12 +55,18 @@ const DROP_NAMES = ['Barrier', 'Sign', 'RenderBox'];
  *   usa doble altura; además partía la caja en dos a media altura y no dejaba
  *   apilar la carga.
  * - `Text001`…`Text004`: paneles de rotulación del fabricante.
+ * - `AM98_010_TIR_scania_logo` y `AM98_010_TIR_logos`: **el logo del
+ *   fabricante en la calandra** y los emblemas cromados del frontal. Son
+ *   letras con volumen, no textura, así que repintarlas no las borra: en
+ *   blanco seguían leyéndose sobre la rejilla oscura. Mientras el camión solo
+ *   se veía de lado daba igual; desde que entra de frente hacia la cámara
+ *   (D3) se leía «SCANIA» en el primer fotograma de la web.
  * - `ChamferBox1189` y los `Create_Wood`: la **carga que traía el modelo**.
  *   Dentro de la caja queda a oscuras y no se lee; en su sitio va la nuestra,
  *   que es palé de azulejo y combina con el lote que entra (`TrailerLoad`).
  */
 const DROP_NODES =
-  /^(Object01[0-6]_|Level_poles|C-Ext00[23]_|Circle00[1345]_|Box00[78]_|Box01[23]_|Cylinder00[1234]_|Text00[1-4]_|ChamferBox1189|Create_Wood_0(25|33|34))/;
+  /^(Object01[0-6]_|Level_poles|C-Ext00[23]_|Circle00[1345]_|Box00[78]_|Box01[23]_|Cylinder00[1234]_|Text00[1-4]_|ChamferBox1189|Create_Wood_0(25|33|34)|AM98_010_TIR_(scania_logo|logos)00)/;
 
 /**
  * De Z del modelo a X de la escena. El modelo mide 17,3 m de largo y su
@@ -183,7 +189,34 @@ export const TRUCK = {
   openTo: CURTAIN_SPLIT + Z_TO_X,
   /** Altura del techo. */
   roof: 4.3,
+  /**
+   * Dónde está el enganche (la quinta rueda), desde la cola. Es el pivote de
+   * la tractora cuando el camión maniobra (`escena/maniobra.ts`).
+   *
+   * **Sale de medir el GLB**: el frontal de la caja está en `z` 4,54 del
+   * modelo y los dos ejes motrices de la tractora en 1,54–2,60 y 2,91–3,97;
+   * la quinta rueda va un pelo por delante del centro de ese tándem, en
+   * `z` ≈ 3,2. Pasado a la escena son 12,4 m.
+   */
+  enganche: 12.4,
 };
+
+/**
+ * Dónde se parte el modelo entre tractora y semirremolque, en Z del modelo.
+ *
+ * **Se parte por piezas, no por un plano**, porque las dos se solapan a lo
+ * largo: la caja del semirremolque llega hasta `z` 4,54 y el chasis de la
+ * tractora empieza en 1,27, por debajo de ella. Lo que decide es dónde
+ * **empieza** cada pieza: todo lo que arranca por delante de esto es de la
+ * tractora (chasis, ejes motrices, cabina, los pilotos de su trasera) y todo
+ * lo que arranca por detrás es del semirremolque, aunque llegue más lejos (la
+ * caja, la lona, los largueros). Medido nodo a nodo leyendo el GLB.
+ *
+ * La única excepción es el jirón de lona del lado lejano (`Cloth`), que
+ * arranca en 3,42 y es del semirremolque.
+ */
+const CORTE_TRACTORA = 1.2;
+const DEL_REMOLQUE = new Set(['Cloth']);
 
 /** El escudo del techo: lo único que se ve del camión en vista cenital. */
 const ROOF_LIVERY = { z: CURTAIN_SPLIT - 1, width: 3.6, height: 2.3 };
@@ -214,9 +247,23 @@ type Props = {
    * aplastado por encima del techo y parece un fantasma.
    */
   roofRef?: RefObject<Group | null>;
+  /**
+   * Grupo de la tractora. Gira sobre el enganche (`TRUCK.enganche`) y la escena le
+   * escribe `rotation.y`: lo que va doblada respecto al semirremolque
+   * mientras maniobra. Recta, 0.
+   */
+  tractorRef?: RefObject<Group | null>;
+  /** Lo que tiene que girar con la tractora, en coordenadas del camión
+   *  (cola en el origen, mirando a +X): su sombra de contacto. */
+  conLaTractora?: ReactNode;
 };
 
-export default function TruckModel({ curtainRef, roofRef }: Props) {
+export default function TruckModel({
+  curtainRef,
+  roofRef,
+  tractorRef,
+  conLaTractora,
+}: Props) {
   const { scene } = useGLTF(MODEL, false);
   const logo = useTexture('/logo.png');
 
@@ -324,22 +371,44 @@ export default function TruckModel({ curtainRef, roofRef }: Props) {
 
     remove.forEach((node) => node.removeFromParent());
 
-    // **Fundido por material.** Ver `fundirPorMaterial`: de ~97 mallas a una
-    // por material, que es lo que de verdad cuesta dibujar el camión. La lona
-    // original va invisible (la dibuja la nuestra) y se queda fuera sola,
-    // porque solo se funde lo que se ve.
-    fundirPorMaterial(root);
+    // **La tractora sale aparte**, para que pueda girar sobre el enganche
+    // cuando el camión maniobra (D3). Ver `CORTE_TRACTORA`. `attach` conserva
+    // la posición de cada pieza, así que no hay que rehacer ninguna cuenta.
+    root.updateMatrixWorld(true);
+    const tractora = new Group();
+    const deLaTractora: Mesh[] = [];
+    const pieza = new Box3();
+    root.traverse((child) => {
+      if (!(child instanceof Mesh) || !child.visible) return;
+      const nombre = (child.material as MeshStandardMaterial)?.name ?? '';
+      if (DEL_REMOLQUE.has(nombre)) return;
+      if (pieza.setFromObject(child).min.z >= CORTE_TRACTORA) deLaTractora.push(child);
+    });
+    deLaTractora.forEach((malla) => tractora.attach(malla));
 
-    // Ahora que está limpio se mide de verdad y se recoloca: mirando a +X,
-    // apoyado en el suelo y con el origen en la cola.
-    const box = new Box3().setFromObject(root);
+    // **Fundido por material**, cada pieza por su lado. Ver
+    // `fundirPorMaterial`: de ~97 mallas a una por material, que es lo que de
+    // verdad cuesta dibujar el camión. Partido en dos, los materiales que
+    // salen en las dos piezas (ruedas, chasis, pilotos) cuestan una llamada
+    // más cada uno: es el precio de que el camión se doble. La lona original
+    // va invisible (la dibuja la nuestra) y se queda fuera sola, porque solo
+    // se funde lo que se ve.
+    fundirPorMaterial(root);
+    fundirPorMaterial(tractora);
+
+    // Ahora que está limpio se mide de verdad —las dos piezas juntas— y se
+    // recoloca: mirando a +X, apoyado en el suelo y con el origen en la cola.
+    const box = new Box3()
+      .setFromObject(root)
+      .union(new Box3().setFromObject(tractora));
     const size = box.getSize(new Vector3());
     const center = box.getCenter(new Vector3());
 
     const offset = new Vector3(-center.x, -box.min.y, -center.z);
     root.position.copy(offset);
+    tractora.position.copy(offset);
 
-    return { root, size, offset, curtain, cab };
+    return { root, tractora, size, offset, curtain, cab };
   }, [scene]);
 
   // Plano del costado y longitud de cada pieza, sacados de la malla original.
@@ -373,6 +442,7 @@ export default function TruckModel({ curtainRef, roofRef }: Props) {
   // media longitud, para que el origen caiga en la cola y no en el centro.
   // El orden importa: al revés, el desplazamiento se aplicaría girado.
   return (
+    <>
     <group position={[model.size.z / 2, 0, 0]}>
       <group rotation={[0, Math.PI / 2, 0]}>
         <primitive object={model.root} />
@@ -468,22 +538,6 @@ export default function TruckModel({ curtainRef, roofRef }: Props) {
             <TrailerLoad />
           </group>
 
-          {/* Rotulación de la cabina: solo las rayas de la puerta. El escudo
-              que había aquí se quitó: en la tractora de verdad va pequeño y
-              abajo, y a este tamaño se comía la puerta entera. Van como piezas
-              sueltas por fuera de la chapa, no en la textura, así que se
-              colocan sin tocar el UV del modelo. */}
-          {CAB_STRIPES.map((stripe) => (
-            <mesh
-              key={stripe.y}
-              position={[cabX, stripe.y, CAB_STRIPE.z]}
-              rotation={[0, -Math.PI / 2, 0]}
-            >
-              <planeGeometry args={[CAB_STRIPE.length, stripe.h]} />
-              <meshBasicMaterial color={stripe.color} toneMapped={false} />
-            </mesh>
-          ))}
-
           {/* Logo en el techo: es lo que se ve en la vista cenital. */}
           <group ref={roofRef} visible={false}>
             <mesh
@@ -497,6 +551,39 @@ export default function TruckModel({ curtainRef, roofRef }: Props) {
         </group>
       </group>
     </group>
+
+    {/* **La tractora**, colgada del enganche. El grupo exterior es el pivote:
+        girarlo dobla el camión por la quinta rueda, que es lo que hace uno de
+        verdad al maniobrar. El interior la devuelve a su sitio, así que dentro
+        todo va en las mismas coordenadas que el resto del camión. */}
+    <group ref={tractorRef} position={[TRUCK.enganche, 0, 0]}>
+      <group position={[-TRUCK.enganche, 0, 0]}>
+        {conLaTractora}
+        <group position={[model.size.z / 2, 0, 0]}>
+          <group rotation={[0, Math.PI / 2, 0]}>
+            <primitive object={model.tractora} />
+            <group position={model.offset}>
+              {/* Rotulación de la cabina: solo las rayas de la puerta. El
+                  escudo que había aquí se quitó: en la tractora de verdad va
+                  pequeño y abajo, y a este tamaño se comía la puerta entera.
+                  Van como piezas sueltas por fuera de la chapa, no en la
+                  textura, así que se colocan sin tocar el UV del modelo. */}
+              {CAB_STRIPES.map((stripe) => (
+                <mesh
+                  key={stripe.y}
+                  position={[cabX, stripe.y, CAB_STRIPE.z]}
+                  rotation={[0, -Math.PI / 2, 0]}
+                >
+                  <planeGeometry args={[CAB_STRIPE.length, stripe.h]} />
+                  <meshBasicMaterial color={stripe.color} toneMapped={false} />
+                </mesh>
+              ))}
+            </group>
+          </group>
+        </group>
+      </group>
+    </group>
+    </>
   );
 }
 

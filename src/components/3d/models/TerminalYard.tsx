@@ -1,8 +1,9 @@
 'use client';
 
-import { Instance, Instances } from '@react-three/drei';
+import { Instance, Instances, useTexture } from '@react-three/drei';
+import { useThree } from '@react-three/fiber';
 import type { RefObject } from 'react';
-import type { Group } from 'three';
+import { type Group, RepeatWrapping, SRGBColorSpace } from 'three';
 
 /**
  * El patio de la terminal: suelo y vallado.
@@ -122,49 +123,6 @@ const SHED_SKIN = {
 
 const RAIL_HEIGHTS = [1.05, 1.95];
 
-/**
- * Vigas de la cubierta. Son las que rayan el patio con bandas de luz y
- * sombra, que es lo que cuenta que la terminal está techada.
- *
- * El truco está en que **no se ven**: `colorWrite` apagado hace que no pinten
- * nada en pantalla, pero siguen entrando en el mapa de sombras, así que su
- * sombra sí cae sobre el suelo, los contenedores y el camión. No vale poner
- * `visible={false}`: eso las saca también del mapa de sombras y desaparece el
- * efecto entero.
- */
-const CANOPY = {
-  y: 13,
-  from: -52,
-  to: 14,
-  // **Las vigas van más separadas desde que las sombras son físicas.**
-  // Estaban cada 6 m, afinadas para cuando el suelo llevaba un velo de sombra
-  // al 26 %. Con sombra de verdad, a ese paso el patio salía rayado como una
-  // persiana en vez de con bandas de luz de nave.
-  step: 11,
-  width: 104,
-  centerX: -10,
-  // Más finas desde que la sombra es física: una viga de 2,6 m a 13 m de
-  // altura con la luz rasante proyecta una banda mucho más ancha que ella.
-  depth: 1.6,
-};
-
-const canopyZs = Array.from(
-  { length: Math.floor((CANOPY.to - CANOPY.from) / CANOPY.step) + 1 },
-  (_, index) => CANOPY.from + index * CANOPY.step,
-);
-
-function Canopy() {
-  return (
-    <group>
-      {canopyZs.map((z) => (
-        <mesh key={z} position={[CANOPY.centerX, CANOPY.y, z]} castShadow>
-          <boxGeometry args={[CANOPY.width, 0.6, CANOPY.depth]} />
-          <meshBasicMaterial colorWrite={false} depthWrite={false} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
 
 function Shed({
   x,
@@ -184,20 +142,18 @@ function Shed({
   // distingue un cuerpo del otro.
   const ribs = skin.ribs ? Math.floor(width / skin.ribs) : 0;
 
-  // Todos los materiales van transparentes: la escena les escribe la opacidad
-  // para fundirlas al bajar la cámara (ver `Sheds`).
   return (
     <group position={[x, 0, z]}>
       <mesh position={[0, height / 2, 0]} receiveShadow>
         <boxGeometry args={[width, height, 6]} />
-        <meshStandardMaterial color={skin.wall} roughness={0.95} transparent />
+        <meshStandardMaterial color={skin.wall} roughness={0.95} />
       </mesh>
 
       {/* Remate de arriba: el filo oscuro es lo que hace que se lea como nave
           y no como una pared suelta. */}
       <mesh position={[0, height + 0.12, 0.2]}>
         <boxGeometry args={[width + 0.8, 0.26, 6.4]} />
-        <meshStandardMaterial color={skin.trim} roughness={0.8} transparent />
+        <meshStandardMaterial color={skin.trim} roughness={0.8} />
       </mesh>
 
       {/* Nervios de la chapa. Van juntos y finos, como en la foto: a dos
@@ -206,14 +162,13 @@ function Shed({
 
           **Instanciados, uno por nave.** Eran una malla cada uno —43 cajas
           entre las tres naves, contando paredes y remates— y los nervios son
-          casi todas. Un `Instances` por nave y no uno para las tres, porque
-          cada nave se funde por su cuenta (la escena le escribe la opacidad
-          a sus materiales, y este es uno más). `frustumCulled={false}` como
-          todo lo instanciado de esta escena. */}
+          casi todas. Un `Instances` por nave y no uno para las tres: cuando
+          cada nave se fundía por su cuenta hacía falta, y se quedó así.
+          `frustumCulled={false}` como todo lo instanciado de esta escena. */}
       {ribs > 0 && (
         <Instances limit={ribs} frustumCulled={false}>
           <boxGeometry args={[0.12, height, 0.06]} />
-          <meshStandardMaterial color={skin.trim} roughness={0.9} transparent />
+          <meshStandardMaterial color={skin.trim} roughness={0.9} />
           {Array.from({ length: ribs }, (_, index) => (
             <Instance
               key={index}
@@ -233,7 +188,7 @@ function Shed({
       {kind === "metal" && (
         <mesh position={[-width * 0.18, height / 2, 3.08]}>
           <boxGeometry args={[0.5, height, 0.12]} />
-          <meshStandardMaterial color={skin.trim} roughness={0.9} transparent />
+          <meshStandardMaterial color={skin.trim} roughness={0.9} />
         </mesh>
       )}
     </group>
@@ -242,15 +197,16 @@ function Shed({
 /**
  * Las naves del fondo.
  *
- * **Solo existen en la vista de perfil.** Desde la cámara en tres cuartos, lo
- * que está al fondo sube muchísimo en pantalla (es la misma razón por la que
- * la pila no pasa de dos filas), y una nave a 49 m se planta encima del
- * titular. Así que la escena las funde según la cámara baja a perfil. Se funde
- * y no se enciende de golpe porque a mitad de bajada el corte se vería.
+ * **Se ven desde el primer fotograma** (2026-11-18). Durante mucho tiempo
+ * solo existieron en la vista de perfil, fundiéndose al bajar la cámara,
+ * porque desde la cámara en tres cuartos lo del fondo sube mucho en pantalla y
+ * se plantaba encima del titular. Desde que la cámara alta encuadra el patio
+ * delante de la nave de Almazora quedan arriba, por encima del texto, y le
+ * dan al patio un fondo que lo hace parecer un sitio.
  */
 export function Sheds({ ref }: { ref?: RefObject<Group | null> }) {
   return (
-    <group ref={ref} visible={false}>
+    <group ref={ref}>
       {SHEDS.map((shed) => (
         <Shed key={shed.x} {...shed} />
       ))}
@@ -344,30 +300,103 @@ export default function TerminalYard({
           `Scene.tsx`), un material normal ya se queda en su color. Así que el
           suelo recibe luz de verdad: las sombras caen sobre él como sobre
           cualquier otra cosa y la escena deja de tener dos reglas. */}
-      <mesh
-        position={[FLOOR.x, FLOOR_Y, FLOOR.z]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        receiveShadow
-      >
-        <planeGeometry args={[FLOOR.width, FLOOR.depth]} />
-        <meshStandardMaterial
-          // Su color de verdad, sin compensaciones. Estuvo bajándose tres
-          // veces (#f1ece4 → #d9d4cd → #c4c0ba) para contrarrestar una luz que
-          // en realidad estaba 2,5 veces por debajo de lo que toca. Arreglada
-          // la suma (ver `Scene.tsx`), el material ya sale con su color.
-          color='#f1ece4'
-          roughness={1}
-          polygonOffset
-          polygonOffsetFactor={-1}
-          polygonOffsetUnits={-1}
-        />
-      </mesh>
+      <SueloAsfalto />
 
       <group ref={fenceRef}>
         <Fence from={FENCE.from} to={SPLIT_X} />
       </group>
-      <Canopy />
+      {/* Aquí iban las vigas de «luz de nave» (`Canopy`), que rayaban el
+          patio con bandas de sombra. Al aire libre y con sol no hay techo que
+          las dé: se quitaron al adoptar la cámara nueva (2026-11-18). */}
     </group>
+  );
+}
+
+/**
+ * **El suelo: asfalto fotográfico** (desde el 2026-11-18). El patio de Almazora es
+ * asfalto gris claro con rayas blancas (`public/media/camion-02.jpg`), no un
+ * plano crema. La textura es `clean_asphalt` de Poly Haven (CC0, Dimitrios
+ * Savva), aclarada al gris del patio de la foto, desaturada y recomprimida
+ * (`public/texturas/`). Se probó antes `asphalt_06`, que tiene manchas, y las
+ * manchas repetidas cada pocos metros dibujaban un mosaico que se veía.
+ *
+ * Mide mucho más que el de antes, y es a propósito: con perspectiva se ve el
+ * suelo hasta el horizonte, y si se acabara se vería el borde. Así llega hasta
+ * donde la niebla ya lo ha fundido con el cielo.
+ *
+ * Cada repetición cubre 3 m (la textura está medida sobre 2,1 × 2,1 m: a la
+ * distancia de esta cámara, a escala real el grano se perdía).
+ *
+ * **Y lleva variación a gran escala**, porque un asfalto de un solo gris se lee
+ * como un plano de color con grano encima. Un ruido sobre la posición en el
+ * mundo, a 10–30 m, lo aclara y oscurece por zonas, como el de verdad: hay
+ * parches nuevos, rodadas y zonas más castigadas. Se mete en el sombreador del
+ * propio material (`onBeforeCompile`), así que no cuesta ni una textura más.
+ */
+const SUELO_D1 = { lado: 1400, tesela: 3 };
+
+const parchearSuelo = (shader: { vertexShader: string; fragmentShader: string }) => {
+  shader.vertexShader = shader.vertexShader
+    .replace('#include <common>', `#include <common>
+      varying vec2 vSuelo;`)
+    .replace(
+      '#include <begin_vertex>',
+      `#include <begin_vertex>
+      vSuelo = (modelMatrix * vec4(position, 1.0)).xz;`,
+    );
+  shader.fragmentShader = shader.fragmentShader
+    .replace(
+      '#include <common>',
+      `#include <common>
+      varying vec2 vSuelo;
+      float hashSuelo(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
+      float ruidoSuelo(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        vec2 u = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hashSuelo(i), hashSuelo(i + vec2(1.0, 0.0)), u.x),
+                   mix(hashSuelo(i + vec2(0.0, 1.0)), hashSuelo(i + vec2(1.0, 1.0)), u.x), u.y);
+      }`,
+    )
+    .replace(
+      '#include <map_fragment>',
+      `#include <map_fragment>
+      float zonas = ruidoSuelo(vSuelo * 0.035) * 0.6 + ruidoSuelo(vSuelo * 0.12) * 0.4;
+      diffuseColor.rgb *= 0.84 + 0.26 * zonas;`,
+    );
+};
+
+function SueloAsfalto() {
+  const maxAniso = useThree((state) => state.gl.capabilities.getMaxAnisotropy());
+  const [color, normal] = useTexture(
+    ['/texturas/asfalto-color.jpg', '/texturas/asfalto-normal.jpg'],
+    (texturas) => {
+      const lista = Array.isArray(texturas) ? texturas : [texturas];
+      for (const t of lista) {
+        t.wrapS = RepeatWrapping;
+        t.wrapT = RepeatWrapping;
+        t.repeat.set(SUELO_D1.lado / SUELO_D1.tesela, SUELO_D1.lado / SUELO_D1.tesela);
+        t.anisotropy = Math.min(8, maxAniso);
+      }
+      // Solo la de color va en sRGB; la de relieve son datos, no color.
+      lista[0].colorSpace = SRGBColorSpace;
+    },
+  );
+
+  return (
+    <mesh position={[FLOOR.x, FLOOR_Y, FLOOR.z]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <planeGeometry args={[SUELO_D1.lado, SUELO_D1.lado]} />
+      <meshStandardMaterial
+        map={color}
+        normalMap={normal}
+        normalScale={[0.6, 0.6]}
+        roughness={0.92}
+        onBeforeCompile={parchearSuelo}
+        polygonOffset
+        polygonOffsetFactor={-1}
+        polygonOffsetUnits={-1}
+      />
+    </mesh>
   );
 }
 

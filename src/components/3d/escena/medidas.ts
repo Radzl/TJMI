@@ -29,24 +29,32 @@
 
 import { CONTAINER } from '../models/ContainerModel';
 import { FORKLIFT } from '../models/ForkliftModel';
+import { NAVE, PUERTA_CARRETILLA } from '../models/NaveAlmazora';
 import { PALLET, PALLET_LOAD, PALLET_STACKS } from '../models/Pallets';
 import { TRUCK } from '../models/TruckModel';
 import { Color } from 'three';
 import type { Contacto } from '../models/ContactShadow';
+import { CIELO } from './dia';
 
 // Distribución de la maqueta, en metros. El camión mira hacia +X.
 export const TRUCK_X = 0;
 
 /**
- * Lo que sobresalen las horquillas por delante de la máquina.
+ * De la punta de las horquillas al centro del lote, a lo largo.
  *
- * Sustituye al alcance variable de la pluma, que iba de 3,81 m con la carga
- * en alto a casi 4,5 con ella en el suelo. Una carretilla no tiene alcance:
- * tiene horquillas, y miden lo que miden. Esto es lo que más cambia la
- * coreografía — la máquina pasa de estar a cuatro metros del lote a estar
- * pegada a él.
+ * Una carretilla no tiene alcance: tiene horquillas, y miden lo que miden. El
+ * lote mide 3,6 m en el sentido de la marcha, así que con su centro 0,95 por
+ * delante de la punta, su cara de atrás queda a 0,85 por detrás de ella: las
+ * horquillas (1,18 m) entran 0,85 bajo la carga y queda a la vista un palmo
+ * de horquilla entre la carga y el carro.
+ *
+ * **Fue 1,25 con la carretilla de antes, y no se puede bajar más de 0,95**
+ * (2026-11-19). Con el lote pegado al carro (0,64) la carretilla acabaría la
+ * maniobra con el mástil metido 25 cm en la cola del semirremolque: el lote se
+ * para con su cara de atrás en x = 0,4 y el mástil va 0,15 por detrás del
+ * carro. A 0,95 el frente del mástil se queda justo fuera, en −0,06.
  */
-export const FORK_REACH = 1.25;
+export const FORK_REACH = 0.95;
 
 /**
  * Profundidad a la que acaba el lote dentro del semirremolque.
@@ -88,12 +96,12 @@ export const HOLD = { x: STAGE.x - 1.6 };
 /**
  * La altura a la que viaja el lote, y es **constante**.
  *
- * Esta es la consecuencia grande de cambiar de máquina. La grúa levantaba la
- * carga del suelo y la llevaba en alto; la carretilla **no eleva** —el mástil
- * de este modelo va en la misma malla que las ruedas, así que no se puede
- * animar—, de modo que el lote viaja a la altura del piso del camión desde el
- * primer fotograma: la carretilla llega del almacén **ya cargada**, que es lo
- * que de verdad pasa.
+ * La carretilla **no anima la elevación**: el lote viaja a la altura del piso
+ * del camión desde el primer fotograma, porque la carretilla sale del almacén
+ * **ya cargada**, que es lo que de verdad pasa. Desde 2026-11-19 las
+ * horquillas del modelo van subidas a esta misma altura (ver
+ * `ForkliftModel.tsx`), así que el lote ya no flota sobre unas horquillas a
+ * ras de suelo: va apoyado en ellas.
  *
  * 1,20 m de piso + medio lote (0,86) = 2,06 m al centro.
  */
@@ -147,9 +155,25 @@ export const STAGING_Z = -4.5;
  */
 export const PILE_BASE_Y = CONTAINER.height / 2;
 
-// Escena 0: la carretilla cruza el patio con el lote en las horquillas, se
+// Escena 0: la carretilla sale de la nave con el lote en las horquillas, se
 // acerca al primer plano y gira a la derecha hasta encarar la cola del camión.
-export const APPROACH_FROM = { x: -24, z: -24, angle: Math.PI / 2 };
+//
+// **Sale del portón izquierdo de la nave** (2026-11-18) y no de la pila de
+// contenedores. Ir a buscar el lote a la pila obligaba a la cámara alta a irse
+// a la izquierda, y entonces la nave quedaba detrás del titular.
+//
+// **Sale marcha atrás**, con las horquillas hacia dentro (mirando a −Z, de ahí
+// el ángulo π/2). Se probó saliendo de frente y desde la cámara alta el lote
+// —1,7 m de alto, por encima del techo de la máquina— la tapaba entera: solo
+// se veía una caja avanzando sola. Recular con una carga que tapa la vista es
+// además lo que manda hacer cualquier manual de carretillero. Espera dentro,
+// tapada por la fachada, mientras el camión entra y se cuadra: con la máquina
+// hacia la puerta, basta con que su largo quede detrás de ella.
+export const APPROACH_FROM = {
+  x: PUERTA_CARRETILLA,
+  z: NAVE.z - FORKLIFT.length - 0.3,
+  angle: Math.PI / 2,
+};
 export const APPROACH_TO = {
   x: HOLD.x - FORK_REACH,
   z: STAGING_Z,
@@ -159,90 +183,31 @@ export const APPROACH_TO = {
 /**
  * La pila de contenedores del fondo.
  *
- * **El número está clavado a mano a propósito.** Antes salía de
- * `APPROACH_FROM.z - PICK_POSE.reach`, o sea del alcance de la pluma al
- * agarrar del suelo (4,47 m). Esa pluma ya no existe, pero la pila es
- * decorado y moverla cambiaría el encuadre de apertura, que está afinado. Se
- * queda donde estaba.
+ * **Los números están clavados a mano a propósito.** Salían de dónde empezaba
+ * la carretilla (y antes, del alcance de la pluma de la grúa). Desde que la
+ * carretilla sale de la nave la pila es solo decorado del patio, y se queda
+ * donde estaba.
  */
-export const PILE = {
-  x: APPROACH_FROM.x,
-  z: APPROACH_FROM.z - 4.47,
-};
+export const PILE = { x: -24, z: -28.47 };
 /** Hueco entre contenedores de la pila, a lo ancho. */
 export const PILE_GAP = CONTAINER.width + 0.9;
-/** Punto al que mira la cámara mientras la grúa todavía está en la pila. */
-export const PILE_VIEW = { x: PILE.x - PILE_GAP, z: PILE.z + 2 };
 /** Fondo entre una fila de contenedores y la siguiente. */
 export const PILE_ROW_DEPTH = CONTAINER.length + 1.4;
 
 /**
- * La bruma de distancia.
+ * El color al que vira la niebla en la sección azul noche.
  *
- * **No es el crema de la página, y ahí está el cambio.** Antes lo era exacto,
- * así que lo que estaba lejos no se alejaba: desaparecía. Las dos filas de
- * contenedores salían del mismo valor y la pila se leía como una pared de
- * rayas en vez de como dos filas, una detrás de otra.
- *
- * Ahora es un pelo más fría y más oscura que el fondo. Lo justo para que lo
- * lejano se asiente en un valor propio en vez de fundirse con el papel, que es
- * lo que de verdad da aire. Si se oscurece más, el patio se vuelve gris y deja
- * de parecer un día claro.
+ * Aquí estuvieron también el color de la bruma de día (`FOG_DAY`, un arena
+ * claro) y su alcance por vista (`FOG_QUARTER`, `FOG_SIDE`, `FOG_CLOSE`), que
+ * eran de la cámara plana: con ella la cámara se iba a 60 m en perfil y a ~40
+ * en tres cuartos, y cada vista necesitaba su alcance. Con la cámara con
+ * perspectiva (2026-11-18) la bruma tiene el color del horizonte del cielo
+ * (`CIELO.horizonte` en `dia.ts`) y su alcance se calcula desde la distancia
+ * real de la cámara en `Scene.tsx`. Lo que aquellas notas enseñaban —que la
+ * niebla se mide desde la cámara y que un gris en el aire se lee como mal
+ * tiempo— sigue escrito en `CLAUDE.md`.
  */
-/**
- * El color de la bruma.
- *
- * Estuvo en `#e9e7e3`, que es un **gris**, y ese era el motivo real de que el
- * arranque se leyera como un día lluvioso. Durante varias pasadas se intentó
- * arreglar subiendo la **luz**, que es otra cosa: por mucha luz que se eche,
- * si lo que está a treinta metros se tiñe de gris, la escena sigue pareciendo
- * encapotada.
- *
- * Este es cálido —tira a arena, no a ceniza— y solo siete puntos por debajo
- * del crema de la página. Sigue sin ser el color del fondo, que es lo que no
- * puede pasar: si fueran idénticos, lo lejano no se alejaría, desaparecería.
- */
-export const FOG_DAY = new Color('#f0e9dd');
 export const FOG_NIGHT = new Color('#0f1a2e');
-
-/**
- * Y el alcance. Va **por vista, no fijo**, y aquí está el detalle que más
- * fácil se pasa por alto:
- *
- * la niebla se mide **desde la cámara**, y las dos vistas no están a la misma
- * distancia ni de lejos. En perfil la cámara se planta a 60 m del camión; en
- * tres cuartos está a unos 20 m del primer término y a 41 del fondo de la
- * pila. Con un único alcance no hay manera: el que separa las dos filas de
- * contenedores en el arranque deja el camión lavado en perfil, y el que
- * respeta el camión no hace nada en el arranque. (Comprobado: con 26 → 118
- * el camión salía translúcido y el rótulo rosa.)
- *
- * Así que cada vista lleva el suyo y se interpolan con la propia cámara.
- */
-/** Arranque en tres cuartos: cámara cerca, la bruma trabaja dentro del patio. */
-/**
- * En el arranque la bruma empieza mucho más lejos y satura mucho más tarde.
- *
- * Estaba en 24–120, y la cuenta de cuánto lava un objeto es
- * `(distancia − near) / (far − near)`. Con aquello, las naves del fondo a
- * unos 100 m salían lavadas al **79 %**: de ahí la sensación de niebla. Con
- * 40–200 se quedan en el 37 %, que todavía las separa del primer término sin
- * borrarlas.
- */
-export const FOG_QUARTER = { near: 40, far: 200 };
-/** Perfil: la cámara se va a 60 m, así que todo se corre hacia atrás. */
-export const FOG_SIDE = { near: 70, far: 280 };
-
-/**
- * Y el primer plano del camión, que cierra el fondo sin tocar al camión.
- *
- * Es el sustituto del desenfoque de maqueta: `TiltShift2` revienta el render
- * con estas versiones (está probado y documentado), así que el fondo se
- * difumina **acercando el fondo de la niebla** en vez de desenfocándolo. El
- * `near` casi no se mueve a propósito: el camión está a 60 m y bajarlo lo
- * difuminaría a él, que es justo lo contrario de lo que se busca.
- */
-export const FOG_CLOSE = { near: 56, far: 150 };
 
 /**
  * El patio, en coordenadas de rejilla: `slot` cuenta hacia la izquierda y
@@ -273,8 +238,12 @@ export const PILE_ROWS = [
  */
 export const ROW_HAZE = 0.22;
 
+// Hacia el horizonte del cielo, que es el color de la bruma desde que la
+// escena es de día (2026-11-18); antes iba hacia el arena de la bruma vieja.
+const BRUMA = new Color(CIELO.horizonte);
+
 export function hazed(hex: string, amount: number) {
-  return '#' + new Color(hex).lerp(FOG_DAY, amount).getHexString();
+  return '#' + new Color(hex).lerp(BRUMA, amount).getHexString();
 }
 
 export const PILE_STACKS = PILE_ROWS.map((pile) => ({
@@ -362,6 +331,10 @@ export const YARD_CONTACTS: Contacto[] = [
  */
 export const TRUCK_CONTACTS: Contacto[] = [
   { x: 1.9, z: 0, width: 3.8, depth: 2.7 },
+];
+/** La de la tractora va aparte porque gira con ella cuando el camión se
+ *  dobla al maniobrar (D3). */
+export const TRACTOR_CONTACTS: Contacto[] = [
   { x: 13.0, z: 0, width: 5.6, depth: 2.7 },
 ];
 
@@ -373,14 +346,19 @@ export const TRUCK_CONTACTS: Contacto[] = [
 /**
  * La sombra de contacto de la carretilla.
  *
- * Era 6,4 × 3,4, la huella de la reach stacker. Una carretilla mide 3,12 de
- * largo por 1,15 de ancho, así que con la mancha vieja se habría leído como
- * una sombra que sobra por los cuatro lados. Va centrada en el cuerpo: el
- * origen del modelo está en la punta de las horquillas, y el cuerpo queda
- * detrás, en las x negativas.
+ * Va **solo debajo del cuerpo**, de la cola al frente de las ruedas
+ * delanteras (`FORKLIFT.cuerpo`): desde 2026-11-19 las horquillas van en alto,
+ * a la altura del piso del camión, y una mancha debajo de ellas sería sombra
+ * de algo que no toca el suelo. El origen del modelo está en la punta de las
+ * horquillas, así que el cuerpo queda detrás, en las x negativas.
  */
 export const FORKLIFT_CONTACTS: Contacto[] = [
-  { x: -FORKLIFT.length / 2, z: 0, width: FORKLIFT.length + 0.3, depth: 1.4 },
+  {
+    x: (FORKLIFT.cuerpo.desde + FORKLIFT.cuerpo.hasta) / 2,
+    z: 0,
+    width: FORKLIFT.cuerpo.hasta - FORKLIFT.cuerpo.desde + 0.3,
+    depth: FORKLIFT.width + 0.1,
+  },
 ];
 
 // Avance del camión al arrancar, sobre la sección oscura. Es largo a
@@ -429,19 +407,52 @@ export const TRUCK_FRAME = { width: 27, narrow: 20 };
 export const LOADING_FRAME = { narrow: 14, x: 1.5 };
 
 /**
- * **El arranque, cerrado sobre la carretilla.** En el primer fotograma la
- * cámara en tres cuartos abarcaba 34 m y la carretilla medía unos 45 px: la
- * protagonista del primer plano de la web era una mota. Ahora arranca con el
- * encuadre a esta fracción, mirando a la máquina, y se abre a lo normal en los
- * dos primeros compases, que de todas formas son de ralentí (el avance empieza
- * en 0,14).
+ * **Cómo mira la cámara alta la entrada del camión** (D3, 2026-11-18).
  *
- * **No se puede cerrar más, y está mirado.** Se probó a 0,6 en escritorio y
- * 0,65 en móvil: la carretilla salía enorme, pero como la cámara la mira a
- * ella y la pila queda detrás, las torres de contenedores subían hasta la
- * barra superior en escritorio y hasta pisar el párrafo del hero en móvil.
+ * Hasta D3 el primer fotograma se cerraba sobre la carretilla (`OPENING`),
+ * porque era la única protagonista y a 34 m de encuadre medía 45 px. Ahora el
+ * primer fotograma es del camión, que entra desde el fondo, así que la cámara
+ * encuadra **el patio delante de la nave**: el punto de la acción va de
+ * `desde` a `hasta` mientras el camión entra (en escritorio se le suma el
+ * desplazamiento a la columna izquierda, `quarterShift`, como a todo lo de la
+ * vista alta), y ahí se queda mientras la carretilla sale de la nave.
+ *
+ * **Casi quieta, y es lo que la hace funcionar.** Se probó a atarla al
+ * camión, y con la cámara persiguiéndolo la nave acababa unos fotogramas
+ * debajo del titular. Quieta, el encuadre abarca el patio entero: el camión
+ * aparece junto a la nave, baja hacia la cámara y gira sin salirse del plano,
+ * y la nave se queda arriba a la izquierda, con el rótulo por encima del
+ * titular y nunca debajo de él. El travelling de `desde` a `hasta` es solo
+ * para que la imagen no esté congelada.
+ *
+ * **El móvil lleva su propio encuadre**, porque allí el titular va arriba y
+ * no al lado: con el de escritorio la nave quedaba justo detrás del titular.
+ * En una pantalla alta lo natural es apilar: el titular arriba, la nave en
+ * medio y el camión abajo. Por eso mira más al fondo (`z` negativa), y
+ * empieza a la izquierda para que el camión se vea entrar por el carril.
+ *
+ * `ancho` multiplica el encuadre de tres cuartos de siempre.
  */
-export const OPENING = { desktop: 0.75, narrow: 0.82, until: 0.22 };
+export const ENTRADA_VISTA = {
+  pc: { desde: { x: -1.5, z: 5 }, hasta: { x: 0, z: 2 }, ancho: 1.25 },
+  movil: { desde: { x: -6, z: -8 }, hasta: { x: 4, z: -10 }, ancho: 1 },
+};
+
+/**
+ * **Encuadre de perfil mientras se carga, en escritorio** (D3).
+ *
+ * El cliente eligió el camión y la nave **a la izquierda del titular**. Con
+ * los 34 m de siempre centrados en x = 2, la cola quedaba en mitad de la
+ * pantalla y la cabina debajo del párrafo. Para que el camión entero quepa a
+ * la izquierda **y** la carretilla siga entera detrás de la cola, hace falta
+ * más campo: con 40 m centrados en 13,5 la carretilla cae en el borde
+ * izquierdo, el camión llega hasta poco más de la mitad y el rótulo de la nave
+ * se queda en la mitad izquierda.
+ *
+ * Solo manda durante la carga: el primer plano (`TRUCK_FRAME`) y el arranque
+ * hacia `InRoute` siguen con sus encuadres de siempre.
+ */
+export const ENCUADRE_CARGA = { ancho: 40, x: 13.5 };
 
 /**
  * Altura de la línea de suelo en el móvil mientras se carga (fracción de la

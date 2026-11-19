@@ -1,14 +1,11 @@
 /**
  * Medidas de pantalla compartidas.
  *
- * Esto existe por un motivo muy concreto: `Experience` necesita saber el
- * umbral de móvil **sin importar `Postproceso`**, porque ese módulo se carga
- * de forma diferida justo para que no viaje al teléfono. Importarle una
- * constante lo traería entero y el aplazamiento no serviría de nada.
- *
- * Es el mismo caso que `roadFrameWidth` en `lib/route.ts`: dos sitios que
- * tienen que usar el mismo número y que, si se desincronizan, rompen algo en
- * silencio.
+ * Nació para que `Experience` supiera el umbral de móvil sin importar
+ * `Postproceso` (la viñeta, que ya no existe). Hoy lo usa el hero para saber
+ * cuándo el párrafo entra con la carga, y la escena 3D usa el mismo corte:
+ * dos sitios que tienen que usar el mismo número y que, si se desincronizan,
+ * rompen algo en silencio.
  */
 
 /**

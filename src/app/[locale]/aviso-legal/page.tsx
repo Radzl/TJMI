@@ -46,6 +46,7 @@ export default async function LegalNoticePage({ params }: Props) {
           <LegalSections sections={sections} />
         </Container>
       </section>
+
     </>
   );
 }

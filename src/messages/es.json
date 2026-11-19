@@ -765,7 +765,7 @@
     "legal": {
       "title": "Aviso legal",
       "intro": "Datos de la empresa titular de esta web y condiciones de uso, conforme a la Ley 34/2002 de servicios de la sociedad de la información.",
-      "updated": "Última actualización: 24 de septiembre de 2026",
+      "updated": "Última actualización: 19 de noviembre de 2026",
       "pending": "Documento pendiente de revisión. Faltan los datos societarios y los créditos de los modelos 3D marcados abajo.",
       "sections": [
         {
@@ -797,9 +797,12 @@
         {
           "heading": "Créditos de los modelos 3D",
           "paragraphs": [
-            "La animación de la portada usa modelos 3D de stock con licencia libre. Algunos los hemos modificado (colores de marca y logotipo propio) y otros van tal como los publicó su autor.",
-            "«Forklift», de KolosStudios, en poly.pizza. Licencia Creative Commons Attribution 3.0 (CC-BY 3.0): https://poly.pizza/m/DTQBuenKJY",
-            "[PENDIENTE: nombre del modelo, autor, licencia y enlace de cada uno de los modelos usados]"
+            "La animación de la portada usa modelos 3D de stock con licencia libre. Los hemos adaptado a la escena y en cada uno se indica qué cambiamos.",
+            "«Warehouse Forklift Gameready», de Kamran Mughal, en Sketchfab. Licencia Creative Commons Atribución 4.0 (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/deed.es): https://sketchfab.com/3d-models/warehouse-forklift-gameready-94e21059f00c4e989c6403ada034516e. Le hemos quitado las letras de la textura, hemos subido las horquillas y el mástil y hemos reducido las texturas.",
+            "«EPAL pallet», de ChoboiAssets, en Sketchfab. Licencia CC BY 4.0: https://sketchfab.com/3d-models/epal-pallet-1afaf577cf0e42dfbd6dd4a0bd7ab87c. Le hemos quitado los clavos, lo hemos ajustado de medidas y hemos aclarado la madera.",
+            "«20ft Container», de Europhil, en Sketchfab. Licencia CC BY 4.0: https://sketchfab.com/3d-models/20ft-container-07c7df70eebd40ec8321060029482358. Lo hemos ajustado de medidas y cada contenedor del patio lleva un color de chapa distinto.",
+            "Textura del asfalto: «Clean Asphalt», de Dimitrios Savva, en Poly Haven. Dominio público (CC0): https://polyhaven.com/a/clean_asphalt. La hemos aclarado y desaturado.",
+            "[PENDIENTE: nombre, autor, licencia y enlace del modelo del camión]"
           ]
         },
         {

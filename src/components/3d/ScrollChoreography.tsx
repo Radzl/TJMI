@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
-import { tramoDeEscena } from '@/lib/partitura';
+import { SCRUB_INTRO, tramoDeEscena } from '@/lib/partitura';
 import { writeProgress, writeSceneProgress } from '@/lib/store';
 
 /**
@@ -11,10 +11,10 @@ import { writeProgress, writeSceneProgress } from '@/lib/store';
  * los componentes 3D leyendo el store.
  */
 /**
- * `scrub: 1` y no `true`: con `true` la escena va clavada a la rueda, así que
- * un acelerón la teletransporta. Con un segundo de margen para alcanzar al
- * scroll, todo coge peso. Los demás disparadores de la intro llevan el mismo
- * valor para que no se desincronicen entre ellos.
+ * `scrub` con margen y no `true`: con `true` la escena va clavada a la rueda,
+ * así que un acelerón la teletransporta. Con margen para alcanzar al scroll
+ * (`SCRUB_INTRO`, dos segundos), todo coge peso. Los textos de la intro llevan
+ * el mismo valor para que no se desincronicen.
  */
 export default function ScrollChoreography() {
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function ScrollChoreography() {
       trigger: document.body,
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 1,
+      scrub: SCRUB_INTRO,
       onUpdate: (self) => writeProgress(self.progress),
     });
 
@@ -53,7 +53,7 @@ export default function ScrollChoreography() {
         trigger: section,
         start,
         end,
-        scrub: 1,
+        scrub: SCRUB_INTRO,
         onUpdate: (self) => writeSceneProgress(index, self.progress),
       });
     });

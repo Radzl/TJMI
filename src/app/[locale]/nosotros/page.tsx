@@ -33,8 +33,11 @@ export default async function AboutPage({ params }: Props) {
 
   return (
     // Página oscura: el tema noche se aplica a todo el contenido. Ver
-    // `.tema-noche` en `globals.css`.
-    <div className="tema-noche" data-bg="night">
+    // `.tema-noche` en `globals.css`. **Pinta su propio fondo** (`bg-bone`,
+    // que dentro del tema noche es azul noche): si dependiera del fondo de
+    // la página, al llegar desde el menú se quedaba crema y el titular crema
+    // desaparecía. Ver `Backdrop`.
+    <div className="tema-noche bg-bone" data-bg="night">
       {/* **Primero el titular, después el vídeo, y el vídeo en grande.** Hubo
           una temporada en que esta página abría con el vídeo a sangre y el
           titular encima, y se entraba a Nosotros sin saber que se había

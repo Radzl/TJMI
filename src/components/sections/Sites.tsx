@@ -20,7 +20,7 @@ export default function Sites() {
   const sites = t.raw('sites') as Site[];
 
   return (
-    <section data-bg="night" className="tema-noche relative z-10 bg-bone pb-28">
+    <section data-bg="night" className="tema-noche relative z-10 bg-bone pb-28 pt-24 lg:pb-36 lg:pt-32">
       <Container>
         <SectionHeading
           title={t('sitesTitle')}

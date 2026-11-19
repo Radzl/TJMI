@@ -416,27 +416,14 @@ body {
   --mapa-borde-azul: #34548a;
 }
 
-/* El fondo de «Elige por dónde empezar», con el borde fundido.
+/* El fondo de «Elige por dónde empezar»: opaco, con el borde en corte limpio.
 
-   La sección sube por encima del primer plano del camión, y un bloque crema
-   opaco lo cortaba por una línea invisible. Con esto el fondo pasa de
-   transparente a crema a lo largo de `--fundido`, así que el camión se
-   disuelve en el papel. `IndicePaneles` lo anima de un 40 % de pantalla a 0
-   mientras entra el contenido; **por defecto vale 0**, que es el fondo opaco
-   de siempre: sin JavaScript o con movimiento reducido no cambia nada.
-
-   El transparente es el mismo color de la sección a alfa 0 y no
-   `transparent`: hay navegadores que interpolan `transparent` pasando por el
-   negro y dejan un velo sucio en el degradado. Sale de `--color-bone` con
-   `color-mix`, así que vale igual con la sección en crema que en azul noche
-   (`.tema-noche`). */
+   Durante un día llevó el borde fundido (`--fundido`, animado por
+   `IndicePaneles`) para que el camión se disolviera en el fondo al entrar. El
+   cliente pidió el 2026-11-18 que entre secciones de la portada no haya
+   difuminados, solo cambio de color, así que se quitó. */
 .indice-fondo {
-  --fundido: 0px;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--color-bone) 0%, transparent) 0,
-    var(--color-bone) var(--fundido)
-  );
+  background: var(--color-bone);
 }
 
 /* El degradado de abajo es fijo: es lo que deja leer el texto blanco sobre
@@ -992,6 +979,13 @@ body {
     rgb(27 44 72 / 0) 72%
   );
 }
+
+/* (Aquí estuvo `.costura`, la franja que fundía el papel con el azul noche
+   entre secciones. **Se quitó el 2026-11-18 a petición del cliente**: entre
+   secciones va un cambio de color seco, sin difuminado. Se veía como una
+   banda gris sucia, y en el móvil el titular de «Antes de mandar un palé»
+   caía dentro de ella, en tinta sobre gris oscuro. El aire que daba lo pone
+   ahora el relleno de cada sección.) */
 
 /* Palabra gigante en contorno (escena Servicios) */
 .text-stroke {

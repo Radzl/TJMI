@@ -71,14 +71,12 @@ type Props = {
  * encima» (2026-11-18), y además incumplía la regla de la casa: los cambios de
  * fondo son fundidos, nunca un bloque opaco entrando.
  *
- * Ahora la entrada va atada al scroll y en dos capas:
+ * Ahora la entrada va atada al scroll:
  *
- * 1. **El borde está fundido.** El fondo de la sección pasa de transparente a
- *    crema a lo largo de `--fundido` (el 40 % de la pantalla al empezar), así
- *    que el camión se disuelve en el papel en vez de quedar cortado. Ese
- *    fundido **se cierra antes de que entre el contenido**, mientras el borde
- *    sube hasta media pantalla: cuando aparece el titular, el fondo detrás ya
- *    es crema entero y el 3D no asoma.
+ * 1. **El borde es un corte limpio, sin difuminado** (2026-11-18). Durante un
+ *    día fue un fundido —el fondo pasaba de transparente a azul a lo largo de
+ *    `--fundido`— y el cliente pidió que entre secciones de la portada no haya
+ *    difuminados, solo cambio de color. `--fundido` sigue en el CSS a 0.
  * 2. **El contenido entra por orden**: el titular, después los paneles uno
  *    detrás de otro —se descubren de abajo arriba mientras suben— y al final
  *    la línea del presupuesto. Todo acaba cuando la sección llega arriba, que
@@ -86,9 +84,8 @@ type Props = {
  *    sola línea de tiempo; en móvil, donde los paneles van apilados, cada
  *    pieza entra cuando llega a la pantalla.
  *
- * Sin JavaScript o con movimiento reducido no pasa nada de esto: `--fundido`
- * vale 0 en el CSS (fondo opaco, como antes) y el contenido está visible desde
- * el principio.
+ * Sin JavaScript o con movimiento reducido no pasa nada de esto: el contenido
+ * está visible desde el principio.
  *
  * ## Contenido
  *
@@ -153,7 +150,6 @@ export default function IndicePaneles({
     // La banda del vídeo y el pie entran cada uno al llegar a la pantalla,
     // en los dos tamaños: van debajo de la zona fija, fuera de su recorrido.
     const sueltas = [banda, pie].filter((pieza): pieza is HTMLElement => pieza !== null);
-    const fundidoInicial = () => `${Math.round(window.innerHeight * 0.4)}px`;
     // Los paneles se descubren de abajo arriba. El recorte va unos píxeles por
     // fuera de la caja (`-8px`) para no comerse el contorno del foco, que
     // sobresale del panel; y todo en píxeles, porque GSAP no interpola bien
@@ -192,15 +188,11 @@ export default function IndicePaneles({
           });
         });
 
-        // El fundido y el titular van atados a la sección entera, de que asoma
-        // por abajo a que su borde llega arriba (que es cuando empieza a
+        // El titular y los paneles van atados a la sección entera, de que
+        // asoma por abajo a que su borde llega arriba (que es cuando empieza a
         // abrir paneles). La línea de tiempo dura 1, así que cada número es
-        // una fracción de ese recorrido.
-        //
-        // **El orden es lo que importa**: primero se cierra el fundido —el
-        // borde de la sección sube hasta media pantalla disolviendo el
-        // camión— y **solo entonces** entra el titular. Entraba a la vez y
-        // quedaba escrito encima del rótulo del camión, a medio disolver.
+        // una fracción de ese recorrido. El titular entra cuando el borde ya
+        // ha pasado de media pantalla, así que nunca cae sobre el camión.
         const borde = gsap.timeline({
           defaults: { ease: 'power2.out' },
           scrollTrigger: {
@@ -211,19 +203,8 @@ export default function IndicePaneles({
             invalidateOnRefresh: true,
           },
         });
-        // El fundido va con `fromTo` y no con `set` + `to`: la variable CSS
-        // no guardaba su valor de partida y el borde salía opaco desde el
-        // primer píxel (medido: `--fundido` a 0 con la sección a media
-        // entrada). El valor de partida es una función para que se recalcule
-        // al cambiar el alto de la ventana.
-        borde.fromTo(
-          el,
-          { '--fundido': fundidoInicial },
-          { '--fundido': '0px', ease: 'none', duration: 0.65, immediateRender: true },
-          0,
-        );
-        // El titular queda unos 70 px por debajo del borde: en 0,6 el fundido
-        // ya mide menos que eso, así que entra sobre crema entero.
+        // (Aquí iba el fundido del borde, `--fundido`; se quitó: ver la
+        // cabecera.)
         if (titulo) borde.to(titulo, { autoAlpha: 1, y: 0, duration: 0.24 }, 0.6);
 
         if (escritorio) {

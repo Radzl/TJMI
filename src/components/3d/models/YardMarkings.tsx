@@ -38,7 +38,9 @@ const PAINT_Y = 0.016;
 const LANE = 3.2;
 const LINE = 0.22;
 /** Pintura desgastada sobre hormigón: un tono cálido, sin gritar. */
-const PAINT = '#ded5bf';
+// Blanca, como la del patio de Almazora (`public/media/camion-02.jpg`). Fue
+// crema mientras el suelo era crema.
+const PAINT = '#ecebe6';
 
 /**
  * Una raya, tumbada sobre el suelo.

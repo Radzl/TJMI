@@ -1,31 +1,35 @@
 'use client';
 
-import { Environment, Lightformer, OrthographicCamera } from '@react-three/drei';
+import { Environment, Lightformer, PerspectiveCamera } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import {
+  Color,
   Matrix4,
   Vector3,
   type Fog,
   type Mesh,
-  type MeshStandardMaterial,
   type DirectionalLight,
   type Group,
   type MeshBasicMaterial,
-  type OrthographicCamera as OrthoCamera,
+  type PerspectiveCamera as PerspCamera,
 } from 'three';
+import Cielo from './escena/Cielo';
+import { CIELO, FOV } from './escena/dia';
 import ContainerStacks, {
   CONTAINER,
   type ContainerPlacement,
 } from './models/ContainerModel';
-import ForkliftModel from './models/ForkliftModel';
+import ForkliftModel, { FORKLIFT } from './models/ForkliftModel';
+import NaveAlmazora, { NAVE } from './models/NaveAlmazora';
 import TerminalYard, { Sheds, TerminalYardNear } from './models/TerminalYard';
 import YardMarkings from './models/YardMarkings';
 import Pallets, { PalletLoad, PALLET_LOAD } from './models/Pallets';
 import ContactShadow from './models/ContactShadow';
 import { fundirPlanos, matrizDe } from './models/planos';
 import TruckModel, { TRUCK } from './models/TruckModel';
-import { PARTITURA } from '@/lib/partitura';
+import { poseCamion, type PoseCamion } from './escena/maniobra';
+import { ENTRADA, PARTITURA } from '@/lib/partitura';
 import { useScrollStore, writeTravel } from '@/lib/store';
 import { damp, easeLag, lerp, range, smoothstep } from '@/lib/utils';
 
@@ -38,12 +42,10 @@ import {
   CARRY_Y,
   CENTRE_NUDGE,
   DROP,
+  ENCUADRE_CARGA,
+  ENTRADA_VISTA,
   EXIT_RUN,
-  FOG_CLOSE,
-  FOG_DAY,
   FOG_NIGHT,
-  FOG_QUARTER,
-  FOG_SIDE,
   FOREGROUND_STACKS,
   FORKLIFT_CONTACTS,
   FORKLIFT_Z,
@@ -51,18 +53,17 @@ import {
   HOLD,
   LOADING_FRAME,
   LOADING_GROUND,
-  OPENING,
   PILE,
   PILE_BASE_Y,
   PILE_GAP,
   PILE_ROWS,
   PILE_ROW_DEPTH,
   PILE_STACKS,
-  PILE_VIEW,
   QUARTER_CAM,
   QUARTER_UP,
   SETTLE_RUN,
   STAGE,
+  TRACTOR_CONTACTS,
   TRUCK_CONTACTS,
   TRUCK_FRAME,
   TRUCK_X,
@@ -150,11 +151,47 @@ const BAYS = fundirPlanos(
 const puntero = { x: 0, y: 0, vx: 0, vy: 0 };
 const ORBITA = { giro: 0.026, cabeceo: 0.012 };
 const _brazo = new Vector3();
+/** La niebla tiene el color del horizonte del cielo, así el suelo lejano se
+ *  funde con él sin línea. */
+const FOG_HORIZONTE = new Color(CIELO.horizonte);
+/**
+ * De dónde viene el sol (la luz principal), relativo a lo que mira la cámara.
+ * Lo comparten la luz y el halo del cielo.
+ *
+ * **Sol de mañana** (2026-11-18, lo eligió el cliente): unos 19° sobre el
+ * horizonte, desde la izquierda y por delante. Estuvo a 29°, que es luz de
+ * media mañana alta; más bajo, las sombras salen largas y el patio se
+ * estructura solo, que es lo que más «foto» da. Sigue viniendo del lado de la
+ * cámara para que la fachada de la nave y el costado del camión, que miran a
+ * ella, queden iluminados y el rótulo se lea.
+ */
+const SOL: [number, number, number] = [-42, 18, 32];
+const TAN_MEDIO_FOV = Math.tan(((FOV / 2) * Math.PI) / 180);
+/**
+ * El azul noche que sube desde abajo en `InRoute`.
+ *
+ * Con la cámara plana, el azul era la cara de delante de una caja que quedaba
+ * entre el camión y la cámara: al bajar la cámara, su borde de arriba subía
+ * por la pantalla. Con perspectiva esa cara queda **detrás** de la cámara
+ * (la cámara se acerca a ~30 m y la caja empieza a 46), y además bajar la
+ * cámara la mete bajo el suelo. Así que aquí el azul es un **muro** vertical
+ * plantado entre el camión y la cámara, cuyo borde de arriba se coloca justo
+ * a la altura a la que se ve la base del camión: así el camión queda posado
+ * sobre el azul, que es lo que pide el guion, y después el muro sube hasta
+ * tapar la pantalla entera.
+ */
+const MURO = { z: 6, alto: 600, ancho: 900, caraCamion: 1.3 };
+/** La cámara con perspectiva no baja de esta altura: por debajo del suelo se
+ *  vería la cara de abajo del asfalto. Al pedirle más, inclina la mirada. */
+const SUELO_CAMARA = 1.6;
 const _arriba = new Vector3(0, 1, 0);
 const _lado = new Vector3();
+/** Pose del camión durante la entrada (D3). Memoria de trabajo del bucle de
+ *  render, como los vectores de arriba: no se crea nada dentro de `useFrame`. */
+const _pose: PoseCamion = { x: 0, z: 0, giro: 0, doblez: 0 };
 
 export default function Scene() {
-  const cameraRef = useRef<OrthoCamera>(null);
+  const cameraRef = useRef<PerspCamera>(null);
 
   // El puntero, normalizado de −1 a 1 desde el centro de la ventana. Solo con
   // ratón: en un táctil `pointerType` es `touch` y no se escucha.
@@ -180,17 +217,17 @@ export default function Scene() {
   const forkliftRef = useRef<Group>(null);
   const cargoRef = useRef<Group>(null);
   const truckRef = useRef<Group>(null);
-  const bandRef = useRef<Group>(null);
-  const nearYardRef = useRef<Group>(null);
+  const tractorRef = useRef<Group>(null);
   const farFenceRef = useRef<Group>(null);
   const curtainRef = useRef<Group>(null);
-  const shedsRef = useRef<Group>(null);
   const keyLightRef = useRef<DirectionalLight>(null);
   const fogRef = useRef<Fog>(null);
   // Estado de los muelles. Van en refs y no en estado de React: cambian en
   // cada fotograma y no deben provocar ni un solo render.
   const beaconRef = useRef<Mesh>(null);
   const veilRef = useRef<MeshBasicMaterial>(null);
+  const muroRef = useRef<Mesh>(null);
+
 
   const size = useThree((state) => state.size);
   const isNarrow = size.width < 768;
@@ -238,7 +275,15 @@ export default function Scene() {
     // llega un salto enorme y los muelles pegan un latigazo.
     const dt = Math.min(frameDelta, 0.05);
 
-    const [hero, , inRoute] = useScrollStore.getState().scenes;
+    const [heroRaw, , inRoute] = useScrollStore.getState().scenes;
+    // **El hero tiene ahora dos actos** (D3): primero entra el camión
+    // (`entrada`, el primer 20 % del scroll) y después viene la carga de
+    // siempre. `hero` es el progreso de la carga sola, de 0 a 1, para que
+    // todos sus compases sigan con los números afinados que tenían. Los que
+    // comparte con la página (`PARTITURA`) ya vienen en fracción del hero
+    // entero y se leen sobre `heroRaw`.
+    const entrada = range(heroRaw, ...PARTITURA.hero.entrada);
+    const hero = range(heroRaw, ENTRADA, 1);
 
     // Vida en reposo: antes de que nadie toque el scroll, la carga se balancea
     // un poco colgada de la pluma. Se apaga en cuanto empiezas a bajar.
@@ -302,9 +347,10 @@ export default function Scene() {
     // El primer plano del camión se calcula aquí arriba porque lo necesitan
     // dos sitios: la cámara, que cierra el encuadre, y la niebla, que se
     // cierra con él para difuminar el fondo.
-    const closeUp =
-      smoothstep(range(hero, ...PARTITURA.hero.primerPlano)) *
-      (1 - smoothstep(range(inRoute, 0.02, 0.14)));
+    // `closeUpIn` es solo la entrada del plano; `closeUp` además se suelta
+    // al arrancar el camión.
+    const closeUpIn = smoothstep(range(heroRaw, ...PARTITURA.hero.primerPlano));
+    const closeUp = closeUpIn * (1 - smoothstep(range(inRoute, 0.02, 0.14)));
 
     // --- Escena 0: cruza el patio con el lote y encara la cola -----------
     // Aquí manda la carretilla: el lote va en sus horquillas y la seguimos.
@@ -322,12 +368,11 @@ export default function Scene() {
     // esperando a que arranque la escena.
     const advance = smoothstep(range(hero, 0.14, 0.3));
     const swing = smoothstep(range(hero, 0.28, 0.46));
-    // Cómo sigue la cámara a la grúa. En profundidad solo la acompaña a
-    // medias: así se ve que la máquina se acerca (baja por la pantalla) sin
-    // que la pila del fondo se dispare hacia arriba y acabe detrás del
-    // titular. De lado a lado, en cambio, va clavada durante el giro, y la
-    // pila sale de plano limpiamente por la izquierda.
-    const followZ = smoothstep(range(hero, 0.1, 0.3)) * 0.5;
+    // (Aquí estaba `followZ`, cuánto seguía la cámara alta a la carretilla en
+    // profundidad mientras venía de la pila. Desde que sale de la nave la
+    // cámara no la persigue: se queda encuadrando el patio delante de la nave,
+    // y la carretilla cruza el plano de arriba abajo. Ver el bloque de la
+    // cámara.)
 
     const craneX0 = lerp(APPROACH_FROM.x, APPROACH_TO.x, swing);
     const craneZ0 = lerp(APPROACH_FROM.z, APPROACH_TO.z, advance);
@@ -341,7 +386,7 @@ export default function Scene() {
     // imposible: este semirremolque tiene techo.
     const place = smoothstep(range(hero, 0.5, 0.62));
     // Vive en la partitura porque el párrafo del hero en móvil se ata a él.
-    const insert = smoothstep(range(hero, ...PARTITURA.hero.loteEntra));
+    const insert = smoothstep(range(heroRaw, ...PARTITURA.hero.loteEntra));
     const cargoX1 = lerp(lerp(HOLD.x, STAGE.x, place), DROP.x, insert);
 
     // La lona se abre antes de que el lote llegue y se cierra cuando ya está
@@ -433,11 +478,19 @@ export default function Scene() {
     // --- Camión y carga, en llano ----------------------------------------
     const truckX = TRUCK_X + groundRun;
 
+    // **La entrada (D3)**: el camión viene del fondo, gira y se cuadra. La
+    // curva frena al final —llega rodando y se para— y en 1 deja la cola en
+    // `TRUCK_X`, recto, que es justo donde empieza todo lo de después. Ver
+    // `escena/maniobra.ts`.
+    const llegada = 1 - (1 - entrada) * (1 - entrada);
+    poseCamion(llegada, _pose);
     if (truckRef.current) {
-      truckRef.current.position.set(truckX, 0, 0);
+      truckRef.current.position.set(_pose.x + groundRun, 0, _pose.z);
+      truckRef.current.rotation.y = _pose.giro;
       // El morro se levanta al tirar y se vuelve a posar.
       truckRef.current.rotation.z = pull * 0.013;
     }
+    if (tractorRef.current) tractorRef.current.rotation.y = _pose.doblez;
     // Metros hechos: de aquí sacan las ruedas su giro.
     writeTravel(groundRun);
 
@@ -454,94 +507,30 @@ export default function Scene() {
     }
 
     // --- Fondo del patio ----------------------------------------------------
-    // El tramo de fondo que pasa por detrás del camión solo se enciende con la
-    // cámara ya casi de perfil. En tres cuartos cruzaría por detrás del
-    // titular, y para entonces todavía queda fuera de plano por la derecha,
-    // así que encenderlo no se ve.
-    if (nearYardRef.current) {
-      nearYardRef.current.visible = quarter < 0.45;
-    }
-    // Las naves del fondo solo existen en perfil: desde la cámara en tres
-    // cuartos se plantarían encima del titular. Se funden según baja, y el
-    // fundido se hace al final de la bajada, cuando ya casi no se mueven.
-    //
-    // **Y entran escalonadas, una detrás de otra.** Las tres a la vez se leen
-    // como un telón que se enciende; separadas por un suspiro, se leen como
-    // que el mundo se va construyendo según baja la cámara. El orden de los
-    // hijos del grupo es el de `SHEDS`, así que basta con el índice.
-    const sheds = smoothstep(range(hero, 0.38, 0.62));
-    if (shedsRef.current) {
-      shedsRef.current.visible = sheds > 0.01;
-      shedsRef.current.children.forEach((shed, index) => {
-        const from = 0.38 + index * 0.04;
-        const alpha = smoothstep(range(hero, from, from + 0.12));
-        shed.traverse((child) => {
-          const material = (child as Mesh).material as
-            | MeshStandardMaterial
-            | undefined;
-          if (material) material.opacity = alpha;
-        });
-      });
-    }
+    // **La nave, las naves del fondo y el vallado se ven desde el primer
+    // fotograma** (2026-11-18). Antes solo existían en perfil y se fundían al
+    // bajar la cámara, porque desde la cámara alta se plantaban detrás del
+    // titular. Ahora la cámara alta encuadra el patio delante de la nave, con
+    // la carretilla saliendo de ella, y el rótulo cae en la columna izquierda.
 
-    // --- Parallax falso del fondo ---------------------------------------
-    //
-    // Con cámara ortográfica **no hay parallax**: no hay perspectiva, así que
-    // todo se mueve clavado a la cámara y el patio entero se desliza como una
-    // lámina. Hay que fingirlo, y se finge al revés de lo que parece: para
-    // que algo avance *menos* en pantalla hay que moverlo **en la misma
-    // dirección** que la cámara, una fracción de lo que ella se mueve.
-    //
-    // Se ata al avance del camión (`groundRun`), que es el tramo donde el
-    // fondo pasa de largo y donde se nota; no a la bajada a perfil, donde el
-    // desplazamiento es mucho mayor y el fondo acabaría metiéndose debajo del
-    // titular.
-    //
-    // Las dos piezas del vallado llevan **la misma fracción**: están a la
-    // misma profundidad y son la misma valla. Con fracciones distintas se
-    // abriría un escalón justo en la junta.
-    // Lo que de verdad ha andado la cámara. Antes era una fracción fija del
-    // avance del camión; ahora la cámara tiene su propio recorrido (se adelanta
-    // para centrarlo y se para para soltarlo), así que el parallax se ata a eso
-    // o el fondo se despegaría del movimiento real.
-    const follow = groundRun * 0.74;
-    const profile = 1 - quarter;
-    if (shedsRef.current) shedsRef.current.position.x = follow * 0.5 * profile;
-    const fenceShift = follow * 0.26 * profile;
-    if (farFenceRef.current) farFenceRef.current.position.x = fenceShift;
-    if (nearYardRef.current) nearYardRef.current.position.x = fenceShift;
+    // (Aquí hubo un paralaje falso del fondo, porque con la cámara plana no
+    // hay paralaje. Con perspectiva es de verdad y fingirlo encima lo
+    // exageraba: se quitó al adoptar la cámara nueva, 2026-11-18.)
     // La niebla vira al azul noche cuando el fondo de la escena deja de ser
     // crema: mientras el suelo oscuro llena la pantalla. Si se quedase en
     // crema, el fondo del patio se aclararía sobre el oscuro y se vería el
     // truco.
     if (fogRef.current) {
       const darkness = smoothstep(range(inRoute, 0.48, 0.62));
-      fogRef.current.color.copy(FOG_DAY).lerp(FOG_NIGHT, darkness);
-      // El alcance acompaña a la cámara: corto en tres cuartos (está cerca),
-      // largo en perfil (se ha ido a 60 m) y cerrado por detrás en el primer
-      // plano del camión, que es el desenfoque de maqueta que no se puede
-      // montar con postprocesado.
-      // Perfil → primer plano → tres cuartos, en ese orden. Cada vista pone
-      // la cámara a una distancia distinta y la niebla se mide desde la
-      // cámara, así que el alcance tiene que acompañarla.
-      const fogNear = lerp(FOG_SIDE.near, FOG_CLOSE.near, closeUp);
-      fogRef.current.near = lerp(fogNear, FOG_QUARTER.near, quarter);
-
-      const fogFar = lerp(FOG_SIDE.far, FOG_CLOSE.far, closeUp);
-      fogRef.current.far = lerp(fogFar, FOG_QUARTER.far, quarter);
+      fogRef.current.color.copy(FOG_HORIZONTE).lerp(FOG_NIGHT, darkness);
+      // El alcance va con la cámara: se fija más abajo, donde ya se sabe a
+      // qué distancia está.
     }
 
     if (veilRef.current) {
       // El telón que cierra la intro. Ver `coverIn`, arriba.
       veilRef.current.opacity = coverIn;
       veilRef.current.visible = coverIn > 0.001;
-    }
-    if (bandRef.current) {
-      // Está desde el principio: es el suelo de la vista de perfil. Se baja y
-      // se oculta en tres cuartos, donde no se quiere.
-      bandRef.current.position.y = lerp(-300, -520, quarter);
-      // Y se apaga con el telón ya puesto: debajo de él ya no se ve nada.
-      bandRef.current.visible = quarter < 0.99 && coverIn < 0.999;
     }
 
     const camera = cameraRef.current;
@@ -614,13 +603,21 @@ export default function Scene() {
       // En escritorio no cambia nada: el camión entero ya cabe grande.
       const departure = smoothstep(range(inRoute, 0.02, 0.14));
       const loadToTruck = smoothstep(range(hero, 0.8, 0.93));
+      // En escritorio, mientras se carga, el perfil abre a `ENCUADRE_CARGA`
+      // para que camión y nave queden a la izquierda del titular (D3); el
+      // primer plano y el arranque vuelven a los anchos de siempre, así que
+      // `InRoute` no nota nada.
       const sideWidth = isNarrow
         ? lerp(
             lerp(LOADING_FRAME.narrow, TRUCK_FRAME.narrow, loadToTruck),
             worldWidth,
             departure,
           )
-        : lerp(worldWidth, TRUCK_FRAME.width, closeUp);
+        : lerp(
+            lerp(ENCUADRE_CARGA.ancho, TRUCK_FRAME.width, closeUpIn),
+            worldWidth,
+            departure,
+          );
 
       // Al cerrar el plano, en móvil el camión sube hacia el centro: la
       // pantalla es muy alta, el camión es una tira horizontal y pegado al
@@ -632,10 +629,15 @@ export default function Scene() {
       // justo debajo del titular y del botón.
       // En el móvil, mientras se carga, la línea de suelo va más baja
       // (`LOADING_GROUND`): el plano está cerrado y las naves del fondo
-      // crecen con él. Con el camión entero sube al centro, y al arrancar
-      // vuelve a la de siempre.
+      // crecen con él. Con el camión entero sube hacia el centro, y al
+      // arrancar vuelve a la de siempre.
+      //
+      // **Sube a 0,34 y no a 0,45 desde D3**: ahora la nave de Almazora está
+      // justo detrás del camión, y a 0,45 su rótulo rojo pisaba la última
+      // línea del párrafo del hero mientras este se desvanece (a 0,38 la
+      // rozaba). Camión y nave juntos ya llenan el centro de la pantalla.
       const framedFraction = isNarrow
-        ? lerp(lerp(LOADING_GROUND, 0.45, loadToTruck), heroFraction, departure)
+        ? lerp(lerp(LOADING_GROUND, 0.34, loadToTruck), heroFraction, departure)
         : lerp(heroFraction, 0.09, closeUp);
       const aimY = lerp(
         lerp(
@@ -670,7 +672,11 @@ export default function Scene() {
             2.5,
             departure,
           )
-        : lerp(2, TRUCK_X + TRUCK.length / 2, closeUp);
+        : lerp(
+            lerp(ENCUADRE_CARGA.x, TRUCK_X + TRUCK.length / 2, closeUpIn),
+            2,
+            departure,
+          );
       const centrePull =
         TRUCK_X + TRUCK.length / 2 - (isNarrow ? 2.5 : 2) + CENTRE_NUDGE;
 
@@ -712,20 +718,21 @@ export default function Scene() {
       // forma de contarlo) y pasar a perfil es solo bajar la cámara, sin
       // volteos raros. Además va siguiendo a la máquina.
       //
-      // **Y arranca cerrada sobre la carretilla** (`OPENING`): en el primer
-      // fotograma el encuadre es una fracción del normal y mira a la máquina,
-      // no a la pila, y se abre en los dos primeros compases. El ancho, la
-      // altura a la que se mira y el desplazamiento a la columna izquierda se
-      // escalan juntos, así que la maniobra sigue cayendo en la franja baja y
-      // lejos del titular mientras se abre.
-      const openT = smoothstep(range(hero, 0.02, OPENING.until));
-      const opening = lerp(isNarrow ? OPENING.narrow : OPENING.desktop, 1, openT);
-      const qWidth = quarterWidth * opening;
-      const qY = quarterY * opening;
+      // **Mira el patio delante de la nave toda la vista alta** (D3,
+      // `ENTRADA_VISTA`), casi quieta: el camión entra y se cuadra dentro del
+      // plano, y después la carretilla sale de la nave y lo cruza hasta la
+      // cola. Hasta D3 el arranque se cerraba sobre la carretilla
+      // (`OPENING`) y después la cámara la perseguía desde la pila; ir a la
+      // pila dejaba la nave detrás del titular. El ancho, la altura a la que
+      // se mira y el desplazamiento a la columna izquierda se escalan juntos,
+      // así que lo que pasa sigue cayendo en la franja baja.
+      const vista = isNarrow ? ENTRADA_VISTA.movil : ENTRADA_VISTA.pc;
+      const escala = vista.ancho;
+      const qWidth = quarterWidth * escala;
+      const qY = quarterY * escala;
       const quarterX =
-        lerp(lerp(forkliftX, PILE_VIEW.x, openT), forkliftX, swing) +
-        quarterShift * opening;
-      const quarterZ = lerp(lerp(forkliftZ, PILE_VIEW.z, openT), forkliftZ, followZ);
+        lerp(vista.desde.x, vista.hasta.x, llegada) + quarterShift * escala;
+      const quarterZ = lerp(vista.desde.z, vista.hasta.z, llegada);
 
       const aimX = lerp(sideX, quarterX, quarter);
       const aimYTarget = lerp(aimY - 0.4, qY, quarter);
@@ -757,6 +764,67 @@ export default function Scene() {
 
       camera.lookAt(focusX, focusY, focusZ);
 
+      // Empuje lento durante todo el hero: un 4 % de acercamiento repartido
+      // en toda la sección. Una cámara clavada se siente a software; con esta
+      // deriva, que por sí sola no se ve, la escena deja de estar congelada.
+      const creep = 1 - 0.04 * smoothstep(range(hero, 0.05, 0.95));
+      // Cuántos metros de mundo caben de lado a lado en el plano que se mira.
+      const anchoMundo = lerp(sideWidth, qWidth, quarter) * creep;
+
+      // **Cámara con perspectiva** (desde el 2026-11-18; antes era plana,
+      // ortográfica). Para no rehacer a ojo toda la coreografía, mira desde
+      // la MISMA dirección que miraba la plana y se coloca a la distancia
+      // justa para que, en el plano que mira, quepan los mismos metros de lado
+      // a lado que cabían antes. Así los encuadres afinados (`OPENING`,
+      // `TRUCK_FRAME`, `LOADING_FRAME`…) siguen valiendo: lo que cambia es que
+      // lo cercano crece y lo lejano encoge.
+      {
+        const distancia = anchoMundo / (2 * (size.width / size.height) * TAN_MEDIO_FOV);
+        _brazo
+          .set(
+            camera.position.x - focusX,
+            camera.position.y - focusY,
+            camera.position.z - focusZ,
+          )
+          .normalize()
+          .multiplyScalar(distancia);
+        camera.position.set(focusX + _brazo.x, focusY + _brazo.y, focusZ + _brazo.z);
+        // Tope suave contra el suelo: la cámara plana bajaba por debajo de
+        // y = 0 para subir la línea de suelo en pantalla. Esta se queda a
+        // `SUELO_CAMARA` y, al seguir mirando al mismo punto, inclina la
+        // mirada, que en perspectiva sube la línea de suelo igual. Va con una
+        // curva y no con un `max`, para que no haya codo en el movimiento.
+        camera.position.y =
+          SUELO_CAMARA + 0.8 * Math.log1p(Math.exp((camera.position.y - SUELO_CAMARA) / 0.8));
+        camera.lookAt(focusX, focusY, focusZ);
+
+        // El muro azul noche (ver `MURO`). Su borde se coloca donde la
+        // cámara ve la base del camión: la recta que va de la cámara al
+        // suelo junto a la cara del camión corta el plano del muro a esa
+        // altura.
+        if (muroRef.current) {
+          const fondo = camera.position.z - focusZ - MURO.caraCamion;
+          const posado =
+            fondo > 0.1
+              ? (camera.position.y * (MURO.z - MURO.caraCamion)) / fondo
+              : 0;
+          const borde = lerp(
+            lerp(-0.5, posado, settleGround),
+            camera.position.y + 60,
+            fillGround,
+          );
+          muroRef.current.position.set(camera.position.x, borde - MURO.alto / 2, focusZ + MURO.z);
+          muroRef.current.visible = settleGround > 0.001 || fillGround > 0.001;
+        }
+        // La niebla se mide desde la cámara, así que va con ella. Y con sol
+        // la bruma de verdad es muy suave: empieza pasado lo que se mira y se
+        // cierra lejos, donde el suelo ya llega al horizonte.
+        if (fogRef.current) {
+          fogRef.current.near = distancia + lerp(25, 15, closeUp);
+          fogRef.current.far = distancia + lerp(600, 380, closeUp);
+        }
+      }
+
 
       // La luz que proyecta sombra viaja con el punto que mira la cámara. Su
       // dirección no cambia (solo se traslada), así que la escena se ilumina
@@ -767,42 +835,45 @@ export default function Scene() {
         // Más rasante que antes (de unos 47° a unos 29° sobre el suelo). El
         // suelo del patio es un campo crema enorme y vacío: lo que lo estructura
         // son las sombras, y para que haya sombra que ver tiene que ser larga.
-        key.position.set(focusX - 36, 27, focusZ + 34);
+        key.position.set(focusX + SOL[0], SOL[1], focusZ + SOL[2]);
         key.target.position.set(focusX, 0, focusZ);
         key.target.updateMatrixWorld();
       }
-      // Empuje lento durante todo el hero: un 4 % de acercamiento repartido
-      // en toda la sección. Una cámara clavada se siente a software; con esta
-      // deriva, que por sí sola no se ve, la escena deja de estar congelada.
-      const creep = 1 - 0.04 * smoothstep(range(hero, 0.05, 0.95));
-
-      camera.zoom = size.width / (lerp(sideWidth, qWidth, quarter) * creep);
-      camera.updateProjectionMatrix();
     }
   });
 
   return (
     <>
-      <OrthographicCamera
+      <PerspectiveCamera
         ref={cameraRef}
         makeDefault
+        fov={FOV}
         position={[0, 3.4, 60]}
-        near={-400}
-        far={600}
+        near={0.5}
+        far={2000}
       >
-        {/* Telón pegado a la cámara: cierra la intro fundiendo a azul noche,
-            el mismo color al que vira el fondo de la página. */}
-        <mesh position={[0, 0, -20]} renderOrder={999}>
-          <planeGeometry args={[4000, 4000]} />
-          <meshBasicMaterial
-            ref={veilRef}
-            color="#0f1a2e"
-            transparent
-            opacity={0}
-            depthTest={false}
-          />
-        </mesh>
-      </OrthographicCamera>
+        <Telon materialRef={veilRef} />
+      </PerspectiveCamera>
+
+      <Cielo sol={SOL} />
+      {/* El muro azul noche. Se pinta encima de todo lo que caiga por debajo
+          de su borde (sin prueba de profundidad): si no, el asfalto que queda
+          entre el muro y la cámara le tapa la parte de abajo y solo asoma una
+          raya. El borde va justo a la altura de la base del camión, así que no
+          tapa nada que tenga que verse. Por debajo del telón (999). */}
+      <mesh ref={muroRef} visible={false} frustumCulled={false} renderOrder={998}>
+        <planeGeometry args={[MURO.ancho, MURO.alto]} />
+        {/* `toneMapped={false}`: el azul tiene que ser **exactamente** el de la
+            página, y el tratamiento de color (AgX) lo movería y se vería la
+            costura con la sección de debajo. */}
+        <meshBasicMaterial
+          color="#0f1a2e"
+          fog={false}
+          depthTest={false}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
 
       {/* Luz suave y cálida, como la referencia: nada de contraste duro. */}
       {/* Entorno para los reflejos, montado con paneles de luz aquí mismo.
@@ -838,7 +909,7 @@ export default function Scene() {
           Su color lo va cambiando `useFrame` entre el crema y el azul noche,
           porque si no, en la sección oscura el fondo del patio se iría hacia
           crema y cantaría. */}
-      <fog ref={fogRef} attach="fog" args={['#e9e7e3', FOG_QUARTER.near, FOG_QUARTER.far]} />
+      <fog ref={fogRef} attach="fog" args={[CIELO.horizonte, 40, 600]} />
 
       {/* **Las tres intensidades están calculadas, no puestas a ojo**, y la
           cuenta conviene conocerla antes de tocarlas.
@@ -896,11 +967,19 @@ export default function Scene() {
           este reparto, a la sombra queda 0,64 contra 1,02, que se lee como
           bandas de luz y no como barrotes. Si subes la principal, mira el
           patio entero y no solo el camión. */}
-      <hemisphereLight args={['#eef1f6', '#d0c9bd', 2.11]} />
+      {/* **Luz de mañana** (2026-11-18). Con el tratamiento de color de cine
+          (AgX, en `Experience.tsx`) la cuenta de «suman π» de arriba ya no es
+          exacta —AgX comprime las luces—, así que estas intensidades están
+          calibradas **midiendo capturas**: el asfalto, la fachada de la nave
+          y el costado del camión, contra lo que se veía antes. El sol pesa
+          más que el cielo para que la sombra se lea (sol bajo de mañana), y el
+          rebote del suelo es cálido. */}
+      <hemisphereLight args={['#b9cfee', '#b6a68c', 1.25]} />
       <directionalLight
         ref={keyLightRef}
-        position={[-36, 27, 34]}
-        intensity={1.64}
+        position={SOL}
+        color="#ffdcae"
+        intensity={4.2}
         castShadow
         shadow-mapSize={isNarrow ? [1024, 1024] : [2048, 2048]}
         shadow-bias={-0.0006}
@@ -913,7 +992,9 @@ export default function Scene() {
           args={[-55, 55, 55, -55, 1, 160]}
         />
       </directionalLight>
-      <directionalLight position={[22, 12, 10]} intensity={0.55} />
+      {/* Relleno frío desde el otro lado: es el cielo de la mañana rebotando
+          en las caras que el sol no toca. */}
+      <directionalLight position={[30, 12, 18]} intensity={0.35} color="#d8e4f4" />
 
       {/* **Aquí hubo un `<ContactShadows>` de drei, y no hay que devolverlo.**
 
@@ -940,14 +1021,18 @@ export default function Scene() {
       <group>
         <TerminalYard fenceRef={farFenceRef} />
 
-        {/* El carril va pintado justo por donde circula la grúa: primero
-            baja hacia el espectador y después gira hacia el camión. */}
+        {/* El carril va pintado justo por donde circula la carretilla: sale
+            del portón de la nave, baja hacia el espectador y gira hacia el
+            camión. */}
         <YardMarkings
           corner={{ x: APPROACH_FROM.x, z: APPROACH_TO.z }}
-          fromZ={PILE.z - 4}
+          fromZ={NAVE.z}
           toX={TRUCK_X + 14}
         />
-        <Sheds ref={shedsRef} />
+        <Sheds />
+        {/* La nave de Almazora, la sede de verdad, detrás del camión. Ver
+            `NaveAlmazora.tsx`. De su portón izquierdo sale la carretilla. */}
+        <NaveAlmazora />
         <Pallets />
 
         {/* Los dos lotes que quedan en la plaza de la que sale el que se
@@ -962,7 +1047,7 @@ export default function Scene() {
           </group>
         ))}
 
-        <group ref={nearYardRef} visible={false}>
+        <group>
           <TerminalYardNear />
         </group>
 
@@ -1001,12 +1086,10 @@ export default function Scene() {
               mantiene viva la escena mientras alguien lee el titular sin hacer
               scroll.
 
-              **Baja de 4,35 m a 2,05.** Estaba a la altura de la cabina de la
-              grúa, que mide el doble; dejado ahí quedaría flotando un palmo
-              por encima de la carretilla. Va justo sobre el techo (1,92 m) y
-              retrasado hacia el cuerpo, porque el origen del modelo está en la
-              punta de las horquillas. */}
-          <mesh ref={beaconRef} position={[-1.9, 2.05, 0]}>
+              Va sobre la parte de atrás del techo protector, que es donde lo
+              lleva una de verdad; dónde está ese techo lo dice el propio
+              modelo (`FORKLIFT.rotativo`). */}
+          <mesh ref={beaconRef} position={FORKLIFT.rotativo}>
             <sphereGeometry args={[0.16, 10, 10]} />
             <meshBasicMaterial color="#ff9d2e" toneMapped={false} />
           </mesh>
@@ -1020,19 +1103,39 @@ export default function Scene() {
       </group>
 
       <group ref={truckRef} position={[TRUCK_X, 0, 0]}>
-        {/* Dentro del grupo del camión, así que lo acompaña cuando arranca. */}
+        {/* Dentro del grupo del camión, así que lo acompaña cuando arranca.
+            La de la tractora va dentro de la tractora, para que gire con ella
+            cuando el camión se dobla al entrar. */}
         <ContactShadow puntos={TRUCK_CONTACTS} fuerza={0.32} y={0.045} />
-        <TruckModel curtainRef={curtainRef} />
+        <TruckModel
+          curtainRef={curtainRef}
+          tractorRef={tractorRef}
+          conLaTractora={
+            <ContactShadow puntos={TRACTOR_CONTACTS} fuerza={0.32} y={0.045} />
+          }
+        />
       </group>
 
-      {/* Suelo oscuro de la terminal: está desde el primer fotograma y se
-          come la pantalla según sube la línea de suelo. */}
-      <group ref={bandRef} position={[0, -300, -14]}>
-        <mesh>
-          <boxGeometry args={[600, 600, 120]} />
-          <meshBasicMaterial color="#0f1a2e" />
-        </mesh>
-      </group>
     </>
+  );
+}
+
+/** Telón pegado a la cámara: cierra la intro fundiendo a azul noche, el mismo
+ *  color al que vira el fondo de la página. */
+function Telon({ materialRef }: { materialRef: React.RefObject<MeshBasicMaterial | null> }) {
+  return (
+    <mesh position={[0, 0, -20]} renderOrder={999}>
+      <planeGeometry args={[4000, 4000]} />
+      <meshBasicMaterial
+        ref={materialRef}
+        color="#0f1a2e"
+        transparent
+        opacity={0}
+        depthTest={false}
+        // Igual que el muro: el azul de la página exacto, sin tratamiento de
+        // color, o el relevo al mapa dejaría ver la costura.
+        toneMapped={false}
+      />
+    </mesh>
   );
 }

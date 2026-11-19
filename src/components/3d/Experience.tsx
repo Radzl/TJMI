@@ -1,27 +1,49 @@
 'use client';
 
 import { PerformanceMonitor } from '@react-three/drei';
-import { Canvas } from '@react-three/fiber';
-import { NoToneMapping } from 'three';
-import { lazy, Suspense, useState } from 'react';
-import { ANCHO_MOVIL } from '@/lib/pantalla';
+import { Canvas, useThree } from '@react-three/fiber';
+import { ACESFilmicToneMapping } from 'three';
+import { Suspense, useEffect, useState } from 'react';
 import AvisoCarga from './AvisoCarga';
 import Scene from './Scene';
 import { useIntroVisible } from './useIntroVisible';
+import { useReposo } from './useReposo';
 
 /**
- * **El postprocesado no se descarga en el móvil, y antes sí.**
+ * **Fotogramas por segundo cuando nadie toca nada** (2026-11-18).
  *
- * La viñeta lleva tiempo apagada por debajo de 768 px, porque medido cuesta
- * **la mitad de los fotogramas** en un teléfono: 30 fps contra 88 en el
- * patio. Lo que no se había mirado es que el **módulo** viajaba igual:
- * `postprocessing` y `@react-three/postprocessing` entraban en el trozo de
- * 1,1 MB del 3D y se descargaban y se evaluaban en un teléfono para no pintar
- * nada.
- *
- * Con `lazy` el trozo se parte y el teléfono no lo pide.
+ * Quieta, la escena solo tiene dos cosas vivas: el rotativo de la carretilla,
+ * que parpadea cada segundo y tres cuartos, y la respiración de la carga, que
+ * es lenta y de centímetros. Las dos se leen igual a 15 fotogramas que a 144,
+ * así que no tiene sentido pintar más. En cuanto hay scroll, ratón o dedo,
+ * vuelve a la velocidad de la pantalla (`useReposo`).
  */
-const Postproceso = lazy(() => import('./Postproceso'));
+const RITMO_REPOSO = 15;
+
+/** Exposición del tratamiento de color (ACES). Calibrada sobre capturas: ver
+ *  la nota de la luz en `Scene.tsx`. */
+const EXPOSICION = 1;
+
+/** Pide un fotograma cada tanto mientras el lienzo está en `demand`. */
+function Latido() {
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    const id = window.setInterval(() => invalidate(), 1000 / RITMO_REPOSO);
+    return () => window.clearInterval(id);
+  }, [invalidate]);
+  return null;
+}
+
+/*
+ * (Aquí se cargaba `Postproceso`, la viñeta del escritorio, y se quitó el
+ * 2026-11-18. Al pasar a tratamiento de color de cine salió por qué estorbaba:
+ * el compositor de `@react-three/postprocessing` **apaga el tratamiento de
+ * color de three mientras está activo**, así que en escritorio la escena salía
+ * sin él y en el móvil con él, y se veían dos escenas distintas. La viñeta era
+ * un oscurecimiento del 1,5 % en las esquinas pensado para la maqueta; sin
+ * ella el escritorio se ahorra además una pasada a pantalla completa en cada
+ * fotograma.)
+ */
 
 export default function Experience() {
   // **El lienzo deja de dibujar cuando la intro ya no se ve.** Está fijo
@@ -30,16 +52,8 @@ export default function Experience() {
   // dos tercios de la página gastando batería para algo tapado. Ver
   // `useIntroVisible`.
   const intro = useIntroVisible();
-
-  // **Se decide una vez, al montar, y no se vuelve a mirar.** Está escrito en
-  // `Postproceso`: montar y desmontar el efecto al girar el teléfono recrea
-  // el render target en mitad de la animación y **eso sí se ve**. Así que
-  // esto decide si el módulo **llega a cargarse**, que es una decisión de una
-  // sola vez, y el propio componente sigue decidiendo si **se ejecuta**, que
-  // esa sí reacciona al tamaño. Son dos cosas distintas y las dos hacen falta.
-  const [conPostproceso] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth >= ANCHO_MOVIL,
-  );
+  // **Y baja el ritmo cuando nadie toca nada.** Ver `RITMO_REPOSO`.
+  const reposo = useReposo();
 
   // **Resolución adaptativa.** El lienzo pinta hasta a 1,5 píxeles reales
   // por píxel de CSS, que en un teléfono de gama media es lo que más pesa:
@@ -62,48 +76,46 @@ export default function Experience() {
             `shadows` a secas piden PCFSoftShadowMap, que Three ya ha
             retirado, y entonces avisa por consola de que cae en este mismo.
             Mejor pedirlo de frente. */}
-        {/* **Sin mapeo de tonos, y es la decisión que desatasca todo lo demás.**
+        {/* **Tratamiento de color de cine: ACES** (2026-11-18). El cliente
+            eligió «mañana soleada» y el salto hacia lo real; con la escena ya
+            en perspectiva, con cielo y asfalto fotográfico, el color plano de
+            maqueta era lo que más la delataba. Se probó AgX y lavaba esta
+            escena hasta el gris (sobre todo el cielo pálido del móvil); ACES
+            da blancos limpios y colores vivos. Las intensidades de `Scene.tsx`
+            se calibraron para ella midiendo capturas. Lo que tiene que ser un
+            color exacto de la web (el muro y el telón azul noche) va con
+            `toneMapped={false}`.
 
-            Por defecto three aplica ACES Filmic, que es una curva pensada para
-            render fotorrealista con rango dinámico alto: comprime las luces y
-            las desatura. Esta escena es justo lo contrario —una maqueta limpia
-            de colores planos—, y esa curva era la que saturaba a blanco
-            cualquier crema. De ahí venía el parche de pintar el suelo con
-            material **sin luz**: era la única forma de que conservara su color.
-
-            Con `NoToneMapping` el color de un material es el color que sale en
-            pantalla, siempre que la luz total sobre él sume ~1. Por eso las
-            intensidades de `Scene.tsx` están calculadas y no puestas a ojo. */}
+            Estuvo sin mapeo de tonos mientras la escena era una maqueta de
+            colores planos: entonces ACES saturaba a blanco el suelo crema. Con
+            el suelo de asfalto y la luz recalibrada eso ya no pasa. */}
         <Canvas
           shadows="percentage"
           dpr={[1, topeDpr]}
-          frameloop={intro ? "always" : "never"}
-          gl={{ antialias: true, toneMapping: NoToneMapping }}
+          frameloop={!intro ? "never" : reposo ? "demand" : "always"}
+          gl={{
+            antialias: true,
+            toneMapping: ACESFilmicToneMapping,
+            toneMappingExposure: EXPOSICION,
+          }}
         >
-          <PerformanceMonitor
-            bounds={() => [45, 57]}
-            flipflops={3}
-            onDecline={() => setTopeDpr(1)}
-            onIncline={() => setTopeDpr(1.5)}
-            onFallback={() => setTopeDpr(1)}
-          />
+          {intro && reposo && <Latido />}
+          {/* **Fuera mientras dura el reposo, y es obligatorio.** El medidor
+              cuenta fotogramas por segundo: con los 15 del reposo creería que
+              el equipo no puede, bajaría la resolución y, a la tercera vez que
+              cambiara de opinión, la dejaría baja para siempre. */}
+          {!reposo && (
+            <PerformanceMonitor
+              bounds={() => [45, 57]}
+              flipflops={3}
+              onDecline={() => setTopeDpr(1)}
+              onIncline={() => setTopeDpr(1.5)}
+              onFallback={() => setTopeDpr(1)}
+            />
+          )}
           <Suspense fallback={null}>
             <Scene />
           </Suspense>
-
-          {/* Postprocesado: viñeta, y solo en escritorio. El porqué de las dos
-              cosas —el valor y dónde se apaga— está medido y escrito en el
-              propio componente.
-
-              **Va en su propio `Suspense` y fuera del de la escena**, y no es
-              cosmético: compartiendo boundary, la espera de este módulo
-              volvería a suspender el de arriba y la escena **ya montada**
-              desaparecería un instante mientras llega la viñeta. */}
-          {conPostproceso && (
-            <Suspense fallback={null}>
-              <Postproceso />
-            </Suspense>
-          )}
         </Canvas>
       </div>
     </>

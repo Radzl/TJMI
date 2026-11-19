@@ -72,11 +72,17 @@ const MOBILE = { name: 'movil', width: 390, height: 844 };
  * número: cuando algo falla, lo primero que se quiere saber es qué momento de
  * la intro se ha roto.
  */
+// **Las del hero se reapuntaron con D3 (2026-11-18).** El hero empieza ahora
+// con la entrada del camión, que se lleva el primer 20 % (`ENTRADA` en
+// `src/lib/partitura.ts`), y la carga va detrás. Las tomas de la carga siguen
+// en el mismo momento de antes: fracción = 0,2 + 0,8 · antigua. Si cambia
+// `ENTRADA`, hay que rehacerlas igual **y mirar las capturas**.
 const SHOTS = [
-  { id: 'patio-reposo', scene: 1, at: 0.02, label: 'El patio antes de tocar nada' },
-  { id: 'grua-maniobra', scene: 1, at: 0.3, label: 'La grúa girando con la carga' },
-  { id: 'lona-abierta', scene: 1, at: 0.55, label: 'La lona abierta y el lote entrando' },
-  { id: 'primer-plano', scene: 1, at: 0.93, label: 'Primer plano del camión' },
+  { id: 'patio-reposo', scene: 1, at: 0.02, label: 'El camión entrando, antes de tocar nada' },
+  { id: 'camion-girando', scene: 1, at: 0.1, label: 'El camión girando, doblado por el enganche' },
+  { id: 'grua-maniobra', scene: 1, at: 0.44, label: 'La carretilla acercando la carga' },
+  { id: 'lona-abierta', scene: 1, at: 0.64, label: 'La lona abierta y el lote entrando' },
+  { id: 'primer-plano', scene: 1, at: 0.944, label: 'Primer plano del camión' },
   // **Las de la escena 3 se reapuntaron al arreglar el parpadeo del camión.**
   // Su disparador empezaba una pantalla antes de la sección y ahora empieza
   // en la sección misma, así que la misma fracción de sección ya no cae en el

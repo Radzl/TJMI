@@ -765,7 +765,7 @@
     "legal": {
       "title": "Legal notice",
       "intro": "Details of the company behind this website and terms of use, under Spanish Law 34/2002 on information society services.",
-      "updated": "Last updated: 24 September 2026",
+      "updated": "Last updated: 19 November 2026",
       "pending": "Draft pending review. The company details and the 3D model credits marked below are missing.",
       "sections": [
         {
@@ -797,9 +797,12 @@
         {
           "heading": "3D model credits",
           "paragraphs": [
-            "The homepage animation uses freely licensed stock 3D models. We have modified some of them (brand colours and our own logo); others are used as their author published them.",
-            "\"Forklift\" by KolosStudios, on poly.pizza. Creative Commons Attribution 3.0 licence (CC-BY 3.0): https://poly.pizza/m/DTQBuenKJY",
-            "[PENDING: name, author, licence and link for each model used]"
+            "The homepage animation uses freely licensed stock 3D models. We have adapted them to the scene, and each entry says what we changed.",
+            "\"Warehouse Forklift Gameready\" by Kamran Mughal, on Sketchfab. Creative Commons Attribution 4.0 licence (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/): https://sketchfab.com/3d-models/warehouse-forklift-gameready-94e21059f00c4e989c6403ada034516e. We have removed the lettering from its texture, raised the forks and mast, and reduced the textures.",
+            "\"EPAL pallet\" by ChoboiAssets, on Sketchfab. CC BY 4.0 licence: https://sketchfab.com/3d-models/epal-pallet-1afaf577cf0e42dfbd6dd4a0bd7ab87c. We have removed the nails, adjusted its size and lightened the wood.",
+            "\"20ft Container\" by Europhil, on Sketchfab. CC BY 4.0 licence: https://sketchfab.com/3d-models/20ft-container-07c7df70eebd40ec8321060029482358. We have adjusted its size, and each container in the yard has a different panel colour.",
+            "Asphalt texture: \"Clean Asphalt\" by Dimitrios Savva, on Poly Haven. Public domain (CC0): https://polyhaven.com/a/clean_asphalt. We have lightened and desaturated it.",
+            "[PENDING: name, author, licence and link for the truck model]"
           ]
         },
         {

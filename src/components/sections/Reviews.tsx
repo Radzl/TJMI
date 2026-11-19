@@ -124,8 +124,13 @@ export default function Reviews() {
   const total = items.length;
 
   return (
-    <section data-bg="bone" className="relative z-10 bg-bone pb-28">
-      <Container>
+    <section data-bg="bone" className="relative z-10 bg-bone">
+      {/* Crema entre dos secciones oscuras, y el paso es un **cambio de color
+          seco, sin difuminado**: lo pidió el cliente (2026-11-18). Hubo una
+          franja que fundía un color en el otro (`.costura`) y se leía como
+          una mancha gris; se quitó. El aire de arriba y abajo lo pone el
+          propio relleno, para que el titular no quede pegado al corte. */}
+      <Container className="py-24 lg:py-32">
         <SectionHeading title={t('title')} lead={t('lead')} />
 
         <div className="mt-14">

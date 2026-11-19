@@ -2,146 +2,107 @@
 
 import { useGLTF } from '@react-three/drei';
 import { useMemo } from 'react';
-import { Camera, Light, Mesh, type Object3D } from 'three';
+import { Mesh } from 'three';
 import Operator from './Operator';
 
-const MODEL = '/models/forklift.glb';
+const MODEL = '/models/carretilla.glb';
 
 /**
  * La carretilla elevadora que carga los palés por el costado del camión.
  *
- * **Por qué sustituye a la reach stacker.** La máquina anterior estaba mal
- * elegida y era un fallo de geometría, no de gusto: una reach stacker agarra
+ * **Por qué una carretilla y no una grúa.** Una reach stacker agarra
  * contenedores **desde arriba** con un spreader, y un semirremolque de lonas
- * **tiene techo**. No hay forma de que meta un palé dentro. El guion cerró
- * «grúa portacontenedores, no carretilla» cuando la carga era un contenedor;
- * después la carga pasó a ser palés y la máquina no cambió. En
+ * **tiene techo**: no hay forma de que meta un palé dentro. En
  * `public/media/camion-02.jpg` se ve quién hace ese trabajo de verdad: una
  * carretilla, por el costado y con las horquillas a la altura del piso.
  *
- * Modelo: «Forklift» de KolosStudios, en poly.pizza, licencia **CC-BY 3.0**.
- * El crédito es obligación de la licencia y está en el aviso legal.
+ * **Modelo: «Warehouse Forklift Gameready», de Kamran Mughal, en Sketchfab,
+ * licencia CC BY 4.0** (2026-11-19). Sustituye a la «Forklift» de
+ * KolosStudios, que era de bloques de color plano y se leía como un juguete al
+ * lado del camión. El crédito es obligación de la licencia y está en el aviso
+ * legal.
  *
- * **Va sin repintar, y es decisión del cliente.** El amarillo que trae es el
- * de una carretilla de verdad, así que repintarla a los colores de la casa la
- * alejaría de lo que se ve en la foto. La marca ya la llevan el camión y las
- * naves.
+ * **El archivo no es el de Sketchfab tal cual: se preparó para la escena**
+ * con un guion de Python (ver «Los modelos de Sketchfab» en `CLAUDE.md`):
+ *
+ * - **Ya va en metros, mirando a +X y con el origen en la punta de las
+ *   horquillas, a ras de suelo.** Es el punto que de verdad se coloca: al
+ *   situar la carretilla se sitúa dónde va a quedar el palé. Por eso aquí no
+ *   hay ni giro ni escala ni desplazamiento.
+ * - **Las horquillas y el carro van subidos 1,14 m**, hasta el piso del
+ *   camión (1,20 m), y la parte interior del mástil 31 cm, para que el carro
+ *   no asome por encima. Con la carretilla de antes no se podía: mástil,
+ *   ruedas y techo iban en la misma pieza, y el lote viajaba a 1,20 m con las
+ *   horquillas en el suelo. En este modelo el carro y las horquillas son
+ *   piezas sueltas dentro de la malla, así que se separaron y se subieron al
+ *   preparar el archivo. Sigue siendo **una sola malla y una sola llamada de
+ *   dibujo**: no se animan, la carretilla lleva el lote en alto desde que
+ *   sale de la nave hasta que se va.
+ * - **Sin las letras de la textura** («SQUIRE», un logotipo en forma de S y
+ *   el modelo «SJT-9»): una marca en una máquina de la escena se lee como la
+ *   de otra empresa, igual que el logotipo de la calandra del camión.
+ * - Texturas a 512 y 256 px en JPEG, y sin la de especular: a lo que mide en
+ *   pantalla (unos 120 px de largo en escritorio) no se distingue.
+ *
+ * **Va sin repintar, y es decisión del cliente.** El amarillo es el de una
+ * carretilla de verdad. La marca ya la llevan el camión y la nave.
  */
 
 /**
- * Escala a metros, y los tres ejes cuadran a la vez con esta.
+ * Lo que mide, en metros, medido sobre el archivo ya preparado.
  *
- * Medido sobre el propio GLB (hay que transformar las ocho esquinas de la
- * caja: el nodo trae un cuaternión de la conversión Z-up → Y-up de FBX2glTF y
- * escala **no uniforme**, así que multiplicar por la escala y ya da medidas
- * que no son).
- *
- * | | modelo | × 1,35 | contrapesada real |
- * | --- | --- | --- | --- |
- * | largo | 2,31 | **3,12 m** | 3,0–3,3 m con horquillas |
- * | ancho | 0,85 | **1,15 m** | 1,15 m |
- * | alto | 1,42 | **1,92 m** | ~2,1 m de techo protector |
- *
- * Que el ancho caiga clavado y el largo dentro del rango con el mismo número
- * es lo que dice que 1,35 es el factor bueno: el 2,31 del archivo **incluye
- * las horquillas**, no es solo el cuerpo.
+ * Es una contrapesada de unas tres toneladas y media: 1,31 m de ancho, techo
+ * protector a 2,26 m y 3,86 m de la punta de las horquillas a la cola (de
+ * ellos, 1,18 m de horquilla). Se deja a su tamaño: cuadra con una real.
  */
-const SCALE = 1.35;
-
-/**
- * Dónde está el origen del modelo dentro del archivo, antes de recolocarlo.
- *
- * El largo del modelo corre por **Z** y la escena quiere las cosas mirando a
- * **+X**, como el camión. El giro de −90° en Y lleva −Z a +X.
- *
- * **Cuál de los dos extremos es el frente hay que MIRARLO, no deducirlo.** Lo
- * deduje del reparto de materiales —el material oscuro llega hasta z = 4,19,
- * así que ahí estaría el mástil— y estaba al revés: ese extremo es el
- * contrapeso. El mástil y las horquillas están en z = 1,88. Se vio poniendo
- * la carretilla un momento al lado del camión y mirándola.
- */
-const BOX = {
-  /** Centro a lo ancho. */
-  centreX: 54.25,
-  /** El suelo: por debajo de esto no hay geometría. */
-  groundY: 0.02,
-  /** La punta de las horquillas, que es el extremo delantero. */
-  frontZ: 1.88,
-};
-
-/**
- * El origen queda en **la punta de las horquillas, a ras de suelo**.
- *
- * Es el punto que de verdad hace falta mover: lo que se coloca al colocar la
- * carretilla es dónde va a quedar el palé. Con el origen en el centro de la
- * máquina habría que ir sumando medio vehículo en cada cuenta de la
- * coreografía. Así, `position.x` es directamente dónde están las horquillas y
- * el cuerpo queda por detrás, en las x negativas.
- */
-const ORIGIN: [number, number, number] = [-BOX.centreX, -BOX.groundY, -BOX.frontZ];
-
-/**
- * Dónde se sienta el operario, en metros de la escena.
- *
- * Medido sobre el propio GLB, no puesto a ojo. Las piezas, ya transformadas:
- *
- * | pieza | largo (x) | alto (y) |
- * | --- | --- | --- |
- * | chasis, mástil, ruedas y techo | −3,12 .. −0,07 | 0,00 .. 1,92 |
- * | techo protector y respaldo | −2,28 .. −0,54 | 0,36 .. 1,89 |
- * | capó amarillo | −2,05 .. 0,00 | 0,29 .. **0,98** |
- *
- * En una contrapesada el asiento va **encima del capó**, que aquí acaba a
- * 0,98. Como el origen de la figura es el suelo del puesto y el asiento le
- * queda 0,42 por encima, el origen va a 0,98 − 0,42 = **0,56**.
- *
- * A lo largo, −1,8 deja el respaldo justo en el borde trasero del capó
- * (−2,06 contra −2,05) y la cabeza a 1,71, por debajo del techo protector.
- * O sea: sentado donde hay sitio, y sin atravesar nada.
- */
-const OPERATOR = { x: -1.8, y: 0.56, z: 0 };
-
-/** Lo que mide ya colocada, por si la coreografía necesita las cuentas. */
 export const FORKLIFT = {
-  /** De la punta de las horquillas a la cola, en metros. */
-  length: 2.31 * SCALE,
-  width: 0.85 * SCALE,
-  height: 1.42 * SCALE,
+  /** De la punta de las horquillas a la cola. */
+  length: 3.864,
+  width: 1.31,
+  /** Hasta lo alto del mástil, con la parte interior extendida. */
+  height: 2.89,
+  /**
+   * Lo que va apoyado en el suelo, de la cola al frente de las ruedas
+   * delanteras. Las horquillas van en alto y no tocan nada, así que la
+   * sombra de contacto va solo debajo de esto.
+   */
+  cuerpo: { desde: -3.864, hasta: -1.33 },
+  /**
+   * Dónde va el rotativo: sobre la parte de atrás del techo protector, que
+   * acaba a 2,26 m y llega hasta x = −3,28.
+   */
+  rotativo: [-3.05, 2.4, 0] as [number, number, number],
 };
+
+/**
+ * Dónde se sienta el operario, en metros de la escena, medido sobre una vista
+ * lateral del modelo con cuadrícula de 10 cm.
+ *
+ * El cojín del asiento acaba a **1,20 m** de alto y el respaldo empieza en
+ * x = −2,98. La figura tiene el origen en el suelo del puesto y el asiento
+ * 0,42 por encima, así que el origen va a 1,20 − 0,42 = **0,78**. A lo largo,
+ * su propio respaldo (que va 0,21 por detrás del origen) cae sobre el del
+ * modelo: −2,98 + 0,21 = **−2,77**. La cabeza queda a unos 2,03 m, por debajo
+ * del techo protector, y las manos a la altura del volante.
+ */
+const OPERATOR = { x: -2.77, y: 0.78, z: 0 };
 
 export default function ForkliftModel() {
   const { scene } = useGLTF(MODEL, false);
 
   const model = useMemo(() => {
     const root = scene.clone(true);
-    const remove: Object3D[] = [];
-
     root.traverse((child) => {
-      if (child instanceof Camera || child instanceof Light) {
-        remove.push(child);
-        return;
-      }
       if (!(child instanceof Mesh)) return;
-
-      // Sin tocar el material: el modelo viene con color plano y sin texturas,
-      // que es justo el acabado de maqueta del resto de la escena.
       child.castShadow = true;
       child.receiveShadow = true;
     });
-
-    remove.forEach((node) => node.removeFromParent());
     return root;
   }, [scene]);
 
   return (
     <>
-      <group rotation={[0, -Math.PI / 2, 0]} scale={SCALE}>
-        <primitive object={model} position={ORIGIN} />
-      </group>
-      {/* El operario va FUERA del grupo del modelo, no dentro: ahí hay un
-          `scale` de 1,35 y la figura saldría un 35 % más alta, o sea un
-          conductor de 1,55 m sentado. Aquí las coordenadas ya son metros de
-          la escena. Es lo mismo que hacía la grúa, por lo mismo. */}
+      <primitive object={model} />
       <group position={[OPERATOR.x, OPERATOR.y, OPERATOR.z]}>
         <Operator />
       </group>
@@ -154,7 +115,6 @@ export default function ForkliftModel() {
 // apunta el descompresor a `https://www.gstatic.com/draco/...`: una
 // petición a Google esperando el día que alguien comprima un modelo con
 // Draco, y eso va contra la regla de este proyecto de no cargar nada de
-// terceros. Hoy no se dispara —ninguno de los tres GLB usa esa extensión;
-// el camión usa `EXT_meshopt_compression`, que lleva su propio wasm— pero
-// el cargador entra igual en el paquete. A `false` desaparecen las dos.
+// terceros. Ningún GLB de la escena usa esa extensión; a `false` el cargador
+// ni se construye.
 useGLTF.preload(MODEL, false);

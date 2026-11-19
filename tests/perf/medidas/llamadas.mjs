@@ -71,16 +71,18 @@ const INICIO = `
 `;
 
 /** Los puntos donde se mide: escena del guion, fracción de su sección y nombre. */
+// Las del hero van con la entrada del camión delante (D3): la carga empieza
+// en 0,2 del hero y sus puntos son 0,2 + 0,8 · los de antes. Las de la
+// carretera (escena 5) se quitaron con ella.
 const PUNTOS = [
-  ['1', 0.02, 'patio en reposo'],
-  ['1', 0.3, 'carretilla acercándose'],
-  ['1', 0.6, 'lona abierta'],
-  ['1', 0.9, 'primer plano'],
+  ['1', 0.02, 'camión entrando'],
+  ['1', 0.1, 'camión girando'],
+  ['1', 0.44, 'carretilla acercándose'],
+  ['1', 0.68, 'lona abierta'],
+  ['1', 0.92, 'primer plano'],
   ['3', 0.05, 'camión arrancando'],
   ['3', 0.2, 'camión rodando'],
   ['3', 0.6, 'azul noche'],
-  ['5', 0.45, 'carretera, media ruta'],
-  ['5', 0.8, 'carretera, llegando'],
 ];
 
 const browser = await chromium.launch({ headless: true, channel: 'chrome' });
@@ -130,8 +132,11 @@ async function medir(page) {
     window.__porFotograma.length = 0;
   });
   await page.waitForTimeout(500);
+  // Solo los fotogramas que de verdad se pintan: con la pausa en reposo
+  // (`useReposo`) el lienzo baja a 15 por segundo y la mayoría de los del
+  // navegador van vacíos, así que la mediana de todos daba 0.
   return page.evaluate(() => {
-    const o = window.__porFotograma.slice().sort((a, b) => a - b);
+    const o = window.__porFotograma.filter((n) => n > 0).sort((a, b) => a - b);
     return o[Math.floor(o.length / 2)] ?? 0;
   });
 }

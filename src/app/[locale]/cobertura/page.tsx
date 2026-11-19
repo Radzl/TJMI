@@ -87,8 +87,11 @@ export default async function CoveragePage({ params }: Props) {
 
   return (
     // Página oscura: el tema noche se aplica a todo el contenido. Ver
-    // `.tema-noche` en `globals.css`.
-    <div className="tema-noche" data-bg="night">
+    // `.tema-noche` en `globals.css`. **Pinta su propio fondo** (`bg-bone`,
+    // que dentro del tema noche es azul noche): si dependiera del fondo de
+    // la página, al llegar desde el menú se quedaba crema y el titular crema
+    // desaparecía. Ver `Backdrop`.
+    <div className="tema-noche bg-bone" data-bg="night">
       <PageHeader
         title={t('title')}
         lead={t('titleLead')}

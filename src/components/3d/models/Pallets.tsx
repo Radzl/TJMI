@@ -1,7 +1,26 @@
 'use client';
 
-import { Instance, Instances } from '@react-three/drei';
+import { Instance, Instances, useGLTF } from '@react-three/drei';
 import { useMemo } from 'react';
+import type { Material, Mesh } from 'three';
+
+/**
+ * **El palé de madera es un modelo, no una caja** (2026-11-19): «EPAL
+ * pallet», de ChoboiAssets, en Sketchfab, licencia CC BY 4.0, con el crédito
+ * en el aviso legal. Una caja de 14 cm de alto se leía como una tabla; con las
+ * tablas, los tacos y los huecos para las horquillas se lee como un palé a
+ * cualquier distancia.
+ *
+ * El archivo va preparado para esto (ver «Los modelos de Sketchfab» en
+ * `CLAUDE.md`): **a la medida exacta de `PALLET`** (1,20 × 0,14 × 0,85), con
+ * el largo en X, centrado y con la base en y = 0. Así sustituye a la caja sin
+ * mover ni un centímetro de la coreografía. **Sin los clavos**: el modelo traía
+ * las cabezas como una capa de 2.480 triángulos, el 72 % del total, y a la
+ * distancia a la que se ven los palés no se distinguen. Queda en 960
+ * triángulos y una textura de 512 px, aclarada al pino de un palé nuevo: el
+ * mismo tono medio que tenía la caja (`#b08d63`).
+ */
+const MODEL = '/models/pale.glb';
 
 /**
  * Palés de azulejos esperando en el patio.
@@ -50,7 +69,6 @@ export const PALLET_LOAD = {
   height: LOAD_GRID.high * UNIT,
 };
 
-const WOOD = "#b08d63";
 const TILES = "#d5cec1";
 const STRAP = "#34548a";
 
@@ -99,23 +117,26 @@ type Origen = [number, number, number];
  * `<Instances>` cuyas piezas queden lejos de su origen, dale lo mismo.
  */
 function PalletPile({ palets }: { palets: Origen[] }) {
+  const { nodes, materials } = useGLTF(MODEL, false);
   const n = palets.length;
   if (n === 0) return null;
 
   return (
     <>
-      {/* Palé de madera */}
+      {/* Palé de madera: el modelo, con la base en y = 0. La geometría y el
+          material son los del archivo y se comparten entre los tres grupos
+          de palés de la escena. */}
       <Instances
         limit={n}
         range={n}
         castShadow
         receiveShadow
         frustumCulled={false}
+        geometry={(nodes.pale as Mesh).geometry}
+        material={materials.madera as Material}
       >
-        <boxGeometry args={[PALLET.width, PALLET.base, PALLET.depth]} />
-        <meshStandardMaterial color={WOOD} roughness={0.9} />
         {palets.map(([x, y, z], i) => (
-          <Instance key={i} position={[x, y + PALLET.base / 2, z]} />
+          <Instance key={i} position={[x, y, z]} />
         ))}
       </Instances>
 
@@ -228,3 +249,6 @@ export default function Pallets() {
 
   return <PalletPile palets={palets} />;
 }
+
+// Sin Draco, por lo mismo que los demás modelos: ver `ForkliftModel.tsx`.
+useGLTF.preload(MODEL, false);

@@ -10,7 +10,8 @@ export default function NotFound() {
   const t = useTranslations('pages.notFound');
 
   return (
-    <section className="flex min-h-[70svh] items-center py-24">
+    <>
+      <section className="flex min-h-[70svh] items-center py-24">
       <Container>
         <p className="flex items-center gap-4 font-display text-xs uppercase tracking-[0.18em] sm:tracking-[0.3em] text-muted">
           <span className="h-px w-10 bg-brand-red" aria-hidden="true" />
@@ -32,6 +33,7 @@ export default function NotFound() {
           </Button>
         </div>
       </Container>
-    </section>
+      </section>
+    </>
   );
 }

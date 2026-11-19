@@ -19,9 +19,14 @@ export default function LegalSections({
 
           <div className="mt-5 flex flex-col gap-4">
             {section.paragraphs.map((paragraph) => (
+              // `overflow-wrap: anywhere` deja partir lo que no cabe entero:
+              // los créditos llevan direcciones de cien caracteres sin un
+              // espacio, y en un móvil de 390 px desbordaban la página 32 px
+              // de lado (lo cazó `check:repaso`). El texto normal sigue
+              // cortando por los espacios.
               <p
                 key={paragraph}
-                className="max-w-3xl text-base leading-relaxed text-muted"
+                className="max-w-3xl text-base leading-relaxed text-muted [overflow-wrap:anywhere]"
               >
                 {paragraph}
               </p>

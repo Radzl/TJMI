@@ -22,7 +22,7 @@ export default function Route() {
   return (
     // Fondo propio y opaco: ya no hay 3D detrás, y así el texto en tinta nunca
     // puede quedarse sobre el azul noche de la sección anterior.
-    <section data-bg="night" className="tema-noche relative z-10 bg-bone py-28">
+    <section data-bg="night" className="tema-noche relative z-10 bg-bone py-28 lg:py-36">
       <Container>
         <SectionHeading
           title={t('coverageTitle')}

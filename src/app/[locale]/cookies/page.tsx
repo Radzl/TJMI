@@ -159,6 +159,7 @@ export default async function CookiesPage({ params }: Props) {
           </div>
         </Container>
       </section>
+
     </>
   );
 }

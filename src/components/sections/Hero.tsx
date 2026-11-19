@@ -13,14 +13,18 @@ export default function Hero() {
     // y se quedaría en un hueco vacío, así que con movimiento reducido la
     // sección vuelve a medir lo que mide su contenido.
     //
-    // Son 420svh y no 320 porque el disparador de esta sección termina en
-    // `bottom bottom` (ver `ScrollChoreography`), que se come una pantalla:
-    // el recorrido útil sigue siendo el de antes. A cambio, el titular deja
-    // de despegarse una pantalla antes de que acabe la animación, que es lo
-    // que dejaba un pantallazo de crema vacío con el camión de tira abajo.
+    // Son 500svh: 400 de recorrido más la pantalla que se come el disparador,
+    // que termina en `bottom bottom` (ver `ScrollChoreography`). A cambio, el
+    // titular deja de despegarse una pantalla antes de que acabe la
+    // animación, que es lo que dejaba un pantallazo de crema vacío con el
+    // camión de tira abajo.
+    //
+    // Fueron 420 hasta D3 (2026-11-18): la entrada del camión se lleva los
+    // primeros 80svh (`ENTRADA` en `lib/partitura.ts`) y la carga conserva
+    // los 320 de siempre, así que no va más deprisa.
     <section
       data-scene="1"
-      className="relative z-10 min-h-[420svh] sin3d:min-h-0"
+      className="relative z-10 min-h-[500svh] sin3d:min-h-0"
     >
       <div className="sticky top-20 h-[calc(100svh-5rem)] sin3d:static sin3d:h-auto sin3d:py-24">
         {/* El bloque de texto vive arriba y a la derecha: justo encima del
@@ -56,7 +60,7 @@ export default function Hero() {
                 disfraz de etiqueta, que no añadía información y es de los
                 recursos que más delatan una web hecha en serie. Ahora es una
                 frase, en la tipografía de texto y en caja baja. */}
-            <p className="text-sm text-muted">{t('eyebrow')}</p>
+            <p className="text-sm text-ink/80">{t('eyebrow')}</p>
 
             <h1 className="mt-4 font-display text-display-lg uppercase text-ink lg:mt-6">
               {t('title')}
@@ -96,7 +100,7 @@ export default function Hero() {
               media={`(max-width: ${ANCHO_MOVIL - 1}px)`}
               className="sin3d:opacity-100!"
             >
-              <p className="mt-4 max-w-md text-sm leading-relaxed text-muted sm:mt-6 sm:text-base">
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-ink/80 sm:mt-6 sm:text-base">
                 {t('subtitle')}
               </p>
             </ScrollFade>

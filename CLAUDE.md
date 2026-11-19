@@ -71,10 +71,28 @@ Se contaron los píxeles de siete páginas para saber qué colores usa la web **
   | azul de texto | 8,1 | 7,1 | 6,7 |
   | rojo de texto | 5,5 | 4,9 | 4,6 |
 
-- **Cada sección oscura lleva además `data-bg="night"`**, o `Backdrop` pintaría crema detrás mientras la sección cruza el centro de la pantalla y se vería un parpadeo en los bordes. Las páginas interiores oscuras van envueltas en un `<div className="tema-noche" data-bg="night">`.
+- **Cada sección oscura lleva además `data-bg="night"`**, o `Backdrop` pintaría crema detrás mientras la sección cruza el centro de la pantalla y se vería un parpadeo en los bordes. Las páginas interiores oscuras van envueltas en un `<div className="tema-noche bg-bone" data-bg="night">` (el `bg-bone`, que dentro del tema es azul noche, se añadió el 2026-11-19: ver abajo).
+
+#### El fallo grave del 2026-11-19: los titulares crema sobre crema
+
+- **El cliente vio páginas «mal enfocadas, con el título en blanco o crema».** Era cierto y era grave, y no salía en ninguna captura porque **solo pasaba al navegar dentro de la web**: cargando cada página desde cero se veía bien.
+- **La causa:** `Backdrop` vive en el layout, que no se vuelve a montar al cambiar de página, y buscaba las secciones `[data-bg]` **una sola vez, al montarse**. En la página siguiente seguía mirando las de la anterior —que ya no existían— y caía siempre al crema. Las páginas oscuras no pintaban su propio fondo, así que al entrar desde el menú en Servicios, Nosotros, Contacto, Cobertura o cualquier ficha de servicio el fondo era crema y el titular, crema también, desaparecía.
+- **El arreglo va por dos lados**, para que no dependa de uno solo: las cinco envolturas de página oscura pintan su fondo (`bg-bone`), y `Backdrop` vuelve a buscar las secciones en cada pasada y cada vez que cambia la ruta (`usePathname`). Comprobado navegando con clics de verdad por nueve páginas, de claro a oscuro y al revés, en escritorio y en móvil: `tests/visual/salida/navegar.mjs` lee el color del titular y del fondo en cada parada.
+- **Lección:** una comprobación que solo carga páginas desde cero no ve los fallos de la navegación de cliente. Cualquier cosa que viva en el layout y mire el DOM de la página tiene que volver a mirarlo al cambiar de ruta.
 - **El mapa dibujado de las sedes (`SiteLocator`) cambia de piel con variables propias** (`--mapa-*`), con los mismos tonos que el mapa de la red. Van por `style` y no por atributo de SVG: `var()` en un atributo de presentación no es fiable.
 - **Comprobado**: `check:repaso` en las 32 páginas, `check:seo`, `check:errores` y `check:3d`, que solo movió las dos tomas del arranque, y solo por la barra de navegación, que ahora es oscura desde el primer pintado.
 - **Lo que queda escrito más abajo sobre «Servicios iba en azul noche, y ahora va en crema» es historia**: volvió a azul noche con esta decisión.
+
+#### Las costuras entre crema y azul noche
+
+> **Historia (2026-11-19): las costuras se quitaron.** El cliente pidió que entre secciones no haya difuminado, solo cambio de color: las franjas se veían como bandas grises sucias, y en el móvil el titular «Antes de mandar un palé» caía dentro de una, en tinta sobre gris oscuro. Ahora cada frontera es un corte seco, y el aire que daba la costura lo pone el relleno de cada sección (`py-24 lg:py-32` en las reseñas y la franja del blog; `mt-20` antes del cierre de los artículos). El mismo día se quitó también el fundido de entrada de «Elige por dónde empezar» (`--fundido`) y `Backdrop` dejó de fundir sus cambios de color. **No volver a poner difuminados entre secciones sin preguntar.** Lo de abajo se deja como registro.
+
+- **El cliente vio dos fallos al probarlo:** el paso entre colores era «muy brusco» y el titular de cada sección quedaba «muy pegado arriba». Los dos eran ciertos y tenían causa distinta.
+- **El titular pegado:** las reseñas y «Dónde estamos» **no tenían margen superior**. Venían de cuando su vecina de arriba era del mismo color y el hueco lo ponía ella. Ahora cada una lleva el suyo, y el de `Route` también subió.
+- **El corte:** cada frontera entre crema y azul noche lleva ahora una **costura** (`.costura` en `globals.css`), una franja que funde un color en el otro. Va **dentro de la sección en crema**, arriba y abajo, y no entre secciones en `page.tsx`: las reseñas no existen en producción mientras no haya reseñas reales, y una costura suelta en la página quedaría huérfana entre dos azules.
+- Dónde está: en la portada, arriba y abajo de las reseñas y de la franja del blog; al final de preguntas, del listado del blog, de cada artículo (antes del cierre) y de las tres legales; y en la página de error 404.
+- **El fundido es en curva suave, no lineal.** El primero era lineal y se veía como una banda gris con **dos bordes**: el ojo no nota el color, nota el cambio brusco de pendiente donde empieza y acaba. Con los pasos en 3t² − 2t³ sale y llega sin pendiente y no hay borde que mirar. Mide **10rem en móvil y 16rem en escritorio**: empezó en 7 y 11, y el cliente lo pidió más largo, más gradual.
+- **Si añades una sección en crema entre dos oscuras, ponle sus dos costuras**; si va al final de una página en crema, una hacia abajo antes del cierre o del pie.
 
 #### Lo que queda pendiente del color
 
@@ -132,7 +150,7 @@ Next.js (App Router) + React + TypeScript · Tailwind CSS · Three.js + @react-t
 3. Las secciones HTML van encima (`z-index` superior) y son las que generan la altura de scroll.
 4. Una timeline maestra de GSAP con `ScrollTrigger` (`scrub: true`) escribe el progreso (0 → 1) y el progreso de cada escena en un store de Zustand.
 5. Los componentes R3F leen ese store dentro de `useFrame` (con `getState()`, no con hooks reactivos) y mueven cámara, modelos y materiales. Nada de `setState` por frame.
-6. Cámara ortográfica en vista lateral para las escenas 1–4 (look "maqueta" limpio), transición a vista cenital en la escena 5.
+6. **Cámara con perspectiva** (`FOV` 34° en `escena/dia.ts`), con cielo de día y suelo de asfalto. **Fue ortográfica** (el look «maqueta») hasta el 2026-11-18, cuando el cliente vio la intro «de juguete» y aprobó la perspectiva; la vista cenital de la escena 5 se fue antes, con la carretera. Ver «La escena de día».
 7. Lenis sincronizado con ScrollTrigger (`lenis.on('scroll', ScrollTrigger.update)` y `gsap.ticker`).
 
 ## Guion de escenas (storyboard)
@@ -148,7 +166,7 @@ Decisiones cerradas:
 - **Todo lo que este archivo cuenta de la carretera —cenital, asfalto, naves de los extremos, hitos, quitamiedos, cartel, sombras— es historia**: la escena y sus archivos (`Road.tsx`, `Facility.tsx`, `roadSign.ts`, `lib/route.ts`, `RoadIntro.tsx`, `RouteOdometer`, `RouteProgress`) están borrados. Se deja escrito porque las lecciones de medición siguen valiendo.
 - El giro a **vista cenital** ocurre en la escena de la carretera, y no mira a plomo: va inclinada unos 16° para que el camión tenga volumen.
 - La carretera es **3D**, una cinta que se dibuja según avanza el camión, con una **nave de salida y una nave de llegada** en los extremos. El trazado es una curva libre, no el mapa de España.
-- El fondo de la página lo controla `Backdrop` con `data-bg` por sección: los cambios de color son fundidos, nunca un bloque opaco entrando.
+- El fondo de la página lo controla `Backdrop` con `data-bg` por sección. Fueron fundidos; **desde el 2026-11-19 son cambios de color secos**, a petición del cliente (ver «Las costuras entre crema y azul noche»).
 - Escala de la grúa calibrada con las ruedas del propio GLB (1,5 m de diámetro): no tocar a ojo.
 - La intro abre con un **acto previo**: la grúa coge su contenedor de una pila de cinco, viene hacia el espectador y gira a la derecha hasta quedar de perfil delante del camión. Va ligado al scroll, como todo lo demás.
 - Ese acto se ve desde una **cámara en tres cuartos** que está en la misma dirección que la vista de perfil, solo que en alto (unos 30°). Pasar a perfil es bajar la cámara, no girarla: por eso no se nota el corte. Con cámara ortográfica es la única forma de que un avance en profundidad se lea (baja por la pantalla).
@@ -184,7 +202,7 @@ Decisiones cerradas:
 - **La tractora es blanca, con las rayas rojas y azules en la puerta y el escudo pequeño.** Es la librea real de la casa (ver `public/media/camion-01.jpg` y `camion-02.jpg`). El blanco no es puro: el fondo de la página es crema y una cabina blanca del todo no se recorta.
 - **El semirremolque lleva lona por los dos costados.** El GLB solo trae la del lado que se renderizaba, así que en cenital se veía abierto por el otro y cantaba. La del lado lejano no se abre nunca.
 - **El patio tiene naves al fondo** (`Sheds` en `TerminalYard.tsx`) y el vallado va con el paso corto. No es decoración: con la cámara acompañando al camión, lo que se ve moverse son los postes y los nervios de la chapa pasando por detrás. Sin eso, el arranque no se lee como avance.
-- Esas naves **solo existen en la vista de perfil** y entran fundiéndose. Desde la cámara en tres cuartos lo que está al fondo sube muchísimo en pantalla y se plantan encima del titular; encenderlas de golpe a mitad de bajada se vería.
+- *(Historia: desde el 2026-11-18 se ven desde el primer fotograma, ver «La entrada del camión».)* Esas naves **solo existían en la vista de perfil** y entraban fundiéndose. Desde la cámara en tres cuartos lo que está al fondo sube muchísimo en pantalla y se plantan encima del titular; encenderlas de golpe a mitad de bajada se vería.
 - **El logo del techo solo se enciende en cenital** (`roofRef`). La cámara de perfil no mira del todo horizontal, así que desde ahí el logo se ve aplastado por encima del techo y parece un fantasma.
 - **El interior del semirremolque se vacía y se vuelve a llenar con carga nuestra** (`DROP_NODES` en `TruckModel.tsx` y `TrailerLoad` en `Pallets.tsx`). Del GLB se tiran tres cosas, y las tres por el mismo motivo: solo se ven con la lona abierta y todas estorbaban.
   - Los **pliegues de la lona del lado contrario** (`Object010`…`Object016`). El modelo la traía recogida en fuelles y, vista a través del hueco, se lee como jaulas metidas dentro del camión. Como el lado lejano ya lo dibujamos nosotros, sobran.
@@ -216,7 +234,7 @@ Decisiones cerradas:
 
 | # | Escena | Qué pasa | Texto |
 |---|--------|----------|-------|
-| 1 | Hero – Terminal | Fondo blanco. Empieza en tres cuartos: la grúa coge un lote de palés de azulejo de la plaza del patio, se acerca y gira a la derecha. La cámara baja a vista lateral, la lona del semirremolque se abre y el lote entra por el costado. Idle loop suave antes de hacer scroll. | Logo + claim corto |
+| 1 | Hero – Terminal | Cielo de día y asfalto. Empieza en tres cuartos: **el camión entra desde el fondo, gira articulado y se cuadra delante de la nave** (D3). Después la carretilla sale de la nave marcha atrás con un lote de palés de azulejo, se acerca y gira a la derecha. La cámara baja a vista lateral, la lona del semirremolque se abre y el lote entra por el costado. Idle loop suave antes de hacer scroll. | Logo + claim corto |
 | 2 | Carga completa | La grúa suelta el lote, la lona se cierra y la máquina sale de plano. La tractora arranca. Leve desaturación. | — |
 | 3 | En ruta | La sección azul noche sube desde abajo y el camión queda "posado" sobre ella. Después la cámara gira de vista lateral a **cenital** y el camión cruza la pantalla hacia abajo por el lado derecho, con el logo en el techo del contenedor. Titular con efecto ScrambleText. | "Cada día, de Castellón a Madrid." / subtítulo + botón "Sobre nosotros" |
 | 4 | Servicios | Ya sin 3D. Sección fijada (pin) con scroll horizontal. Palabra gigante "SERVICIOS" en contorno. Tarjetas de servicio entrando en horizontal. | Servicios reales de TJMI (ver `messages/es.json`) |
@@ -395,6 +413,8 @@ Decisiones cerradas:
 
 #### Cómo entra (2026-11-18)
 
+> **Cambio del 2026-11-19: el borde ya no está fundido.** El cliente pidió que entre secciones de la portada no haya difuminados, solo cambio de color, así que `--fundido` se quitó y `.indice-fondo` es un fondo opaco. Lo demás sigue: el titular entra cuando el borde ya ha pasado de media pantalla (así nunca cae sobre el camión) y los paneles en cascada.
+
 - **El fallo, que señaló el cliente («entra muy de golpe y encima»):** la sección subía como un bloque crema opaco por encima del primer plano del camión. Como el crema es el mismo que el fondo, el corte caía en una línea invisible y el camión se borraba de golpe, con el titular plantado encima del rótulo. Además incumplía la regla de la casa: los cambios de fondo son fundidos, nunca un bloque opaco entrando.
 - **Ahora entra atada al scroll y en orden**, todo en `IndicePaneles.tsx`:
   1. **El borde está fundido** (`.indice-fondo` en `globals.css`): el fondo pasa de transparente a crema a lo largo de `--fundido`, que empieza en el 40 % de la pantalla y se cierra mientras el borde sube hasta algo más de media pantalla. El camión se disuelve en el papel de abajo arriba, sin ninguna línea.
@@ -473,6 +493,10 @@ Decisiones cerradas:
 
 ## La carretilla que carga el camión (`ForkliftModel.tsx`)
 
+> **Desde el 2026-11-18 sale de la nave de Almazora, marcha atrás, y no de la pila de contenedores**: ver «La carretilla sale de la nave» en «La entrada del camión». Lo que sigue sobre el recorrido desde la pila y el seguimiento de la cámara es historia.
+>
+> **Y desde el 2026-11-19 el modelo es otro**, de Sketchfab, a su tamaño y con las horquillas subidas: ver «Los modelos de Sketchfab». Lo que sigue sobre el modelo de KolosStudios —su escala de 1,35, el mástil que no se podía separar, dónde se sentaba el operario— es historia; las lecciones de medición siguen valiendo.
+
 - **Sustituye a la reach stacker, y el motivo era geométrico, no de gusto.** Una reach stacker agarra contenedores **desde arriba** con un spreader y un semirremolque de lonas **tiene techo**: no hay forma de que meta un palé dentro. En `public/media/camion-02.jpg` se ve quién hace ese trabajo de verdad.
 - **Modelo:** «Forklift» de KolosStudios, en poly.pizza, **CC-BY 3.0**. El crédito es obligación de la licencia y está puesto en el aviso legal. 134 KB, glTF 2.0, **sin texturas** —color plano en el material, que es el acabado de maqueta del resto de la escena—.
 - **Va sin repintar y es decisión del cliente.** El amarillo que trae es el de una carretilla de verdad; repintarla a los colores de la casa la alejaría de la foto. La marca ya la llevan el camión y las naves.
@@ -513,7 +537,7 @@ Los 2,31 del archivo **incluyen las horquillas**: por eso el largo encaja en el 
 ### Dos cosas que parecían gratis y sacaron la máquina de cuadro
 
 - **Adelantar el avance a 0,02**, aprovechando el hueco que dejaba `lift`. Durante ese tramo la cámara todavía encuadra la pila del fondo: si la carretilla se va antes, se va sola. Vuelve a **0,14**, y los dos primeros compases son de ralentí con el lote ya en las horquillas.
-- **Terminar el acercamiento en `z = 0,5`**, alineada con la lona, que es donde tiene que acabar. También la saca de plano: el encuadre en tres cuartos sigue a la máquina **solo al 50 %** en profundidad (`followZ`), así que cinco metros de más la tiran por abajo. El acercamiento termina en los mismos **−4,5** de la grúa y la alineación se hace después, en el relevo (`act`).
+- **Terminar el acercamiento en `z = 0,5`**, alineada con la lona, que es donde tiene que acabar. También la saca de plano: el encuadre en tres cuartos la seguía **solo al 50 %** en profundidad (`followZ`), así que cinco metros de más la tiraban por abajo (desde D3 la sigue del todo, pero la alineación se sigue haciendo en el relevo). El acercamiento termina en los mismos **−4,5** de la grúa y la alineación se hace después, en el relevo (`act`).
 - Por lo mismo, **el lote se alinea con `act` y no con `swing`**: la máquina y su carga tienen que moverse juntas. Con `swing` el lote se deslizaba de lado hacia la lona mientras la carretilla seguía cinco metros por detrás, o sea saliéndose de las horquillas de costado.
 
 ### La retirada va antes y más lejos que la de la grúa
@@ -549,6 +573,157 @@ Heredó 0,78 → 1 con 12,5 m y **a 0,90 la carretilla seguía en cuadro**. El p
 ### Lo que el arnés dijo del cambio
 
 Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restantes dan 0,00 %**: el camión en ruta, el azul noche y la carretera entera, intactos. Es exactamente lo que tenía que pasar, y es el arnés haciendo su trabajo.
+
+## La escena de día: perspectiva, cielo y asfalto (2026-11-18)
+
+- **El encargo:** el cliente vio la intro «de juguete y poco profesional» y pidió mejorarla drásticamente. Eligió **perspectiva real**, **luz realista de día**, **solo modelos gratuitos**, **la misma historia mejor rodada** y hasta unos **6 MB** de 3D. Es el primer paso de cuatro (D1): D2 es la nave de Almazora modelada, D3 el camión entrando y cuadrándose y D4 la versión ligera del móvil.
+- **Se probó detrás de un interruptor (`?d1`) y el cliente lo aprobó el mismo día.** Ya es la única escena: la cámara plana y todo lo que solo existía por ella se quitaron —la caja del suelo oscuro (`bandRef`), el paralaje falso, las vigas de «luz de nave» (`Canopy`), el suelo crema, la bruma arena (`FOG_DAY`) y sus alcances por vista (`FOG_QUARTER`, `FOG_SIDE`, `FOG_CLOSE`)—. **Mucho de lo que este archivo cuenta de esas piezas es historia**; las lecciones (la niebla se mide desde la cámara, un gris en el aire se lee como mal tiempo, la suma de luces es π) siguen valiendo.
+- **El arnés tiene referencias nuevas** para las nueve tomas que cambian; la del azul noche final no se movió (0,00 %), o sea que el relevo al mapa es idéntico. Se miraron una a una antes de aceptarlas.
+- **Lo que el arnés enseñó de paso:** la toma `grua-maniobra-pc` (el nombre viene de cuando era una grúa) cae en un punto en que **la carretilla está saliendo por el borde de abajo** y solo asoma su carga. Ya pasaba con la cámara plana; no lo trajo el cambio. Es para D3: en la maniobra la protagonista tiene que verse entera. **Resuelto en D3** (`followZ` a 1).
+- **La cámara con perspectiva encuadra lo mismo que la plana.** Mira desde la misma dirección y se pone a la distancia justa para que en el plano que mira quepan los mismos metros de lado a lado (`anchoMundo / (2 · aspecto · tan(fov/2))`). Por eso los encuadres afinados (`TRUCK_FRAME`, `LOADING_FRAME`…; `OPENING` se quitó en D3) siguen valiendo: lo que cambia es que lo cercano crece y lo lejano encoge. `FOV` es 34°, un tele medio.
+- **Cielo calculado en la escena** (`escena/Cielo.tsx`): una esfera pegada a la cámara con degradado, nubes de ruido y un halo hacia el sol. **Nada descargado**: el `<Clouds>` de drei pide su textura a un CDN por defecto, así que no se usa. **El horizonte del cielo es el mismo color que la niebla** (`CIELO.horizonte`), así que el suelo lejano se funde con él sin línea.
+- **El suelo es asfalto fotográfico**, porque el patio de Almazora es asfalto gris claro con rayas blancas (`public/media/camion-02.jpg`). Es `clean_asphalt` de Poly Haven (**CC0**, Dimitrios Savva), aclarado y desaturado con `tests/visual/salida/procesar-textura.mjs` y guardado en `public/texturas/` (380 KB entre color y relieve). Lleva **variación a gran escala** metida en el sombreador (`parchearSuelo` en `TerminalYard.tsx`): sin ella, un asfalto de un gris se lee como un plano con grano.
+  - **Se probó antes `asphalt_06`**, que tiene manchas, y las manchas repitiéndose cada pocos metros dibujaban un mosaico que se veía desde lejos. Con perspectiva se ve mucho suelo a la vez: **una textura con detalles reconocibles delata su repetición**.
+  - El suelo mide 1.400 m de lado (antes 240): con perspectiva se ve hasta el horizonte, y si se acabara se vería el borde.
+- **Fuera las bandas de sombra de «nave»** (`Canopy`): al aire libre y con sol no hay techo que las dé. **Fuera el paralaje falso**: con perspectiva el paralaje es de verdad y fingirlo encima lo exageraba.
+- **La pintura del suelo pasa a blanco** (`#ecebe6`), como la del patio de verdad; la crema era para un suelo crema.
+
+### El azul noche que sube, rehecho para la perspectiva
+
+- **Con la cámara plana, el azul era la cara de delante de una caja** entre el camión y la cámara, y la cámara **bajaba por debajo del suelo** para que su borde subiera por la pantalla. Con perspectiva no vale ninguna de las dos cosas: la cámara se acerca a unos 30 m y la caja empieza a 46, o sea **detrás** de la cámara; y bajo el suelo se vería la cara de abajo del asfalto.
+- **Ahora la cámara no baja de 1,6 m** (`SUELO_CAMARA`, con una curva suave y no un `max`, para que no haga codo): al pedirle bajar más, sigue mirando al mismo punto, así que **inclina la mirada**, que en perspectiva sube la línea de suelo igual que antes. Medido a 1280: el camión queda al 64 % de la altura, contra el 62 % que buscaba la cámara plana.
+- **Y el azul es un muro** (`MURO` en `Scene.tsx`) plantado entre el camión y la cámara, con el borde de arriba colocado **justo donde la cámara ve la base del camión**: la recta que va de la cámara al suelo junto a la cara del camión corta el plano del muro a esa altura. Así el camión queda **posado sobre el azul**, que es lo que pide el guion, y después el muro sube hasta tapar la pantalla entera.
+- **El muro se pinta sin prueba de profundidad.** Con ella, el asfalto que queda entre el muro y la cámara le tapaba toda la parte de abajo y solo asomaba como una raya fina: pasó en la primera captura. Como su borde va a la altura de la base del camión, pintarlo por encima de todo no tapa nada que tenga que verse.
+
+### Lo que falta, y por qué
+
+- **Contenedores, palés y naves siguen siendo bloques de color**, y ahora que el suelo y el cielo son fotográficos es lo que más «maqueta» queda. Las naves se cambian por la nave de Almazora en D2. *(Resuelto el 2026-11-19 para la carretilla, los palés y los contenedores: ver «Los modelos de Sketchfab».)*
+- **Los textos del hero caen sobre el cielo y no sobre el crema**: el antetítulo y la entradilla van en tinta al 80 % (`text-ink/80`) y no en el gris de texto, que sobre el cielo claro se quedaba justo de contraste. Mientras fue prueba lo hacía un atributo en el `<html>`; aprobada, va directo en `Hero.tsx`.
+- **La textura de asfalto es CC0 y no obliga a acreditar**, pero esta web acredita igual lo que usa: está en el aviso legal, junto a la carretilla.
+- **La fila de atrás de la pila se tiñe hacia el horizonte del cielo** (`hazed` en `medidas.ts`), que es la bruma de ahora; antes iba hacia el arena de la bruma vieja.
+
+## La nave de Almazora (D2, `NaveAlmazora.tsx`, 2026-11-18)
+
+- **El encargo:** que detrás del camión se viera **la sede de verdad** y no una nave cualquiera. Está sacada del primer plano del vídeo corporativo (segundo 0,3): bloque blanco de dos plantas con tejado de teja, **dos portones** abajo, **cinco ventanas** de cristal bronce arriba, **«José María Ibáñez» en rojo** en lo alto, **«TRANSPORTES»** pequeño en azul a la izquierda con el punto del logo, **zócalo gris** y una moldura entre plantas. Abajo es bloque pintado (se ven las juntas) y arriba enfoscado liso.
+- **Esto no contradice «las naves no llevan nombre escrito»**: aquella decisión era sobre los nombres de ciudad pintados en las cubiertas de las naves de la carretera. El rótulo de esta nave es el que tiene la nave de verdad, y lo pidió el cliente.
+- **El detalle va pintado en una textura generada en el navegador**, no modelado, por lo mismo que el rótulo de la lona: a 30–60 m unas ventanas con hueco y marco costarían decenas de piezas y saldrían igual. Lo que sí es volumen es lo que se lee como volumen: el bloque y el tejado a dos aguas con su alero.
+- **El rótulo usa una sans negrita de rótulo (Arial/Helvetica)**, no la tipografía de la web: es la que lleva la fachada. Su ancho se fuerza a lo que mide en el fotograma (de 6,3 a 19,2 m) en vez de fiarse de la métrica de la fuente del equipo, que cambia de un sistema a otro.
+- **Las medidas están estimadas sobre el fotograma**, con los portones como referencia (unos 5 m de alto): 24 m de fachada y 9,8 de alto. **No son de plano**: si el cliente da las reales, se cambian en `NAVE`.
+- **Va justo detrás del camión aparcado** (`x = 2`, `z = −30`), desde D3. Estuvo a la izquierda del camión (`x = −14`, `z = −34`); con la entrada del camión pasó a ser lo que es en la realidad: el camión se cuadra delante de su nave. Su costado izquierdo (x = −10) deja libre el carril por el que baja el camión al entrar (x = −14).
+- **Se ve desde el primer fotograma** (2026-11-18), con las naves del fondo y el vallado. Hasta entonces entraba fundiéndose al bajar la cámara a perfil, porque desde la cámara alta salía detrás del titular; ahora la cámara alta encuadra el patio delante de ella (ver «La entrada del camión»). **Ya no lleva materiales transparentes**, y la caja pasó de un material por cara a uno solo, con la fachada en un plano propio pegado delante: **4 llamadas de dibujo en vez de 8**. Ojo al quitar un fundido: las naves del fondo arrancaban con el grupo oculto y opacidad 0 porque era la escena la que las encendía, y al quitar el fundido desaparecieron; lo cazó el arnés en dos tomas de `InRoute`.
+- **El arnés lo confirma:** cambian solo las cuatro tomas de perfil donde se ve (la carga, los dos primeros planos y el camión centrado); las del arranque siguen a 0,00 %.
+- ~~En móvil casi no se ve.~~ **Resuelto en D3**: centrada detrás de la cola, cae dentro del plano cerrado de la carga y se ve entera durante toda ella.
+- **Aviso que salió al hacerla:** la lona del camión (`curtainSkin.ts`) pide su tipografía a `--font-inter`, una variable que ya no existe desde que la web pasó a IBM Plex y Archivo. Cae a la sans del sistema, que por suerte es la que parece el rótulo real. Si se toca la lona, conviene escribir la fuente a mano como en la nave.
+
+## La entrada del camión (D3, `escena/maniobra.ts`, 2026-11-18)
+
+- **El encargo, decidido por el cliente entre opciones:** el camión ya no espera aparcado. **Entra desde el fondo del patio hacia la cámara, que está en alto, gira a la derecha y se queda de lado** delante de la nave; **gira articulado**, la tractora primero y el semirremolque detrás doblándose por el enganche; en la carga, **camión y nave van a la izquierda del titular**; y el primer pantallazo **se alarga un poco** para que entrada y carga vayan sin prisa.
+- **El hero tiene ahora dos actos.** Mide **500svh** (eran 420): 400 de recorrido, de los que la entrada se lleva los primeros 80 (`ENTRADA = 0,2` en `lib/partitura.ts`) y la carga los 320 de siempre, así que no va más deprisa. En `Scene.tsx`, `entrada` es el progreso de la entrada y `hero` el de la carga sola, de 0 a 1, así que **todos los compases de la carga siguen con los números que tenían**. Los que comparte con la página (`PARTITURA.hero`) se escriben con `trasEntrada(desde, hasta)`, que los lleva a su sitio en el hero entero, y se leen sobre `heroRaw`.
+
+### La maniobra
+
+- **La ruta es la del enganche** y se calcula entera al cargar el módulo: baja recto por un carril en x = −14 (entre la pila, que acaba en −17,6, y la nave, que empieza en −10), gira con **12 m de radio** —lo que cierra un articulado real— y sigue recto hasta dejar la cola en `TRUCK_X`. La escena solo lee una tabla: nada se integra por fotograma, así que la maniobra depende del scroll y no de los fotogramas por segundo.
+- **El semirremolque se integra como una tractriz**: sus ejes siempre van hacia el enganche, a 10,55 m. Simulado, en la curva se dobla hasta **44°**, que es lo que se ve en un articulado de verdad.
+- **Con 14 m de recta final no llega a enderezarse solo**: acaba con 12° de ángulo, porque un articulado necesita unas tres veces su brazo para cuadrarse. En los últimos 11 m se le ayuda a alinearse con la tractora (`AYUDA`). Desde la cámara alta no se nota; un camión aparcado torcido delante de su nave sí se notaría.
+- **En 1 deja el camión exactamente donde siempre estuvo aparcado** (cola en `TRUCK_X`, recto, mirando a +X), así que nada de lo que viene después nota el cambio. Comprobado: en `camion-centrado` el camión sale idéntico píxel a píxel y solo cambia la nave del fondo, que se movió.
+- La curva del avance **frena al final** (`1 − (1 − e)²`): llega rodando y se para, en vez de arrancar de parado en el primer pixel de scroll.
+
+### El modelo partido en dos
+
+- **La tractora sale aparte del GLB y gira sobre el enganche** (`TRUCK.enganche`, 12,4 m desde la cola). Medido sobre el GLB: el frontal de la caja está en `z` 4,54 del modelo y los ejes motrices de la tractora en 1,54–3,97; la quinta rueda va un pelo por delante del centro de ese tándem.
+- **Se parte por piezas, no por un plano**, porque las dos se solapan a lo largo: la caja del semirremolque llega hasta 4,54 y el chasis de la tractora empieza en 1,27, por debajo. Decide dónde **empieza** cada pieza (`CORTE_TRACTORA = 1,2`). La única excepción es el jirón de lona del lado lejano (`Cloth`), que es del semirremolque.
+- **Cada pieza se funde por su lado** (`fundirPorMaterial` dos veces). Los materiales que salen en las dos (ruedas, chasis, pilotos) cuestan una llamada más cada uno: medido con el corte apagado y encendido, **+16 llamadas** con el camión en pantalla (134 → 150 al entrar, 160 → 176 en el peor momento), un 11 %. Es el precio de que el camión se doble.
+- **La sombra de contacto de la tractora va dentro de la tractora** (`TRACTOR_CONTACTS`, por la prop `conLaTractora`), así gira con ella. Las rayas de la puerta, igual.
+- **`TRUCK.enganche` vive en `TruckModel` y no en `maniobra.ts` por una dependencia circular**: `medidas.ts` importa `TRUCK` del modelo, y si el modelo importara la maniobra (que importa las medidas) habría un ciclo con riesgo de leer una constante antes de que exista.
+- **El logo del fabricante se veía al entrar de frente.** «SCANIA» en la calandra y los emblemas cromados son letras con volumen, no textura, así que repintarlos de blanco no los borraba. Mientras el camión solo se veía de lado daba igual; de frente se leía en el primer fotograma de la web. Se tiran por nombre de nodo (`DROP_NODES`).
+
+### La cámara
+
+- **La vista alta encuadra el patio delante de la nave y se queda casi quieta toda la intro** (`ENTRADA_VISTA`). El camión aparece junto a la nave, baja hacia la cámara y se cuadra dentro del plano; después la carretilla sale de la nave y cruza hasta la cola. El travelling de `desde` a `hasta` es solo para que la imagen no esté congelada.
+- **Llegó a esto en tres intentos, y conviene saber por qué no valían los otros dos:**
+  1. *La cámara atada al camión*, mirándolo mientras entraba: lo seguía bien, pero al perseguirlo empujaba la nave unos fotogramas debajo del titular.
+  2. *La carretilla yendo a buscar el lote a la pila*: obligaba a la cámara a irse a la izquierda, y entonces la nave quedaba detrás del titular. Por eso la nave estaba escondida en la vista alta y solo aparecía al bajar a perfil.
+  3. *Ahora*: con la carretilla saliendo de la nave, la cámara no tiene que irse a ningún sitio, y la nave se ve desde el primer fotograma con el rótulo arriba a la izquierda, por encima del titular. Comprobado fotograma a fotograma en escritorio (el final del rótulo queda a ~590 px; el titular empieza en 598).
+- **Fuera `OPENING`**, el arranque cerrado sobre la carretilla: existía porque ella era la única protagonista del primer fotograma, y ahora lo es el camión. **Y fuera `followZ` y `PILE_VIEW`**: eran el seguimiento de la carretilla desde la pila.
+- **El móvil lleva su propio encuadre** (`ENTRADA_VISTA.movil`), porque allí el titular va encima y no al lado: con el de escritorio la nave quedaba justo detrás del titular. Mira más al fondo para apilar en vertical —titular arriba, nave en medio con el rótulo por debajo del titular, camión abajo—, y empieza a la izquierda para que el camión se vea entrar por el carril. El tejado de la nave queda detrás del titular: medido, **3,8:1**, que pasa para letra grande (pide 3:1) aunque va justo. Si se aclara el tejado o se cambia el encuadre, volver a medirlo.
+
+### La carretilla sale de la nave (2026-11-18)
+
+- **Lo decidió el cliente**, para que la nave se viera desde el principio. Espera dentro del portón izquierdo (`PUERTA_CARRETILLA`, sacado de la propia fachada) mientras el camión entra, sale con el lote y lo lleva a la cola. Es además lo que hace una de verdad: carga en el almacén y lo lleva al camión. La pila de contenedores se queda como decorado del patio (`PILE` va con números fijos).
+- **Sale marcha atrás**, con las horquillas hacia dentro. Se probó de frente y desde la cámara alta el lote (1,7 m de alto, por encima del techo de la máquina) la tapaba entera: se veía una caja avanzando sola. Recular con una carga que tapa la vista es lo que manda cualquier manual de carretillero, y era también lo que hacía antes al salir de la pila.
+- **La fachada es una textura, no hay hueco de verdad**: la carretilla sale atravesando el plano justo donde está pintado el portón oscuro, y como el bloque es opaco no se ve lo de dentro. Arranca con su largo entero detrás de la fachada; si cambia la carretilla o el lote, revisar que no asome antes de tiempo (ya pasó una vez con el lote, que va con su lado largo hacia delante).
+- **El carril pintado sale ahora del portón** (`YardMarkings` con `fromZ = NAVE.z`).
+- **En escritorio el perfil de carga abre a 40 m centrados en x = 13,5** (`ENCUADRE_CARGA`) para que camión y nave queden a la izquierda: la carretilla entra en el borde izquierdo, la cabina llega a poco más de la mitad y **el rótulo rojo de la nave cae siempre en la mitad izquierda**. El primer plano y el arranque vuelven a sus anchos de siempre, así que `InRoute` no cambia.
+- **En el móvil, al pasar al camión entero la línea de suelo sube a 0,34** y no a 0,45: con la nave detrás, a 0,45 su rótulo pisaba la última línea del párrafo del hero mientras se desvanece.
+
+### Lo que el arnés dijo
+
+- Cambian las tomas del hero, como tocaba, y se reapuntaron a su momento nuevo (fracción = 0,2 + 0,8 · antigua). Hay una toma nueva, **`camion-girando`**, con el camión doblado en la curva. En `InRoute`, `camion-centrado` solo cambia por la nave; las otras tres, a 0,00–0,26 %.
+- Se miraron una a una antes de aceptarlas, y se copiaron solo las revisadas, no con `--update`.
+- `tests/perf/medidas/llamadas.mjs` todavía apuntaba a la carretera (escena 5), que ya no existe, y se caía a media medida. Está puesto al día con los puntos nuevos del hero.
+- Herramientas de trabajo: `tests/visual/salida/d3.mjs` (capturas del hero y hoja de contactos) y `zoom-cabina.mjs` (amplía un trozo de un fotograma).
+- **Llamadas de dibujo con la nave visible desde el principio**: al empezar, de 150 a 167 (se ven la nave, las naves del fondo y el vallado); en la carga bajan, de 176 a 168 (la nave pasó de 8 llamadas a 4). El peor fotograma queda mejor que antes.
+
+## La pausa en reposo (`useReposo.ts`, 2026-11-18)
+
+- **El problema, medido**: con la intro en pantalla y nadie tocando nada, el lienzo pintaba a toda la velocidad de la pantalla —**142 fotogramas y 24.000 llamadas de dibujo por segundo**— solo para que parpadeara el rotativo y respirara la carga. En un teléfono es batería y calor a cambio de casi nada.
+- **Ahora**: tras **3 s** (eran 2 hasta que el `scrub` pasó de 1 a 2 segundos) sin scroll, rueda, ratón, dedo, teclado ni cambio de tamaño, el lienzo pasa a `frameloop="demand"` y un latido le pide **15 fotogramas por segundo** (`RITMO_REPOSO` en `Experience.tsx`). Medido con `tests/perf/medidas/reposo.mjs`, en desarrollo y en producción: **15 fps y ~2.500 llamadas por segundo quieto (un 89 % menos)**, y en cuanto se mueve algo vuelve al instante a la velocidad de la pantalla.
+- **Por qué 15 y no 0**: lo único vivo con la escena quieta es el rotativo y la respiración de la carga, y CLAUDE.md ya decía que el rotativo «es lo que mantiene viva la escena mientras alguien lee el titular». Los dos se leen igual a 15 fotogramas.
+- **Por qué 2 s**: los disparadores van con `scrub: 1`, así que la escena sigue moviéndose hasta un segundo después del último scroll; con un umbral corto el ritmo bajaría a mitad del movimiento.
+- **El medidor de rendimiento se quita mientras dura el reposo, y es obligatorio**: `PerformanceMonitor` cuenta fotogramas por segundo, y con 15 creería que el equipo no puede, bajaría la resolución y a la tercera duda la dejaría baja para siempre.
+- **`llamadas.mjs` cuenta ahora solo los fotogramas pintados**: con la pausa, la mayoría de los del navegador van vacíos y la mediana de todos daba 0.
+
+## La luz de mañana y el tratamiento de color (2026-11-19)
+
+- **El encargo:** el cliente pidió un 3D más realista y fluido y eligió, entre opciones, **«mañana soleada»** (sol bajo, sombras largas y tratamiento de color de cine), **movimiento «más suave y amortiguado»** (ver `SCRUB_INTRO` en «Movimiento del 3D») y **pulir el paisaje que hay, sin añadir elementos nuevos**.
+- **El sol baja de unos 29° a unos 19°** (`SOL` en `Scene.tsx`, que comparten la luz y el halo del cielo) y sigue viniendo de la izquierda y del lado de la cámara, para que la fachada de la nave y el costado del camión, que miran a ella, queden iluminados. La luz principal sale ahora de `SOL` también en el bucle (antes la posición estaba copiada a mano).
+- **El reparto es de mañana**: sol cálido (`#ffdcae`, 4,2) que pesa bastante más que el cielo (hemisférica azulada, 1,25), así que las sombras se leen largas y azuladas, y un relleno frío desde el otro lado. **Ya no suman π**: con tratamiento de color esa cuenta no vale, y las intensidades se calibraron midiendo capturas.
+- **Tratamiento de color: ACES** (`Experience.tsx`, exposición 1). **Se probó AgX primero y lavaba la escena hasta el gris**, sobre todo en el móvil, donde se ve casi solo la franja pálida del horizonte. ACES da blancos limpios y colores vivos. Para que el cielo no se fuera a gris, el horizonte y el cénit ganaron algo de color (`CIELO` en `escena/dia.ts`).
+- **El muro y el telón azul noche llevan `toneMapped={false}`**, y es obligatorio: tienen que ser exactamente el `#0f1a2e` de la página o se vería la costura con la sección de debajo. `check:3d` lo confirma: la toma `azul-noche` da 0,00 %.
+- **La trampa de la viñeta**, que costó una pasada: AgX parecía funcionar en escritorio y no en móvil. Era al revés: en escritorio el compositor del postprocesado apagaba el tratamiento de color, y lo que se veía allí era la luz nueva sin tratamiento. Se quitó la viñeta (ver «El desenfoque de maqueta» y la nota de la viñeta) y ahora escritorio y móvil se ven iguales.
+- **Lo que cuesta, medido en producción**: las llamadas de dibujo bajan un poco (peor fotograma 168 → 166, sin la pasada de la viñeta), y el escritorio descarga **1.953 KB** (eran 2.034): el módulo de postprocesado ya no viaja. El móvil sigue en 1.804.
+- ~~Pendiente: los modelos.~~ **Hechos**: ver «Los modelos de Sketchfab», justo debajo.
+
+## Los modelos de Sketchfab: carretilla, palé y contenedor (2026-11-19)
+
+- **El encargo:** dentro de la misma tanda de realismo, el cliente eligió cambiar la carretilla, los palés y los contenedores por modelos gratuitos mejores. Eran los tres elementos que seguían siendo bloques de color plano al lado de un suelo y un cielo fotográficos.
+- **De dónde salen.** Poly Haven no tiene ninguno de los tres, y los gratuitos de CGTrader o RenderHub no son CC0 ni CC BY (o son de pago, o su licencia no permite servir el archivo en una web pública, donde cualquiera puede extraerlo). **La fuente buena es Sketchfab con licencia CC BY 4.0.** Buscar se puede sin cuenta (API pública); descargar no, así que **el cliente inició sesión en el navegador integrado** y yo bajé los tres archivos después de decirle nombre y tamaño de cada uno.
+  - Carretilla: «Warehouse Forklift Gameready», de Kamran Mughal. GLB con texturas de 1k, 2,3 MB.
+  - Palé: «EPAL pallet», de ChoboiAssets. GLB con texturas de 1k, 2,6 MB.
+  - Contenedor: «20ft Container», de Europhil. GLB original, 233 KB, azul liso y **sin naviera rotulada** (se descartaron los que llevaban logos de fabricante o de naviera).
+- **Los créditos están en el aviso legal**, en los dos idiomas, con autor, licencia, enlace y qué se modificó, como pide CC BY. El de la carretilla vieja de KolosStudios se quitó; el contenedor viejo no estaba acreditado. **Lo único que sigue pendiente de crédito es el camión** (`[PENDIENTE: …]` en el aviso legal).
+- **Ninguno va tal cual: los prepara `scripts/modelos/preparar.py`** (Python con numpy y Pillow; no es parte de la web ni de la CI, y los originales no están en el repositorio porque Sketchfab pide cuenta). Cada archivo sale ya en metros y en la convención de la escena, así que el código no tiene giros, escalas ni orígenes que compensar.
+
+### La carretilla
+
+- **Va a su tamaño**: es una contrapesada de unas tres toneladas y media, con 1,31 m de ancho, el techo protector a 2,26 m y 3,86 m de la punta de las horquillas a la cola (1,18 m de horquilla). La de antes medía 3,12 m.
+- **Las horquillas van subidas, y es el cambio que más se ve.** Con la carretilla vieja el lote viajaba a 1,20 m (el piso del camión) y las horquillas iban por el suelo: el mástil, las ruedas y el techo eran la misma pieza y no se podían separar. En esta, **las dos horquillas, el carro y sus dos travesaños son piezas sueltas dentro de la malla**, todas por delante de z = 1,54 del original y sin nada más de la máquina en esa zona. Se encontraron buscando los grupos de triángulos conectados (uniendo antes los vértices que comparten posición, por las costuras de la textura). El guion los sube **1,14 m**, hasta que la cara de las horquillas queda a 1,20, y sube **31 cm** la parte interior del mástil para que el carro no asome por encima: se lee como una carretilla con el mástil extendido.
+- **Va horneado y no animado**: sigue siendo una sola malla y una sola llamada de dibujo (la de antes eran cuatro). La carretilla lleva el lote en alto desde que sale de la nave hasta que se va, y después se retira con las horquillas arriba, que es lo normal.
+- **`FORK_REACH` baja de 1,25 a 0,95**, y no puede bajar más. Es la distancia de la punta de las horquillas al centro del lote. Con el lote pegado al carro (0,64) la carretilla acabaría la maniobra con el mástil metido 25 cm en la cola del semirremolque; a 0,95 se queda justo fuera. Entre la carga y el carro queda a la vista un palmo de horquilla.
+- **Sin las letras de la textura**: «SQUIRE», un logotipo en forma de S y el modelo «SJT-9», dos veces. Se taparon con el naranja de alrededor. Se encontraron ampliando la textura, no mirando el modelo: a tamaño de pantalla no se distinguen, y aun así una marca en una máquina de la escena se lee como la de otra empresa.
+- Texturas a 512 (color) y 256 px (metal y rugosidad) en JPEG, y fuera la de especular con su extensión. **De 2,3 MB a 451 KB.**
+- **Lo que hubo que volver a medir**, con una vista lateral y cuadrícula de 10 cm (`tests/visual/salida/modelos/regla.mjs`, herramienta de trabajo): el operario (`OPERATOR` en `ForkliftModel.tsx`: cojín del asiento a 1,20 m, origen de la figura a 0,78), el rotativo (`FORKLIFT.rotativo`, sobre la parte de atrás del techo protector) y la sombra de contacto, que ahora va **solo debajo del cuerpo** (`FORKLIFT.cuerpo`): debajo de unas horquillas en alto sería sombra de algo que no toca el suelo.
+- **El arranque sigue tapado**: la carretilla es 74 cm más larga, pero `APPROACH_FROM` ya se calculaba con `FORKLIFT.length`, así que espera más adentro de la nave y sale igual. Comprobado fotograma a fotograma: no asoma por el portón antes de tiempo.
+
+### El palé
+
+- **Sin los clavos**: las cabezas venían como una capa finísima de 2.480 triángulos pegada a la madera, el 72 % del modelo, y a la distancia a la que se ven los palés no se distinguen. Queda en **960 triángulos**; con los 36 palés de la escena son unos 35.000.
+- **A la medida exacta de `PALLET`** (1,20 × 0,14 × 0,85): el modelo se estira un 6 % de fondo y un 12 % de alto, que no se ve, y a cambio la caja se sustituye sin mover ni un centímetro de la coreografía. Base en y = 0, centrado.
+- **La madera se aclaró al pino de un palé nuevo**: el tono medio de la textura se lleva al `#b08d63` que tenía la caja. Venía oscura, casi de nogal.
+- **Sigue instanciado**: es la misma geometría para los tres grupos de palés (patio, lote y lo que lleva el camión), con las mismas tres llamadas por grupo que antes. 128 KB.
+
+### El contenedor
+
+- **A las medidas del anterior** (6,06 × 2,455 × 2,57), así que las pilas, los huecos entre ellas y las sombras de contacto no se movieron. El modelo es un 20 pies de verdad (6,16 × 2,44 × 2,44); queda un 5 % más ancho, que no se ve.
+- **Sus ocho piezas van fundidas en tres, una por material**, renombrados a `chapa`, `herrajes` y `cierres`. La chapa sigue tomando el color de cada contenedor por instancia. 181 KB.
+
+### Lo que cuesta y lo que dijo el arnés
+
+- **Las llamadas de dibujo bajan**: el peor fotograma pasa de **166 a 158** (la carretilla de 4 piezas a 1, el contenedor de 5 a 3).
+- **Los GLB suben de 1,72 a 2,24 MB** (+520 KB), dentro de los 6 MB que el cliente dio para el 3D. Se cargan cuando el 3D se monta, no con la portada: el JavaScript sigue en 1.804 KB en móvil y 1.952 en escritorio. Si hiciera falta aligerar, lo siguiente es cuantizar la geometría de la carretilla (va en `float32`).
+- `check:3d`: cambian las seis tomas del patio y las cinco de en ruta siguen a 0,00 %. Se miraron una a una y se copiaron solo esas seis, no con `--update`.
+- **El repaso cazó un desborde en el aviso legal**: las direcciones de Sketchfab miden cien caracteres sin un espacio y empujaban la página 32 px de lado en el móvil. Arreglado en `LegalSections` con `overflow-wrap: anywhere`, que solo parte lo que no cabe entero.
+- Herramientas de trabajo para la próxima vez (en `tests/visual/salida/modelos/`, fuera de git): `visor.mjs` pinta un GLB desde cuatro ángulos e imprime su caja, y `regla.mjs` lo pinta de lado con la cuadrícula. Los dos funcionan sin servidor: el navegador pide los archivos a una dirección falsa y el guion se los sirve del disco.
 
 ## El encuadre del móvil, el arranque y el ratón
 
@@ -612,6 +787,8 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
   a su referencia, como pide la nota de `--update`.
 
 ### El arranque, cerrado sobre la carretilla
+
+> **Historia (D3, 2026-11-18):** `OPENING` se quitó. El primer fotograma es ahora del camión entrando; ver «La entrada del camión».
 
 - En el primer fotograma de la web la carretilla medía unos 45 px: la
   protagonista era una mota. Ahora la cámara en tres cuartos arranca **cerrada
@@ -703,7 +880,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
   errores. En un navegador que no la entiende se navega igual que siempre.
 
 ## Movimiento del 3D
-- Todos los disparadores de la intro van a **`scrub: 1`, no `true`**. Con `true` la escena va clavada a la rueda y un acelerón la teletransporta. Si tocas uno, tócalos todos: van juntos para no desincronizarse.
+- Todos los disparadores de la intro van con **`scrub: SCRUB_INTRO` (2 segundos), no `true`**. Con `true` la escena va clavada a la rueda y un acelerón la teletransporta. **Fue 1 hasta el 2026-11-19**: el cliente veía que «a veces va muy rápido» y eligió «más suave y amortiguado»; con 2, un golpe de rueda ya no despacha la entrada del camión en un segundo, sino que la escena se desliza hasta su sitio y frena sola. El valor vive en `lib/partitura.ts` y lo usan `ScrollChoreography` (el 3D) y `ScrollFade` (sus textos), para que no se desincronicen.
 - `Scene.tsx` usa **muelles amortiguados**, no solo interpolación directa: la pluma llega un pelo tarde respecto a la máquina, y la carga colgada se balancea empujada por su propia velocidad (se queda atrás al acelerar, se adelanta al frenar, y se para sola). Es lo que separa "animación" de "maquinaria".
 - Esos muelles viven en **refs, no en estado de React**: cambian cada fotograma y no deben provocar ni un render.
 - Usan `damp()` de `lib/utils.ts`, que es independiente de los fps. **No uses `lerp` a secas para seguimientos por fotograma**: a 120 fps iría el doble de rápido que a 60.
@@ -713,7 +890,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 
 ## Reparto del scroll (leer antes de tocar alturas o rangos)
 
-- **El disparador del hero acaba en `bottom bottom`, no en `bottom top`.** Es justo donde su bloque `sticky` suelta el titular, así que toda la animación de carga transcurre con el texto delante. Con `bottom top` sobraba una pantalla entera al final: sin titular, con el camión convertido en una tira al fondo y, en móvil, con media pantalla de crema vacía. Por eso el hero mide **420svh**: el disparador se come una pantalla, así que el recorrido útil sigue siendo el de siempre.
+- **El disparador del hero acaba en `bottom bottom`, no en `bottom top`.** Es justo donde su bloque `sticky` suelta el titular, así que toda la animación de carga transcurre con el texto delante. Con `bottom top` sobraba una pantalla entera al final: sin titular, con el camión convertido en una tira al fondo y, en móvil, con media pantalla de crema vacía. Por eso el hero mide una pantalla más que su recorrido: hoy **500svh** (eran 420 hasta D3, que añadió la entrada del camión delante de la carga).
 - Ese cambio tiene un segundo efecto, y es el importante: **`InRoute` empieza a contar exactamente cuando el hero llega a 1**, en vez de una pantalla antes. Antes se solapaban, y por eso el camión arrancaba con la lona todavía abierta y el suelo oscuro se lo comía antes de que se le viera avanzar.
 - El hueco de arriba de `InRoute` (`pt-[240svh]`) no es relleno: dentro caben el arranque del camión y la subida del azul noche, por ese orden. El texto es blanco y no puede asomar antes de que el fondo esté hecho.
 
@@ -744,6 +921,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - El Canvas va con `shadows="soft"`. **Hay sombras reales**: la grúa, los contenedores y el camión proyectan sobre el patio.
 - La luz que proyecta **viaja con el punto que mira la cámara**. Solo se traslada, nunca cambia de dirección, así que la escena se ilumina igual siempre; lo que se mueve es el recuadro donde se calcula la sombra, para no gastar resolución en vacío. En móvil el mapa de sombras va a la mitad.
 - Los reflejos vienen de un `Environment` montado con `Lightformer` **dentro de la escena**. Nada de HDRI descargado: sería una petición a un tercero y va contra la regla de no cargar nada de fuera sin consentimiento. `frames={1}` lo calcula una vez.
+- **Desde el 2026-11-19 hay tratamiento de color de cine (ACES) y luz de mañana**; ver «La luz de mañana» más abajo. Lo que sigue en esta sección sobre `NoToneMapping` y la suma π es historia de la escena de maqueta, y las lecciones de medir siguen valiendo.
 - **No hay mapeo de tonos** (`NoToneMapping` en `Experience.tsx`), y es la decisión que desatascó todo lo demás. Por defecto three aplica ACES Filmic, una curva para render fotorrealista que comprime las luces y las desatura; esta escena es lo contrario, una maqueta de colores planos, y esa curva era la que saturaba a blanco cualquier crema. De ahí venía el parche de pintar el suelo sin luz.
 - **La escena salía apagada y la causa era un número, no el gusto: faltaba un factor π.** Durante tres pasadas se subió la luz de diez en diez por ciento (1,02 → 1,13 → 1,25) y se recalculó el color del suelo otras tantas veces, y seguía viéndose como un día nublado. El motivo: three reparte la luz difusa con la fórmula de Lambert, que **lleva un 1/π dentro**. O sea que una superficie mirando hacia arriba no sale con su color exacto cuando la luz que recibe suma 1,0, sino cuando suma **π ≈ 3,14**. Calibrada a 1,0 la escena rendía a un **tercio** de lo que debía.
 - **Las tres intensidades están calculadas, no puestas a ojo**, y suman π:
@@ -1088,6 +1266,7 @@ Las **cuatro tomas del patio** se mueven entre 1,0 y 2,9 %, y **las once restant
 - Y la cámara lleva un **empuje lento** durante todo el hero: un 4 % repartido en toda la sección. Por sí solo no se ve; lo que se nota es que la escena deja de estar congelada.
 
 - **El desenfoque de maqueta no se puede montar con estas versiones.** Se probó `TiltShift2` de `@react-three/postprocessing` 3.1.1 con three 0.186 y revienta el render (`uniform2fv ... cannot be converted to a sequence`), dejando el Canvas en negro. Se quitó. Si se reintenta, hará falta subir o bajar versiones y comprobarlo, no darlo por hecho.
+- **Historia (2026-11-19): la viñeta y `Postproceso.tsx` se quitaron.** Al pasar a ACES salió que el compositor de `@react-three/postprocessing` apaga el tratamiento de color de three mientras está activo, así que el escritorio salía sin él y el móvil con él. Sin la viñeta las dos van iguales y el escritorio se ahorra una pasada a pantalla completa (y 80 KB de descarga). El paquete sigue instalado pero no se importa. Lo de abajo queda como registro.
 - **Hay viñeta, y solo viñeta** (`Postproceso.tsx`). Es el recurso que más asienta una escena de maqueta: oscurece un pelo las esquinas y la imagen deja de parecer un recorte pegado sobre la página.
 - **La viñeta no se estaba aplicando, y nadie lo había visto.** Se descubrió midiendo el borde superior de las referencias del arnés visual: salía **plano en 245 de lado a lado**, sin rastro de caída hacia las esquinas. O sea que el efecto estaba montado, documentado y afinado… contra nada. Las dos notas que había escritas sobre él eran, en consecuencia, falsas las dos.
 - **Primera nota falsa: `darkness: 0.42` no era «muy baja», era demasiado.** En cuanto el efecto empezó a ejecutarse, el rojo del borde superior caía de 241 en el centro a **192 en las esquinas**: un lavado gris en las cuatro puntas, exactamente el fallo del que avisaba la propia nota. Afinada por medida, va en **0,14**, que deja la caída en 253 → 250. Un 1,5 %, que es lo que se buscaba.
@@ -1949,7 +2128,7 @@ Medidos con píxeles dan 16,7:1 y 5,04:1.
 
 ## Regresión visual de la intro 3D (`npm run check:3d`)
 
-- **Qué problema resuelve.** La intro está gobernada por constantes que dependen unas de otras —el alcance de la niebla por vista, el encuadre del primer plano, el reparto del scroll— y tocar una mueve otras. El fallo **no rompe nada**: compila, pasa el lint y el build, y simplemente se ve mal tres pantallazos más abajo. Esto recorre la portada parándose en **10 puntos fijos** (8 en escritorio y 2 en móvil), captura, y compara contra referencias versionadas en `tests/visual/baseline/`.
+- **Qué problema resuelve.** La intro está gobernada por constantes que dependen unas de otras —el alcance de la niebla por vista, el encuadre del primer plano, el reparto del scroll— y tocar una mueve otras. El fallo **no rompe nada**: compila, pasa el lint y el build, y simplemente se ve mal tres pantallazos más abajo. Esto recorre la portada parándose en **11 puntos fijos** (9 en escritorio y 2 en móvil; la novena, `camion-girando`, es de D3), captura, y compara contra referencias versionadas en `tests/visual/baseline/`.
 - **Eran 15 tomas y las cinco de la carretera se fueron con ella** (2026-11-17), junto con el buscador de kilómetros (`seekKm`) y su umbral propio (`FAIL_SOUGHT`). Lo que este apartado cuenta de esas tomas es historia; la toma `azul-noche` es ahora el último fotograma de la intro.
 - **Necesita el servidor levantado** (`npx next dev --webpack`). Si no hay nadie escuchando, lo dice y sale.
 - Para aceptar un cambio como bueno: `npm run check:3d -- --update`. **Mira las capturas nuevas antes de hacer commit**: una referencia mala da por bueno un fallo para siempre.
@@ -2005,6 +2184,8 @@ Igual que con `check:3d`, se saboteó a propósito: un `@media (prefers-reduced-
 ### La trampa que hace perder media hora
 
 **Hay que reiniciar `next start` después de `next build`.** Sin eso el servidor sigue sirviendo la compilación anterior, los trozos cambian de nombre y lo que se ve son 404 y «Refused to execute script because its MIME type is text/plain» **en las 32 páginas**. Parece que la web está rota y lo que está caducado es el servidor. Ya está escrito en la sección de rendimiento y aun así se volvió a pisar aquí.
+
+**Y parar el servidor no siempre lo para.** Lanzado con `npx next start`, al cerrar la tarea se cierra el envoltorio de `npx` pero el `node` de dentro **puede quedarse escuchando en el puerto**. El siguiente `next start` falla con «address already in use» y el arnés mide, sin avisar, contra el servidor viejo. Pasó el 2026-11-18. Antes de medir, mira quién escucha en el puerto (`Get-NetTCPConnection -LocalPort 3100`).
 
 ## Cuando algo se cae (red de seguridad)
 

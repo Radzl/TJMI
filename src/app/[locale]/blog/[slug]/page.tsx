@@ -238,13 +238,13 @@ export default async function BlogPostPage({ params }: Props) {
             artículo termina; esto es lo que pasa después, y tiene que notarse
             que cambia la cosa.
 
-            Lleva `data-bg="night"`, así que el fondo de la página lo funde
-            `Backdrop` en vez de entrar como un rectángulo. Y el titular
+            El paso del papel al azul es un **cambio de color seco, sin
+            difuminado** (lo pidió el cliente, 2026-11-18). Y el titular
             pregunta en vez de ofrecer: quien acaba de leerse cuatro minutos
             sobre palés ya sabe que mueve palés. */}
         <aside
           data-bg="night"
-          className="bg-night-depth mt-24 py-20 text-white lg:py-24"
+          className="mt-20 bg-night-depth py-20 text-white lg:mt-24 lg:py-24"
         >
           <Container>
             <h2 className="max-w-3xl font-display text-display-md uppercase">
